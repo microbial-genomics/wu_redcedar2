@@ -1,0 +1,158 @@
+
+r__CN2.mgt    -0.25   0.1   
+SCS runoff curve number f
+
+v__ALPHA_BNK.rte    0   1
+Baseflow alpha factor for bank storage
+
+v__CH_K2.rte    0   500
+Effective hydraulic conductivity in main channel alluvium
+
+v__CH_N2.rte    0   0.3
+Manning's "n" value for the main channel.
+
+r__SOL_K(1).sol    -0.8   0.8
+Saturated hydraulic conductivity
+
+r__SOL_AWC(1).sol    -0.8   2
+Available water capacity of the soil layer.
+
+r__OV_N.hru    -0.8   2
+Manning's "n" value for overland flow
+
+v__ESCO.bsn    0   1
+Soil evaporation compensation factor
+
+v__EPCO.bsn    0   1
+Plant uptake compensation factor
+
+v__TRNSRCH.bsn    0   1
+Fraction of transmission losses from main channel that enter deep aquifer. The remainder if the transmission losses enter bank storage
+
+v__SURLAG.bsn    1   24
+Surface runoff lag coefficient
+
+v__CH_N1.sub    0.01   30
+Manning's "n" value for the tributary channels
+
+v__CH_K1.sub    0   300
+Effecitive hydraulic conductivity in tributary channel alluvium (mm/hr)
+
+r__ALPHA_BF.gw    -0.3   0.3
+Baseflow alpha factor (1/days)
+
+v__REVAPMN.gw    0   1000
+Threshold depth of water in the shallow aquifer for "revap" or percolation to the deep aquifer to occure (mm H2O)
+
+v__GW_REVAP.gw    0.02   0.2
+Groundwater "revap" coefficient
+
+v__RCHRG_DP.gw    0   1
+Deep aquifer percolation fraction
+
+r__GW_DELAY.gw    -0.5   2
+The delay time
+
+v__GW_SPYLD.gw    0   0.4
+Specific yield of the shallow aquifer (m3/m3)
+
+r__GWQMN.gw    -0.5   2
+Threshold depth of water in the shallow aquifer required for return flow to occure (mm H2O)
+
+r__HRU_SLP.hru    -0.5   3
+Average slope steepness
+
+r__SLSUBBSN.hru    -0.5   2
+Average slope length 
+
+v__SFTMP.bsn              -5.0       5.0
+Snowfall temperature
+
+SFTMP       3.47035750048235 
+Snowfall temperature
+
+SMTMP       6.24717360362411
+Snow melt base temperature
+
+SMFMX       13.361963108182
+Maximum melt rate for snow during year (occurs on summer solstice).
+
+26 SMFMN       16.3545210612938
+Minimum melt rate for snow during year (occurs on winter solstice).
+
+27 TIMP        0.398021328495815
+Snow pack temperature lag factor.
+
+28 BACTKDQ     277.172228554264
+Bacteria partition coefficient
+
+29 BACTMX      15.9795461883768
+Bacteria percolation coefficient
+
+30 BACT_SWF    0.466970863752067
+Fraction of manure applied to land areas that has active colony forming units
+
+31 CFRT_KG     369.3671656074
+Amount of fertilizer applied in each applicati
+
+32 FRT_SURFACE 0.332620258443058
+Fraction of fertilizer applied to top 10mmof 
+
+33 THBACT      7.81000937568024
+Temperature adjustment factor for bacteria die-off/growth.
+
+34 WDPRCH      0.724702801089734
+Die-off factor for less persistent bacteria in streams (moving water) at 20 C
+
+35 WDPQ        0.469829076901078
+Die-off factor for persistent bacteria in soil solution
+
+36 WGPQ        0.90190387237817
+Growth factor for persistent bacteria in soil solution
+
+37 WDPS        0.0445007267408073
+Die-off factor for persistent bacteria adsorbed to soil particles
+
+38 WGPS        0.47537464206107
+Growth factor for persistent bacteria adsorbed to soil particles
+
+39 WOF_P       0.435250568669289
+Wash-off fraction for persistent bacteria
+
+40 WDPRES      0.626208993606269
+Die-off factor for persistent bacteria in water bodies (still water) at 20ï¿
+
+
+41 DEP_IMP.hru  
+Depth to impervious layer in soil profile in tile drained fileds (mm)
+
+42 DDRAIN.mgt
+Depth to drains (mm); must be >0 to inititate tile drainage
+
+43 TDRAIN.mgt
+Time to drain soil to field capacity (hours)
+
+44 GDRAIN.mgt
+Drain tile lag time (hours)
+
+45 SPCON.bsn
+Linear parameter for calculating the maximum amount of sediment that can be reentrained during channel sediment routing
+
+46 SPEXP.bsn
+Exponent parmeter for calculating sediment reentrained in channel sediment routing
+
+47 PRF_BSN.bsn
+Peak rate adjustment factor for sediment routing in the main channel
+
+48 Adj_PKR.bsn
+Peak rate adjustment facotr for sediment routing in tributary channels
+
+
+
+
+
+
+
+
+
+
