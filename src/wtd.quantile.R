@@ -88,7 +88,7 @@ par_sim_q <- array(data=NA, dim=c(18,nquantiles))
 colnames(par_sim_q) <-c("1%", "2.3%","2.5%","5%", "15.9%", "25%","50%","75%","84.1%","95%","97.5%","97.7%","99.9%")
 rownames(par_sim_q) <- colnames(par_sim)
 
-save(par_sim_q, file ='/home/hwu/wu_redcedar2/data_out/weighted.pars.q.RData')
+write.csv(par_sim_q, file ='/home/hwu/wu_redcedar2/data_out/weighted.pars.q.csv')
 
 
 
@@ -113,7 +113,7 @@ par_sim_bac <- array(data=NA, dim=c(18,nquantiles))
 colnames(par_sim_bac) <-c("1%", "2.3%","2.5%","5%", "15.9%", "25%","50%","75%","84.1%","95%","97.5%","97.7%","99.9%")
 rownames(par_sim_bac) <- colnames(par_sim)
 
-save(par_sim_bac, file ='/home/hwu/wu_redcedar2/data_out/weighted.pars.bac.RData')
+write.csv(par_sim_bac, file ='/home/hwu/wu_redcedar2/data_out/weighted.pars.bac.csv')
 
 
 ############################################################################
@@ -138,7 +138,7 @@ par_sim_flux <- array(data=NA, dim=c(18,nquantiles))
 colnames(par_sim_flux) <-c("1%", "2.3%","2.5%","5%", "15.9%", "25%","50%","75%","84.1%","95%","97.5%","97.7%","99.9%")
 rownames(par_sim_flux) <- colnames(par_sim)
 
-save(par_sim_flux, file ='/home/hwu/wu_redcedar2/data_out/weighted.pars.flux.RData')
+write.csv(par_sim_flux, file ='/home/hwu/wu_redcedar2/data_out/weighted.pars.flux.csv')
 
 
 
