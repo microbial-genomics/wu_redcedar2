@@ -159,20 +159,40 @@ rownames(par_sim_total) <- colnames(par_sim)
 write.csv(par_sim_total, file ='/home/hwu/wu_redcedar2/data_out/weighted.pars.total.csv')
 
 
+#total weight
+
+three.wt <- wt_q + wt_bac + wt_flux
+
+wt_total <- three.wt/sum(three.wt)
+
+par_sim_total <- array(data=NA, dim=c(18,nquantiles))
+
+  for(i in 1:18){
+    print(i)
+   par_sim_total[i,] <- wtd.quantile(df[,i],weights=wt_total, probs=quantiles.probs,normwt=TRUE)
+  }
+
+
+colnames(par_sim_total) <-c("1%", "2.3%","2.5%","5%", "15.9%", "25%","50%","75%","84.1%","95%","97.5%","97.7%","99.9%")
+rownames(par_sim_total) <- colnames(par_sim)
+
+write.csv(par_sim_total, file ='/home/hwu/wu_redcedar2/data_out/weighted.pars.total.csv')
 
 
 
 
 
+#calculate kernal density
+kde <-bac_cal1$parameter$values %>%
+  mutate(weight = wt_total) %>%
+  #filter(nse > -10) %>%
+  gather(key = "par", value = "parameter_range", -weight)
 
+     ggplot(data = kde) +
+   geom_density(aes(x = parameter_range, weight = weight)) +
+   facet_wrap(.~par, nrow=5, scales = "free_x") +
+    theme_bw()
 
-
-~
-~
-~
-~
-~
-~
 ~
 ~
 ~
