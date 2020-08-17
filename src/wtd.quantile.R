@@ -183,6 +183,7 @@ write.csv(par_sim_total, file ='/home/hwu/wu_redcedar2/data_out/weighted.pars.to
 
 
 #calculate kernal density
+
 kde <-bac_cal1$parameter$values %>%
   mutate(weight = wt_total) %>%
   #filter(nse > -10) %>%
@@ -190,9 +191,19 @@ kde <-bac_cal1$parameter$values %>%
 
      ggplot(data = kde) +
    geom_density(aes(x = parameter_range, weight = weight)) +
-   facet_wrap(.~par, nrow=5, scales = "free_x") +
+   facet_wrap(.~par, nrow=5, scales = "free") +
     theme_bw()
+ggsave("kde.pdf")
 
+
+
+###overlap unifomed distribution and weighted distribution
+     ggplot(data = kde) +
+   geom_density(aes(x = parameter_range, weight = weight),colour="orangered3") +
+   geom_density(aes(x = parameter_range),colour="lightskyblue") +
+   facet_wrap(.~par, nrow=5, scales = "free") +
+    theme_bw()
+ggsave("/home/hwu/wu_redcedar2/graphics/kde2.pdf")
 ~
 ~
 ~
