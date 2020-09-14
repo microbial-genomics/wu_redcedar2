@@ -79,14 +79,6 @@ sort(nse_average, decreasing = T) %>% enframe()
 #Step3.	Take the top 5k simulations based on the nse_average, discard the other 5K simulations.
 #run<-colnames(sim_bac)
 
-#run <- run[2:10001]
-#nse_average <- nse_average
-#nse_mean <-cbind(run,nse_average)
-#top5k_sim <- nse_mean[order(-nse_average,run),][1:5000,]
-#valid_sims <-c(top5k[,1])
-#sim_bac_2 <-sim_bac[valid_sims]
-#sim_q_2 <-sim_q[valid_sims]
-
 
 run<-c(1:10000)
 
@@ -149,7 +141,7 @@ fln_WDPRCH <- fitdist(sim_pars_2$WDPRCH, "norm")
 
 
 
-fln_CN2
+#fln_CN2
 # SCS runoff curve number f
 #        estimate  Std. Error
 #mean -0.03060313 0.003394195
@@ -158,7 +150,7 @@ fln_CN2
 CN2<-rtruncnorm(50000, min(sim_pars_2$CN2), max(sim_pars_2$CN2), mean = -0.03060313, sd = 0.16970975)
 
 
- fln_GWQMN
+ #fln_GWQMN
       # estimate  Std. Error
 # mean 0.4915682 0.013951768
 # sd   0.6975884 0.009865299
@@ -166,14 +158,14 @@ CN2<-rtruncnorm(50000, min(sim_pars_2$CN2), max(sim_pars_2$CN2), mean = -0.03060
 GWQMN<-rtruncnorm(50000, min(sim_pars_2$GWQMN), max(sim_pars_2$GWQMN), mean =0.4915682, sd = 0.6975884)
 
 
-fln_CH_N1 
+#fln_CH_N1 
 #       estimate   Std. Error
 #mean 0.09968964 0.0005745893
 #sd   0.02872947 0.0004040831
 
 CH_N1<-rtruncnorm(50000, min(sim_pars_2$CH_N1), max(sim_pars_2$CH_N1), mean = 0.09968964, sd = 0.02872947)
 
-fln_ALPHA_BNK
+#fln_ALPHA_BNK
 # Baseflow alpha factor for bank storage
 #       estimate  Std. Error
 # mean 0.4906096 0.005878505
@@ -181,48 +173,48 @@ fln_ALPHA_BNK
 ALPHA_BNK<-rtruncnorm(50000, min(sim_pars_2$ALPHA_BNK), max(sim_pars_2$ALPHA_BNK), mean = 0.4906096, sd = 0.2939252)
 
 
-fln_CH_K2
+#fln_CH_K2
 # Effective hydraulic conductivity in main channel alluvium
 #      estimate Std. Error
 # mean 27.43193  0.2815924
 # sd   14.07962  0.1991159
 CH_K2<-rtruncnorm(50000, min(sim_pars_2$CH_K2), max(sim_pars_2$CH_K2), mean = 27.43193, sd = 14.07962)
 
- fln_CH_N2
+# fln_CH_N2
 #        estimate   Std. Error
 # mean 0.10236356 0.0005781796
 # sd   0.02890898 0.0004066355
 CH_N2<-rtruncnorm(50000, min(sim_pars_2$CH_N2), max(sim_pars_2$CH_N2), mean = 0.10236356, sd = 0.02890898)
 
 
- fln_TRNSRCH
+ #fln_TRNSRCH
 #        estimate  Std. Error
 # mean 0.16805179 0.001698463
 # sd   0.08492317 0.001200246
 TRNSRCH<-rtruncnorm(50000, min(sim_pars_2$TRNSRCH), max(sim_pars_2$TRNSRCH), mean = 0.16805179, sd = 0.08492317)
 
- fln_CH_N1
+ #fln_CH_N1
        # estimate   Std. Error
 # mean 0.09968964 0.0005745893
 # sd   0.02872947 0.0004040831
 CH_N1<-rtruncnorm(50000, min(sim_pars_2$CH_N1), max(sim_pars_2$CH_N1), mean = 0.09968964, sd = 0.02872947)
 
- fln_CH_K1
+ #fln_CH_K1
       # estimate Std. Error
 # mean 159.53393   1.693993
 # sd    84.69961   1.197834
 CH_K1<-rtruncnorm(50000, min(sim_pars_2$CH_K1), max(sim_pars_2$CH_K1), mean = 159.53393, sd = 84.69961)
 
 
-fln_RCHRG_DP
+#fln_RCHRG_DP
       # estimate  Std. Error
 # mean 0.5015587 0.005983016
 # sd   0.2991508 0.004230418
 RCHRG_DP<-rtruncnorm(50000, min(sim_pars_2$RCHRG_DP), max(sim_pars_2$RCHRG_DP), mean = 0.5015587, sd = 0.2991508)
 
 
- fln_SFTMP
-      estimate Std. Error
+# fln_SFTMP
+#      estimate Std. Error
 # mean 0.1093467 0.05705058
 # sd   2.8525289 0.04034083
 SFTMP<-rtruncnorm(50000, min(sim_pars_2$SFTMP), max(sim_pars_2$SFTMP), mean = 0.1093467, sd = 2.8525289)
@@ -325,14 +317,6 @@ bac_cal1 <- run_swat2012(project_path = path,
 
 
   save(bac_cal1, file='/work/OVERFLOW/RCR/calibration/MSU/bac_cal13.RData')
-
-
-
-
-
-
-
-
 
 
 
