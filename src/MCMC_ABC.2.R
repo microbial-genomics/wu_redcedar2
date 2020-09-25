@@ -1,5 +1,5 @@
 
-load(file = '/work/OVERFLOW/RCR/calibration/MSU/bac_cal13.RData')
+load(file = '/work/OVERFLOW/RCR/calibration/MSU/bac_cal14.RData')
 
 
 #6.Use the truncated normal distributions from 4) to set up the next round of simulations. Simulate with these inputs. For each simulation, calculate the average_nse. We will only keep individual simulations if the average_nse is higher that the first_quartile_average_nse (calculated in step 5) from the last set of simulations. 
@@ -37,8 +37,10 @@ load(file = '/work/OVERFLOW/RCR/calibration/MSU/flux_obs.RData')
 load(file = '/work/OVERFLOW/RCR/calibration/MSU/pcp_obs.RData')
 load(file = '/work/OVERFLOW/RCR/calibration/MSU/pcp_obs2.RData')
 
-load(file = '/work/OVERFLOW/RCR/calibration/MSU/bac_cal13.RData')
+load(file = '/work/OVERFLOW/RCR/calibration/MSU/bac_cal14.RData')
 
+
+nsims <- 100000
 
 sim_bac<- bac_cal1$simulation$bac_out
 sim_q <- bac_cal1$simulation$q_out
@@ -67,21 +69,22 @@ nse_flux <- flux_sim %>%
 sort(nse_flux, decreasing = T) %>% enframe()
 
 
-nse_average <- matrix(data=NA, nrow=50000, ncol=1)
-for(i in 1:50000){
-  print(i)
+nse_average <- matrix(data=NA, nrow=nsims, ncol=1)
+for(i in 1:nsims){
+  #print(i)
   nse_average[i] <- mean(c(nse_bac[i], nse_q[i], nse_flux[i]))
 }
 sort(nse_average, decreasing = T) %>% enframe()
 
 
 
-run<-c(1:50000)
+run<-c(1:nsims)
 
 nse_mean <-cbind(run,nse_average)
 colnames(nse_mean)<-c("run","nse_average")
 
-median_score = -17.21075
+median_score = -5.864447
+#median_score <- mean(nse_ave.2[1250:1251])
 valid.n <-head(which(nse_mean[,2]>median_score),n=5000)
 sim_pars_2 <-sim_pars[valid.n,]
 
@@ -99,7 +102,7 @@ ggplot(data = kde_mcabc) +
 # ###
 #9.	Now use these new 10k simulations to calculate the updated first_quartile_average_nse, this will be the average of the 2500 and 2501st highest average_nse.
 median_score <- mean(nse_ave.2[1250:1251])
-#[1] -5.864447
+#[1] -0.9092294
 
 
 ##################
@@ -136,10 +139,13 @@ fln_WDPRCH <- fitdist(sim_pars_2$WDPRCH, "norm")
 # mean -0.04183794 0.001904808
 # sd    0.13469026 0.001346568
 
-n_sims =100000
+
+#reset nsims
+nsims <- 200000
+
 CN2_mean <- fln_CN2$estimate[1]
 CN2_sd <- fln_CN2$estimate[2]
-CN2<-rtruncnorm(n_sims, min(sim_pars_2$CN2), max(sim_pars_2$CN2),mean = CN2_mean, sd =  CN2_sd)
+CN2<-rtruncnorm(nsims, min(sim_pars_2$CN2), max(sim_pars_2$CN2),mean = CN2_mean, sd =  CN2_sd)
 
 # fln_GWQMN
 # #     estimate  Std. Error
@@ -147,7 +153,7 @@ CN2<-rtruncnorm(n_sims, min(sim_pars_2$CN2), max(sim_pars_2$CN2),mean = CN2_mean
 # sd   0.5589768 0.005589688
 GWQMN_mean <- fln_GWQMN$estimate[1]
 GWQMN_sd <- fln_GWQMN$estimate[2]
-GWQMN<-rtruncnorm(n_sims, min(sim_pars_2$GWQMN), max(sim_pars_2$GWQMN), mean =GWQMN_mean, sd = GWQMN_sd)
+GWQMN<-rtruncnorm(nsims, min(sim_pars_2$GWQMN), max(sim_pars_2$GWQMN), mean =GWQMN_mean, sd = GWQMN_sd)
 
 
 # fln_CH_N1 
@@ -156,7 +162,7 @@ GWQMN<-rtruncnorm(n_sims, min(sim_pars_2$GWQMN), max(sim_pars_2$GWQMN), mean =GW
 # sd   0.02343925 0.0002324755
 CH_N1_mean <- fln_CH_N1$estimate[1]
 CH_N1_sd <- fln_CH_N1$estimate[2]
-CH_N1<-rtruncnorm(n_sims, min(sim_pars_2$CH_N1), max(sim_pars_2$CH_N1), mean = CH_N1_mean, sd = CH_N1_sd)
+CH_N1<-rtruncnorm(nsims, min(sim_pars_2$CH_N1), max(sim_pars_2$CH_N1), mean = CH_N1_mean, sd = CH_N1_sd)
 
 
 # fln_ALPHA_BNK
@@ -166,7 +172,7 @@ CH_N1<-rtruncnorm(n_sims, min(sim_pars_2$CH_N1), max(sim_pars_2$CH_N1), mean = C
 # sd   0.2382690 0.002382501
 ALPHA_BNK_mean <- fln_ALPHA_BNK$estimate[1]
 ALPHA_BNK_sd <- fln_ALPHA_BNK$estimate[2]
-ALPHA_BNK<-rtruncnorm(n_sims, min(sim_pars_2$ALPHA_BNK), max(sim_pars_2$ALPHA_BNK), mean = ALPHA_BNK_mean, sd = ALPHA_BNK_sd)
+ALPHA_BNK<-rtruncnorm(nsims, min(sim_pars_2$ALPHA_BNK), max(sim_pars_2$ALPHA_BNK), mean = ALPHA_BNK_mean, sd = ALPHA_BNK_sd)
 
 
 # fln_CH_K2
@@ -176,7 +182,7 @@ ALPHA_BNK<-rtruncnorm(n_sims, min(sim_pars_2$ALPHA_BNK), max(sim_pars_2$ALPHA_BN
 # sd   11.56662  0.1156662
 CH_K2_mean <- fln_CH_K2$estimate[1]
 CH_K2_sd <- fln_CH_K2$estimate[2]
-CH_K2<-rtruncnorm(n_sims, min(sim_pars_2$CH_K2), max(sim_pars_2$CH_K2), mean = CH_K2_mean, sd = CH_K2_sd)
+CH_K2<-rtruncnorm(nsims, min(sim_pars_2$CH_K2), max(sim_pars_2$CH_K2), mean = CH_K2_mean, sd = CH_K2_sd)
 
 
 # fln_CH_N2
@@ -185,7 +191,7 @@ CH_K2<-rtruncnorm(n_sims, min(sim_pars_2$CH_K2), max(sim_pars_2$CH_K2), mean = C
 # sd   0.02342214 0.0002323030
 CH_N2_mean <- fln_CH_N2$estimate[1]
 CH_N2_sd <- fln_CH_N2$estimate[2]
-CH_N2<-rtruncnorm(n_sims, min(sim_pars_2$CH_N2), max(sim_pars_2$CH_N2), mean = CH_N2_mean, sd = CH_N2_sd)
+CH_N2<-rtruncnorm(nsims, min(sim_pars_2$CH_N2), max(sim_pars_2$CH_N2), mean = CH_N2_mean, sd = CH_N2_sd)
 
 
 # fln_TRNSRCH
@@ -194,7 +200,7 @@ CH_N2<-rtruncnorm(n_sims, min(sim_pars_2$CH_N2), max(sim_pars_2$CH_N2), mean = C
 # sd   0.06925731 0.0006919234
 TRNSRCH_mean <- fln_TRNSRCH$estimate[1]
 TRNSRCH_sd <- fln_TRNSRCH$estimate[2]
-TRNSRCH<-rtruncnorm(n_sims, min(sim_pars_2$TRNSRCH), max(sim_pars_2$TRNSRCH), mean = TRNSRCH_mean, sd = TRNSRCH_sd)
+TRNSRCH<-rtruncnorm(nsims, min(sim_pars_2$TRNSRCH), max(sim_pars_2$TRNSRCH), mean = TRNSRCH_mean, sd = TRNSRCH_sd)
 
 # fln_CH_N1
 # estimate   Std. Error
@@ -202,7 +208,7 @@ TRNSRCH<-rtruncnorm(n_sims, min(sim_pars_2$TRNSRCH), max(sim_pars_2$TRNSRCH), me
 # sd   0.02343925 0.0002324755
 CH_N1_mean <- fln_CH_N1$estimate[1]
 CH_N1_sd <- fln_CH_N1$estimate[2]
-CH_N1<-rtruncnorm(n_sims, min(sim_pars_2$CH_N1), max(sim_pars_2$CH_N1), mean = CH_N1_mean, sd = CH_N1_sd)
+CH_N1<-rtruncnorm(nsims, min(sim_pars_2$CH_N1), max(sim_pars_2$CH_N1), mean = CH_N1_mean, sd = CH_N1_sd)
 
 # fln_CH_K1
 # estimate Std. Error
@@ -210,7 +216,7 @@ CH_N1<-rtruncnorm(n_sims, min(sim_pars_2$CH_N1), max(sim_pars_2$CH_N1), mean = C
 # sd    67.87685  0.6787685
 CH_K1_mean <- fln_CH_K1$estimate[1]
 CH_K1_sd <- fln_CH_K1$estimate[2]
-CH_K1<-rtruncnorm(n_sims, min(sim_pars_2$CH_K1), max(sim_pars_2$CH_K1), mean = CH_K1_mean, sd = CH_K1_sd)
+CH_K1<-rtruncnorm(nsims, min(sim_pars_2$CH_K1), max(sim_pars_2$CH_K1), mean = CH_K1_mean, sd = CH_K1_sd)
 
 
 # fln_RCHRG_DP
@@ -219,7 +225,7 @@ CH_K1<-rtruncnorm(n_sims, min(sim_pars_2$CH_K1), max(sim_pars_2$CH_K1), mean = C
 # sd   0.2432284 0.002432099
 RCHRG_DP_mean <- fln_RCHRG_DP$estimate[1]
 RCHRG_DP_sd <- fln_RCHRG_DP$estimate[2]
-RCHRG_DP<-rtruncnorm(n_sims, min(sim_pars_2$RCHRG_DP), max(sim_pars_2$RCHRG_DP), mean = RCHRG_DP_mean, sd = RCHRG_DP_sd)
+RCHRG_DP<-rtruncnorm(nsims, min(sim_pars_2$RCHRG_DP), max(sim_pars_2$RCHRG_DP), mean = RCHRG_DP_mean, sd = RCHRG_DP_sd)
 
 
 # fln_SFTMP
@@ -228,7 +234,7 @@ RCHRG_DP<-rtruncnorm(n_sims, min(sim_pars_2$RCHRG_DP), max(sim_pars_2$RCHRG_DP),
 # sd   2.3345547 0.02334553
 SFTMP_mean <- fln_SFTMP$estimate[1]
 SFTMP_sd <- fln_SFTMP$estimate[2]
-SFTMP<-rtruncnorm(n_sims, min(sim_pars_2$SFTMP), max(sim_pars_2$SFTMP), mean = SFTMP_mean, sd = SFTMP_sd)
+SFTMP<-rtruncnorm(nsims, min(sim_pars_2$SFTMP), max(sim_pars_2$SFTMP), mean = SFTMP_mean, sd = SFTMP_sd)
 
 # fln_SMTMP
 # estimate Std. Error
@@ -236,7 +242,7 @@ SFTMP<-rtruncnorm(n_sims, min(sim_pars_2$SFTMP), max(sim_pars_2$SFTMP), mean = S
 # sd   2.3611645 0.02361163
 SMTMP_mean <- fln_SMTMP$estimate[1]
 SMTMP_sd <- fln_SMTMP$estimate[2]
-SMTMP<-rtruncnorm(n_sims, min(sim_pars_2$SMTMP), max(sim_pars_2$SMTMP), mean = SMTMP_mean, sd = SMTMP_sd)
+SMTMP<-rtruncnorm(nsims, min(sim_pars_2$SMTMP), max(sim_pars_2$SMTMP), mean = SMTMP_mean, sd = SMTMP_sd)
 
 
 # fln_DEP_IMP
@@ -245,7 +251,7 @@ SMTMP<-rtruncnorm(n_sims, min(sim_pars_2$SMTMP), max(sim_pars_2$SMTMP), mean = S
 # sd   1331.808   13.31908
 DEP_IMP_mean <- fln_DEP_IMP$estimate[1]
 DEP_IMP_sd <- fln_DEP_IMP$estimate[2]
-DEP_IMP<-rtruncnorm(n_sims, min(sim_pars_2$DEP_IMP), max(sim_pars_2$DEP_IMP), mean = DEP_IMP_mean, sd = DEP_IMP_sd)
+DEP_IMP<-rtruncnorm(nsims, min(sim_pars_2$DEP_IMP), max(sim_pars_2$DEP_IMP), mean = DEP_IMP_mean, sd = DEP_IMP_sd)
 
 
 # fln_DDRAIN
@@ -254,7 +260,7 @@ DEP_IMP<-rtruncnorm(n_sims, min(sim_pars_2$DEP_IMP), max(sim_pars_2$DEP_IMP), me
 # sd   474.4889   4.744931
 DDRAIN_mean <- fln_DDRAIN$estimate[1]
 DDRAIN_sd <- fln_DDRAIN$estimate[2]
-DDRAIN<-rtruncnorm(n_sims, min(sim_pars_2$DDRAIN), max(sim_pars_2$DDRAIN), mean = DDRAIN_mean, sd = DDRAIN_sd)
+DDRAIN<-rtruncnorm(nsims, min(sim_pars_2$DDRAIN), max(sim_pars_2$DDRAIN), mean = DDRAIN_mean, sd = DDRAIN_sd)
 
 
 # fln_GDRAIN
@@ -263,7 +269,7 @@ DDRAIN<-rtruncnorm(n_sims, min(sim_pars_2$DDRAIN), max(sim_pars_2$DDRAIN), mean 
 # sd   23.41622  0.2341622
 GDRAIn_mean <- fln_GDRAIN$estimate[1]
 GDRAIn_sd <- fln_GDRAIN$estimate[2]
-GDRAIN<-rtruncnorm(n_sims, min(sim_pars_2$GDRAIN), max(sim_pars_2$GDRAIN), mean = GDRAIn_mean, sd = GDRAIn_sd)
+GDRAIN<-rtruncnorm(nsims, min(sim_pars_2$GDRAIN), max(sim_pars_2$GDRAIN), mean = GDRAIn_mean, sd = GDRAIn_sd)
 
 # fln_BACTKDQ
 # estimate Std. Error
@@ -271,7 +277,7 @@ GDRAIN<-rtruncnorm(n_sims, min(sim_pars_2$GDRAIN), max(sim_pars_2$GDRAIN), mean 
 # sd   109.6619   1.096619
 BACTKDQ_mean <- fln_BACTKDQ$estimate[1]
 BACTKDQ_sd <- fln_BACTKDQ$estimate[2]
-BACTKDQ<-rtruncnorm(n_sims, min(sim_pars_2$BACTKDQ), max(sim_pars_2$BACTKDQ), mean = BACTKDQ_mean, sd = BACTKDQ_sd)
+BACTKDQ<-rtruncnorm(nsims, min(sim_pars_2$BACTKDQ), max(sim_pars_2$BACTKDQ), mean = BACTKDQ_mean, sd = BACTKDQ_sd)
 
 
 # fln_BACT_SWF
@@ -280,7 +286,7 @@ BACTKDQ<-rtruncnorm(n_sims, min(sim_pars_2$BACTKDQ), max(sim_pars_2$BACTKDQ), me
 # sd   0.2322516 0.002322323
 BACT_SWF_mean <- fln_BACT_SWF$estimate[1]
 BACT_SWF_sd <- fln_BACT_SWF$estimate[2]
-BACT_SWF<-rtruncnorm(n_sims, min(sim_pars_2$BACT_SWF), max(sim_pars_2$BACT_SWF), mean = BACT_SWF_mean, sd = BACT_SWF_sd)
+BACT_SWF<-rtruncnorm(nsims, min(sim_pars_2$BACT_SWF), max(sim_pars_2$BACT_SWF), mean = BACT_SWF_mean, sd = BACT_SWF_sd)
 
 # fln_THBACT
 # estimate Std. Error
@@ -288,7 +294,7 @@ BACT_SWF<-rtruncnorm(n_sims, min(sim_pars_2$BACT_SWF), max(sim_pars_2$BACT_SWF),
 # sd   1.673996 0.01673994
 THBACT_mean <- fln_THBACT$estimate[1]
 THBACT_sd <- fln_THBACT$estimate[2]
-THBACT<-rtruncnorm(n_sims, min(sim_pars_2$THBACT), max(sim_pars_2$THBACT), mean = THBACT_mean, sd = THBACT_sd)
+THBACT<-rtruncnorm(nsims, min(sim_pars_2$THBACT), max(sim_pars_2$THBACT), mean = THBACT_mean, sd = THBACT_sd)
 
 # fln_WDPRCH
 # estimate  Std. Error
@@ -296,7 +302,7 @@ THBACT<-rtruncnorm(n_sims, min(sim_pars_2$THBACT), max(sim_pars_2$THBACT), mean 
 # sd   0.2187718 0.002187513
 WDPRCH_mean <- fln_WDPRCH$estimate[1]
 WDPRCH_sd <- fln_WDPRCH$estimate[2]
-WDPRCH<-rtruncnorm(n_sims, min(sim_pars_2$WDPRCH), max(sim_pars_2$WDPRCH), mean = WDPRCH_mean, sd = WDPRCH_sd)
+WDPRCH<-rtruncnorm(nsims, min(sim_pars_2$WDPRCH), max(sim_pars_2$WDPRCH), mean = WDPRCH_mean, sd = WDPRCH_sd)
 
 
 
@@ -341,10 +347,10 @@ bac_cal1 <- run_swat2012(project_path = path,
                          n_thread = 32)
 
 
-save(bac_cal1, file='/work/OVERFLOW/RCR/calibration/MSU/bac_cal14.RData')
+save(bac_cal1, file='/work/OVERFLOW/RCR/calibration/MSU/bac_cal15.RData')
 
 
 
-load(file = '/work/OVERFLOW/RCR/calibration/MSU/bac_cal14.RData')
+# load(file = '/work/OVERFLOW/RCR/calibration/MSU/bac_cal15.RData')
 
 
