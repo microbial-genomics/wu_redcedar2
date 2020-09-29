@@ -1,0 +1,4 @@
+1.	copy MCMC_ABC.2.R to /work/OVERFLOW/RCR/calibration/MSU
+2.	copy submitjob.sh to /work/OVERFLOW/RCR/calibration/MSU
+3.	type cd /work/OVERFLOW/RCR/calibration/MSU
+4.	type sbatch submitjob.sh
