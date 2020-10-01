@@ -5,10 +5,10 @@
 #SBATCH --time=50:00:00
 #SBACTH --ntasks=64
 #SBATCH --mem=16g
-#SBARCH --mail-user=wu.huiyun@epa.gov
+#SBARCH --mail-user=purucker.tom@epa.gov
 #SBATCH --mail-type=BEGIN,END
 
-setenv TMPDIR /work/OVERFLOW/RCR/calibration/MSU
+setenv TMPDIR /work/OVERFLOW/stp/MSU
 
 module load intel/19.0.5
 module load R/3.6.2
@@ -19,4 +19,4 @@ module load udunits-2.2.26/intel-19.0
 
 
 
-Rscript  bac_cal.R 
+Rscript  MCMC_ABC.2.R 
