@@ -1,43 +1,54 @@
+#check to make sure required packages are installed
+list.of.packages <- c("devtools","dplyr","dygraphs","fast","forcats","ggplot2",
+                      "hydroGOF","lhs","lubridate","mapview","plotly",
+                      "purrr","sensitivity","sf","SWATplusR","tibble",
+                      "tidyr","fitdistrplus","truncnorm")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)>0) {install.packages(new.packages)}
 
-load(file = '/work/OVERFLOW/RCR/calibration/MSU/bac_cal14.RData')
-
-
-#6.Use the truncated normal distributions from 4) to set up the next round of simulations. Simulate with these inputs. For each simulation, calculate the average_nse. We will only keep individual simulations if the average_nse is higher that the first_quartile_average_nse (calculated in step 5) from the last set of simulations. 
-
-
-library(SWATplusR)
+#load relevant packages
+library(devtools)
 library(dplyr)
 library(dygraphs)
+library(fast) #error
+library(forcats)
 library(ggplot2)
+library(hydroGOF)
+library(lhs)
 library(lubridate)
 library(mapview)
 library(plotly)
+library(purrr)
+library(sensitivity)
 library(sf)
 library(tibble)
 library(tidyr)
-library(purrr)
-library(lhs)
-library(hydroGOF)
-library(fast)
-library(forcats)
-library(lubridate)
-library(sensitivity)
+
+#SWATPlusR needs to be installed via devtools
+# can require manual installation of tidy, etc packages with reboots
+# devtools::install_github("chrisschuerz/SWATplusR")
+library(SWATplusR)
+
+# the swat executable swat2012_rev670 needs to be copied to the run directory
+# and you must have exe privileges on it
+
+if(Sys.info()[4]=="LZ2626UTPURUCKE"){
+  base_dir <- "c:/git/wu_redcedar2/"
+}
+
+data_in_dir <- paste(base_dir,"data_in/",sep="")
 
 
+#load outside data
+load(file= paste(data_in_dir,'bac_obs.RData', sep=""))
+load(file = paste(data_in_dir,'flux_obs.RData', sep=""))
+load(file = paste(data_in_dir,'pcp_obs.RData', sep=""))
+load(file = paste(data_in_dir,'pcp_obs2.RData', sep=""))
+load(file= paste(data_in_dir, 'q_obs.RData', sep=""))
+load(file= paste(data_in_dir, 'q_obs2.RData', sep=""))
 
-load(file='/work/OVERFLOW/RCR/sensitivity/msu_sobol/q_obs.RData')
-load(file='/work/OVERFLOW/RCR/MSU/bac_obs.RData')
-
-load(file='/work/OVERFLOW/RCR/sensitivity/msu_sobol/q_obs.RData')
-load(file='/work/OVERFLOW/RCR/MSU/bac_obs.RData')
-
-load(file = '/work/OVERFLOW/RCR/calibration/MSU/q_obs2.RData')
-load(file = '/work/OVERFLOW/RCR/calibration/MSU/flux_obs.RData')
-
-load(file = '/work/OVERFLOW/RCR/calibration/MSU/pcp_obs.RData')
-load(file = '/work/OVERFLOW/RCR/calibration/MSU/pcp_obs2.RData')
-
-load(file = '/work/OVERFLOW/RCR/calibration/MSU/bac_cal14.RData')
+#load in last set of simulations
+load(file = paste(data_in_dir,'bac_cal14.RData', sep=""))
 
 
 nsims <- 100000
@@ -108,6 +119,7 @@ median_score <- mean(nse_ave.2[1250:1251])
 ##################
 ################
 #############
+# we have to wait to load these beacuase of tibble and tidyr conflicts
 library(fitdistrplus)
 library(truncnorm)
 
