@@ -1,11 +1,12 @@
 #check to make sure required packages are installed
-list.of.packages <- c("devtools","dplyr","dygraphs","fast","forcats","ggplot2",
-                      "hydroGOF","lhs","lubridate","mapview","plotly",
-                      "purrr","sensitivity","sf","SWATplusR","tibble",
-                      "tidyr","fitdistrplus","truncnorm")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)>0) {install.packages(new.packages)}
+#list.of.packages <- c("devtools","dplyr","dygraphs","fast","forcats","ggplot2",
+#                      "hydroGOF","lhs","lubridate","mapview","plotly",
+#                      "purrr","sensitivity","sf","SWATplusR","tibble",
+#                      "tidyr","fitdistrplus","truncnorm")
+#new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+#if(length(new.packages)>0) {install.packages(new.packages)}
 
+#installed.packages()
 #load relevant packages
 library(devtools)
 library(dplyr)
@@ -26,7 +27,7 @@ library(tidyr)
 
 #SWATPlusR needs to be installed via devtools
 # can require manual installation of tidy, etc packages with reboots
-# devtools::install_github("chrisschuerz/SWATplusR")
+devtools::install_github("chrisschuerz/SWATplusR")
 library(SWATplusR)
 
 # the swat executable swat2012_rev670 needs to be copied to the run directory
@@ -48,78 +49,92 @@ load(file= paste(data_in_dir, 'q_obs.RData', sep=""))
 load(file= paste(data_in_dir, 'q_obs2.RData', sep=""))
 
 #load in last set of simulations
+# list with parameter and simulation elements
 load(file = paste(data_in_dir,'bac_cal14.RData', sep=""))
 
+#determine number of simulations last time
+dim(bac_cal1$simulation$bac_out)
 
-nsims <- 100000
+#set variables
+nsims <- ncol(bac_cal1$simulation$bac_out) - 1
+n_to_keep <- 5000 #number to keep each generation
 
+#load the simulated concentrations, flows, inputs for last simulations
 sim_bac<- bac_cal1$simulation$bac_out
 sim_q <- bac_cal1$simulation$q_out
 sim_pars <- bac_cal1$parameter$values
 
-
-
+# merge simulated and observed bacteria concentrations, calculate nses
 nse_bac <- right_join(sim_bac,bac_obs,by="date")%>%
   select(-date) %>% select(-bacteria) %>%
   map_dbl(., ~NSE(.x, bac_obs$bacteria))
-
 sort(nse_bac, decreasing = T) %>% enframe()
 
+# merge simulated and observed flows, calculate nses
 nse_q <- right_join(sim_q,q_obs,by="date") %>%
   select(-date) %>% select(-discharge) %>%
   map_dbl(., ~NSE(.x, q_obs$discharge))
-
 sort(nse_q, decreasing = T) %>% enframe()
 
-
+# calculate the simulated fluxes from concs and flows
 flux_sim <- sim_bac[c(97:167),c(-1)]*
   sim_q  [c(97:167), c(-1)]*10^4
+
+#merge simulated and observed fluxes, calculate nses
 nse_flux <- flux_sim %>%
   map_dbl(., ~NSE(.x, flux_obs[,1]))
-
 sort(nse_flux, decreasing = T) %>% enframe()
 
-
-nse_average <- matrix(data=NA, nrow=nsims, ncol=1)
+#calculate average nse of conc, flow and flux
+nse_mean_calc <- matrix(data=NA, nrow=nsims, ncol=1)
 for(i in 1:nsims){
   #print(i)
-  nse_average[i] <- mean(c(nse_bac[i], nse_q[i], nse_flux[i]))
+  nse_mean_calc[i] <- mean(c(nse_bac[i], nse_q[i], nse_flux[i]))
 }
-sort(nse_average, decreasing = T) %>% enframe()
+sort(nse_mean_calc, decreasing = T) %>% enframe()
 
+#create new df with average of the 3 nses
+run <- c(1:nsims)
+nse_mean <-cbind(run, nse_mean_calc)
+colnames(nse_mean)<-c("run", "nse_mean")
 
+#should make this a 3D dataframe across the generations
+#use the median score from the last generation to sort the keepers
+#median_score <- mean(nse_mean[1250:1251,2])
+previous_median_score = -5.864447 #from previous generation
+all_keepers <- which(nse_mean[,2] > previous_median_score)
+n_all_keepers <- length(all_keepers)
+valid_keepers <- head(all_keepers, n = n_to_keep)
+sim_pars_keepers <- sim_pars[valid_keepers,] # this dimension is problematic for saving with everything else
+nse_mean_keepers <- nse_mean[valid_keepers,2]
 
-run<-c(1:nsims)
-
-nse_mean <-cbind(run,nse_average)
-colnames(nse_mean)<-c("run","nse_average")
-
-median_score = -5.864447
-#median_score <- mean(nse_ave.2[1250:1251])
-valid.n <-head(which(nse_mean[,2]>median_score),n=5000)
-sim_pars_2 <-sim_pars[valid.n,]
-
-nse_ave.2 <-nse_average[valid.n]
-
-#8.	Calculate the updated unweighted kernel densities based on these new 10k simulations and fit to the normal distribution, truncate at the original range limits for each parameter.
-kde_mcabc <- sim_pars_2 %>% 
+#8.	Calculate the updated unweighted kernel densities based on these new 10k simulations 
+#and fit to the normal distribution, truncate at the original range limits for each parameter.
+kde_next_gen <- sim_pars_keepers %>% 
   gather(key = "par", value = "parameter_range")
 
-ggplot(data = kde_mcabc) +
+ggplot(data = kde_next_gen) +
   geom_density(aes(x = parameter_range)) +
   facet_wrap(.~par, nrow=5, scales = "free") +
   theme_bw()
 #ggsave("/home/hwu/wu_redcedar2/graphics/kde_mcabc.2.pdf")
 # ###
-#9.	Now use these new 10k simulations to calculate the updated first_quartile_average_nse, this will be the average of the 2500 and 2501st highest average_nse.
-median_score <- mean(nse_ave.2[1250:1251])
+#9.	Now use these new 10k simulations to calculate the updated first_quartile_average_nse, 
+# this will be the average of the 2500 and 2501st highest average_nse.
+new_median_score <- median(nse_mean_keepers)
 #[1] -0.9092294
 
+# print results
+print(paste("Generation x"))
+print(paste("median score for the last generation was:", previous_median_score))
+print(paste("generation x:",n_all_keepers, "of", format(nsims,scientific=F), " simulations kept; proportion kept =", round(n_all_keepers/nsims,4)))
+print(paste("best kept mean nse for this generation is:", max(round(nse_mean_keepers,4))))
+print(paste("median score for the this generation is:", round(new_median_score,4)))
 
 ##################
 ################
 #############
-# we have to wait to load these beacuase of tibble and tidyr conflicts
+# we have to wait to load these because of tibble and tidyr conflicts
 library(fitdistrplus)
 library(truncnorm)
 
