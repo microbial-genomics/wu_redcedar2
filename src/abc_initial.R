@@ -2,6 +2,10 @@ library(SWATplusR)
 library(tibble)
 
 
+if(Sys.info()[4]=="LZ2626UTPURUCKE"){
+  base_dir <- "c:/git/wu_redcedar2/"
+}
+
 par_set22_50000 <- tibble("CN2.mgt|change = relchg"= runif(50000,-0.25,0.1),
 		"SOL_K(1).sol|change = relchg" = runif(50000,-0.8,0.8),
 		"SOL_AWC(1).sol|change = relchg" = runif(50000,-0.8,2),
@@ -25,7 +29,7 @@ par_set22_50000 <- tibble("CN2.mgt|change = relchg"= runif(50000,-0.25,0.1),
 		"RCHRG_DP.gw|change = absval" = runif(50000, 0, 1),
 		"GW_SPYLD.gw|change = absval" = runif(50000, 0, 0.4))
 
-q_sim_50000 <- run_swat2012(project_path = "/work/OVERFLOW/RCR/test1",
+q_sim_50000 <- run_swat2012(project_path = "/work/OVERFLOW/stp/MSU",
                       output = define_output(file = "rch",
                                              variable = "FLOW_OUT",
                                              unit = c(4,22,27)),
