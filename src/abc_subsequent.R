@@ -27,7 +27,7 @@ library(tidyr)
 
 #SWATPlusR needs to be installed via devtools
 # can require manual installation of tidy, etc packages with reboots
-devtools::install_github("chrisschuerz/SWATplusR")
+# devtools::install_github("chrisschuerz/SWATplusR")
 library(SWATplusR)
 
 # the swat executable swat2012_rev670 needs to be copied to the run directory
