@@ -72,7 +72,7 @@ par_set22_50000 <- tibble("CN2.mgt|change = relchg"= runif(50000,-0.25,0.1),
                           "RCHRG_DP.gw|change = absval" = runif(50000, 0, 1),
                           "GW_SPYLD.gw|change = absval" = runif(50000, 0, 0.4))
 
-q_sim_50000 <- run_swat2012(project_path = "/work/OVERFLOW/RCR/test1",
+q_sim_50000 <- run_swat2012(project_path = "/work/OVERFLOW/stp/MSU",
                             output = define_output(file = "rch",
                                                    variable = "FLOW_OUT",
                                                    unit = c(4,22,27)),
