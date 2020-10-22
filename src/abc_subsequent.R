@@ -95,7 +95,7 @@ load(file= paste(data_in_dir, '/q_obs2.RData', sep=""))
 ### subsequent runs
 #load in last set of simulations
 # list with parameter and simulation elements
-load(file = paste(data_in_dir,'bac_cal14.RData', sep=""))
+load(file = paste(data_in_dir,'/bac_cal14.RData', sep=""))
 
 #determine number of simulations last time
 dim(bac_cal1$simulation$bac_out)
