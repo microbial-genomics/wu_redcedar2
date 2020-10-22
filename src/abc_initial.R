@@ -8,7 +8,7 @@ if(Sys.info()[4]=="LZ2626UTPURUCKE"){
 
 nsims=100
 
-par_set22_50000 <- tibble("CN2.mgt|change = relchg"= runif(nsims,-0.25,0.1),
+pars <- tibble("CN2.mgt|change = relchg"= runif(nsims,-0.25,0.1),
 		"SOL_K(1).sol|change = relchg" = runif(nsims,-0.8,0.8),
 		"SOL_AWC(1).sol|change = relchg" = runif(nsims,-0.8,2),
 		"OV_N.hru|change = relchg" = runif(nsims,-0.8,2),
