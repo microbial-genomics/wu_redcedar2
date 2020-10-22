@@ -123,7 +123,7 @@ sort(nse_q, decreasing = T) %>% enframe()
 
 # calculate the simulated fluxes from concs and flows
 flux_sim <- sim_bac[c(97:167),c(-1)]*
-  sim_q  [c(97:167), c(-1)]*10^4
+  sim_q[c(97:167), c(-1)]*10^4
 
 #merge simulated and observed fluxes, calculate nses
 nse_flux <- flux_sim %>%
@@ -173,7 +173,7 @@ proportion_kept <- n_all_keepers/previous_nsims
 # print results
 print(paste("Generation x"))
 print(paste("median score for the last generation was:", previous_median_score))
-print(paste("generation x:",n_all_keepers, "of", format(nsims,scientific=F), " simulations kept; proportion kept =", round(proportion_kept,4)))
+print(paste("generation x:",n_all_keepers, "of", format(previous_nsims,scientific=F), " simulations kept; proportion kept =", round(proportion_kept,4)))
 print(paste("best kept mean nse for this generation is:", max(round(nse_mean_keepers,4))))
 print(paste("median score for this generation is:", round(new_median_score,4)))
 
@@ -207,6 +207,7 @@ fitted_WDPRCH <- fitdist(sim_pars_keepers$WDPRCH, "norm")
 
 #reset nsims based on acceptance frequency of last generation
 new_nsims <- round(n_to_keep/proportion_kept)*2
+print(paste("next round we will do", new_nsims, "simulations"))
 
 #hard coding truncated parameters based on values from Sensitivity.R
 CN2_mean <- fitted_CN2$estimate[1]
