@@ -35,10 +35,11 @@ library(SWATplusR)
 
 if(Sys.info()[4]=="LZ2626UTPURUCKE"){
   base_dir <- "c:/git/wu_redcedar2/"
+  data_in_dir <- paste(base_dir,"data_in/",sep="")
+}else{
+  base_dir <- "/work/OVERFLOW/stp/MSU"
+  data_in_dir <- "/work/OVERFLOW/stp/MSU"
 }
-
-data_in_dir <- paste(base_dir,"data_in/",sep="")
-
 
 #load outside data
 load(file= paste(data_in_dir,'bac_obs.RData', sep=""))
