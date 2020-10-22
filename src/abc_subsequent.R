@@ -42,12 +42,12 @@ if(Sys.info()[4]=="LZ2626UTPURUCKE"){
 }
 
 #load outside data
-load(file= paste(data_in_dir,'bac_obs.RData', sep=""))
-load(file = paste(data_in_dir,'flux_obs.RData', sep=""))
-load(file = paste(data_in_dir,'pcp_obs.RData', sep=""))
-load(file = paste(data_in_dir,'pcp_obs2.RData', sep=""))
-load(file= paste(data_in_dir, 'q_obs.RData', sep=""))
-load(file= paste(data_in_dir, 'q_obs2.RData', sep=""))
+load(file= paste(data_in_dir,'/bac_obs.RData', sep=""))
+load(file = paste(data_in_dir,'/flux_obs.RData', sep=""))
+load(file = paste(data_in_dir,'/pcp_obs.RData', sep=""))
+load(file = paste(data_in_dir,'/pcp_obs2.RData', sep=""))
+load(file= paste(data_in_dir, '/q_obs.RData', sep=""))
+load(file= paste(data_in_dir, '/q_obs2.RData', sep=""))
 
 # ### initial run
 # pars <- tibble("CN2.mgt|change = relchg"= runif(nsims,-0.25,0.1),
