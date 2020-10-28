@@ -220,7 +220,7 @@ CN2 <- rtruncnorm(new_nsims, -0.25, 0.1, mean = CN2_mean, sd =  CN2_sd)
 # sd   0.5589768 0.005589688
 GWQMN_mean <- fitted_GWQMN$estimate[1]
 GWQMN_sd <- fitted_GWQMN$estimate[2]
-GWQMN <- rtruncnorm(new_nsims, 0.5, 2, mean =GWQMN_mean, sd = GWQMN_sd)
+GWQMN <- rtruncnorm(new_nsims, -0.5, 2, mean =GWQMN_mean, sd = GWQMN_sd)
 
 # fitted_CH_N1 
 # estimate   Std. Error
@@ -296,7 +296,7 @@ RCHRG_DP <- rtruncnorm(new_nsims, 0, 1, mean = RCHRG_DP_mean, sd = RCHRG_DP_sd)
 # sd   2.3345547 0.02334553
 SFTMP_mean <- fitted_SFTMP$estimate[1]
 SFTMP_sd <- fitted_SFTMP$estimate[2]
-SFTMP <- rtruncnorm(new_nsims, -20, 10, mean = SFTMP_mean, sd = SFTMP_sd)
+SFTMP <- rtruncnorm(new_nsims, -5, 5, mean = SFTMP_mean, sd = SFTMP_sd)
 
 # fitted_SMTMP
 # estimate Std. Error
@@ -304,7 +304,7 @@ SFTMP <- rtruncnorm(new_nsims, -20, 10, mean = SFTMP_mean, sd = SFTMP_sd)
 # sd   2.3611645 0.02361163
 SMTMP_mean <- fitted_SMTMP$estimate[1]
 SMTMP_sd <- fitted_SMTMP$estimate[2]
-SMTMP <- rtruncnorm(new_nsims, -20, 10, mean = SMTMP_mean, sd = SMTMP_sd)
+SMTMP <- rtruncnorm(new_nsims, -5, 5, mean = SMTMP_mean, sd = SMTMP_sd)
 
 
 # fitted_DEP_IMP
