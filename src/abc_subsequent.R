@@ -227,7 +227,7 @@ for(iter in 15:20){
   # sd   0.5589768 0.005589688
   GWQMN_mean <- fitted_GWQMN$estimate[1]
   GWQMN_sd <- fitted_GWQMN$estimate[2]
-  GWQMN <- rtruncnorm(new_nsims, 0.5, 2, mean =GWQMN_mean, sd = GWQMN_sd)
+  GWQMN <- rtruncnorm(new_nsims, -0.5, 2, mean =GWQMN_mean, sd = GWQMN_sd)
   
   # fitted_CH_N1 
   # estimate   Std. Error
@@ -303,7 +303,7 @@ for(iter in 15:20){
   # sd   2.3345547 0.02334553
   SFTMP_mean <- fitted_SFTMP$estimate[1]
   SFTMP_sd <- fitted_SFTMP$estimate[2]
-  SFTMP <- rtruncnorm(new_nsims, -20, 10, mean = SFTMP_mean, sd = SFTMP_sd)
+  SFTMP <- rtruncnorm(new_nsims, -5, 5, mean = SFTMP_mean, sd = SFTMP_sd)
   
   # fitted_SMTMP
   # estimate Std. Error
@@ -311,7 +311,7 @@ for(iter in 15:20){
   # sd   2.3611645 0.02361163
   SMTMP_mean <- fitted_SMTMP$estimate[1]
   SMTMP_sd <- fitted_SMTMP$estimate[2]
-  SMTMP <- rtruncnorm(new_nsims, -20, 10, mean = SMTMP_mean, sd = SMTMP_sd)
+  SMTMP <- rtruncnorm(new_nsims, -5, 5, mean = SMTMP_mean, sd = SMTMP_sd)
   
   
   # fitted_DEP_IMP
@@ -420,8 +420,3 @@ for(iter in 15:20){
   save(bac_cal1, file=rdata_file_out)
   previous_median_score = new_median_score
 }
-
-
-# load(file = '/work/OVERFLOW/RCR/calibration/MSU/bac_cal15.RData')
-
-
