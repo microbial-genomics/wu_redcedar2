@@ -6,7 +6,7 @@ if(Sys.info()[4]=="LZ2626UTPURUCKE"){
   base_dir <- "c:/git/wu_redcedar2/"
 }
 
-nsims=100
+nsims=5000
 
 pars <- tibble("CN2.mgt|change = relchg"= runif(nsims,-0.25,0.1),
 		"SOL_K(1).sol|change = relchg" = runif(nsims,-0.8,0.8),

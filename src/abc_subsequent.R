@@ -35,7 +35,7 @@ library(SWATplusR)
 
 if(Sys.info()[4]=="LZ2626UTPURUCKE"){
   base_dir <- "c:/git/wu_redcedar2/"
-  data_in_dir <- paste(base_dir,"data_in/",sep="")
+  data_in_dir <- paste(base_dir,"data_in",sep="")
 }else{
   base_dir <- "/work/OVERFLOW/stp/MSU"
   data_in_dir <- "/work/OVERFLOW/stp/MSU"
@@ -100,14 +100,16 @@ for(iter in 15:20){
   ### subsequent runs
   #load in last set of simulations
   # list with parameter and simulation elements
-  rdata_file_in <- paste('/bac_cal', iter, '.RData', sep="")
-  load(file = paste(data_in_dir, rdata_file_in, sep=""))
+  rdata_file_in <- paste(data_in_dir, '/bac_cal', iter, '.RData', sep="")
+  print(paste("loading data file: ", rdata_file_in))
+  load(file = rdata_file_in)
   
   #determine number of simulations last time
   dim(bac_cal1$simulation$bac_out)
   
   #set variables
   previous_nsims <- ncol(bac_cal1$simulation$bac_out) - 1
+  print(paste("the last generation ", iter, " had ", previous_nsims, " sims"))
   n_to_keep <- 5000 #number to keep each generation
   
   #load the simulated concentrations, flows, inputs for last simulations
@@ -178,7 +180,7 @@ for(iter in 15:20){
   #[1] -0.9092294
   
   # print results
-  print(paste("Generation x"))
+  print(paste("Generation ", iter))
   print(paste("median score for the last generation was:", previous_median_score))
   print(paste("generation x:",n_all_keepers, "of", format(previous_nsims,scientific=F), " simulations kept; proportion kept =", round(proportion_kept,4)))
   print(paste("best kept mean nse for this generation is:", max(round(nse_mean_keepers,4))))
@@ -415,8 +417,10 @@ for(iter in 15:20){
                            years_skip = 2,
                            n_thread = 32)
   
-  
+  print(paste("swat runs finished for generation ", iter+1))
   rdata_file_out <- paste('/work/OVERFLOW/stp/MSU', '/bac_cal', iter+1, '.RData', sep="")
   save(bac_cal1, file=rdata_file_out)
+  print(paste("radata file for generation ", iter+1, " saved to ", rdata_file_out))
   previous_median_score = new_median_score
+  print(paste("the median score cutoff used to create proposals for generation ", iter+1, " was ", previous_median_score))
 }
