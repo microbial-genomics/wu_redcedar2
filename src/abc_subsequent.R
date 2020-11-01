@@ -1,8 +1,8 @@
 #check to make sure required packages are installed
-#list.of.packages <- c("devtools","dplyr","dygraphs","fast","forcats","ggplot2",
-#                      "hydroGOF","lhs","lubridate","mapview","plotly",
-#                      "purrr","sensitivity","sf","SWATplusR","tibble",
-#                      "tidyr","fitdistrplus","truncnorm")
+list.of.packages <- c("devtools","dplyr","dygraphs","fast","forcats","ggplot2",
+                      "hydroGOF","lhs","lubridate","mapview","plotly",
+                      "purrr","sensitivity","sf","SWATplusR","tibble",
+                      "tidyr","fitdistrplus","truncnorm")
 #new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 #if(length(new.packages)>0) {install.packages(new.packages)}
 
@@ -11,7 +11,7 @@
 library(devtools)
 library(dplyr)
 library(dygraphs)
-library(fast) #error
+#library(fast) #error
 library(forcats)
 library(ggplot2)
 library(hydroGOF)
