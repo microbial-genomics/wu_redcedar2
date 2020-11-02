@@ -46,7 +46,7 @@ simulate_generation_zero <- function(nsims, swat_path, base_dir, pars_initial){
   swat_output0 <- run_swat_red_cedar(swat_path, pars_initial)
   
   #save the simulations
-  save_file <- paste(base_dir,"rcr_swat_output0.RData",sep="")
+  save_file <- file.path(base_dir, "rcr_swat_output0.RData")
   save(swat_output0, file=save_file)
   return(swat_output0)
 }
