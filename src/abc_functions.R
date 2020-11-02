@@ -2,26 +2,26 @@
 
 create_tibble_initial <- function(nsims){
   pars_tibble <- tibble(#hydrology parameters (11)
-                        "CN2.mgt|change = relchg"= runif(nsims,-0.25,0.1),
-                        "GWQMN.gw|change = relchg" = runif(nsims,-0.5, 2),
-                        "ALPHA_BNK.rte|change = absval" =c(0, 1),
+                        "CN2.mgt|change = relchg"= runif(nsims, -0.25, 0.1),
+                        "GWQMN.gw|change = relchg" = runif(nsims, -0.5, 2),
+                        "ALPHA_BNK.rte|change = absval" =c(nsims, 0, 1),
                         "CH_K2.rte|change = absval" = runif(nsims, 0, 500),
                         "CH_N2.rte|change = absval" = runif(nsims, 0, 0.3),
                         "TRNSRCH.bsn|change = absval" = runif(nsims, 0, 1),
                         "CH_N1.sub|change = absval" = runif(nsims, 0.01, 30),
                         "CH_K1.sub|change = absval" = runif(nsims, 0, 300),
                         "RCHRG_DP.gw|change = absval" = runif(nsims, 0, 1),
-                        "SFTMP.bsn|change = absval"= c(-5, 5),
-                        "SMTMP.bsn|change = absval"= c(-5,5),
+                        "SFTMP.bsn|change = absval"= c(nsims, -5, 5),
+                        "SMTMP.bsn|change = absval"= c(nsims, -5, 5),
                         #tile drainage and sediments (3)
-                        "DEP_IMP.hru|change = absval"= c(0,6000),
-                        "DDRAIN.mgt|change = absval"= c(0, 2000),
-                        "GDRAIN.mgt|change = absval"= c(0, 100),
+                        "DEP_IMP.hru|change = absval"= c(nsims, 0, 6000),
+                        "DDRAIN.mgt|change = absval"= c(nsims, 0, 2000),
+                        "GDRAIN.mgt|change = absval"= c(nsims, 0, 100),
                         #bacteria submodel (4)
-                        "BACTKDQ.bsn|change = absval" = c(0, 500),
-                        "BACT_SWF.bsn|change = absval" = c(0, 1),
-                        "THBACT.bsn|change = absval"= c(0, 10),
-                        "WDPRCH.bsn|change = absval"= c(0, 1)
+                        "BACTKDQ.bsn|change = absval" = c(nsims, 0, 500),
+                        "BACT_SWF.bsn|change = absval" = c(nsims, 0, 1),
+                        "THBACT.bsn|change = absval"= c(nsims, 0, 10),
+                        "WDPRCH.bsn|change = absval"= c(nsims, 0, 1)
   )
 }
 
