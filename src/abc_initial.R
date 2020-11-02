@@ -20,13 +20,4 @@ source(file.path(src_dir,"abc_functions.R"))
 # the median score of these candidates will be used as the cutoff for the next generation
 nsims=5000
 pars_initial <- create_tibble_initial(nsims)
-
-# run the initial set of swat simulations
-print(paste("About to run generation 0 with", nsims, "simulations"))
-swat_output0 <- run_swat_red_cedar(swat_path, pars_initial)
-
-#save the simulations
-save_file <- paste(base_dir,"rcr_swat_output0.RData",sep="")
-save(swat_output0, file=save_file)
-
-
+simulate_generation_zero(nsims, pars_initial)

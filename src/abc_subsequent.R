@@ -230,15 +230,7 @@ for(iter in 15:20){
   GWQMN_mean <- fitted_GWQMN$estimate[1]
   GWQMN_sd <- fitted_GWQMN$estimate[2]
   GWQMN <- rtruncnorm(new_nsims, -0.5, 2, mean =GWQMN_mean, sd = GWQMN_sd)
-  
-  # fitted_CH_N1 
-  # estimate   Std. Error
-  # mean 0.09991472 0.0003314811
-  # sd   0.02343925 0.0002324755
-  CH_N1_mean <- fitted_CH_N1$estimate[1]
-  CH_N1_sd <- fitted_CH_N1$estimate[2]
-  CH_N1 <- rtruncnorm(new_nsims, 0.01, 30, mean = CH_N1_mean, sd = CH_N1_sd)
-  
+
   # fitted_ALPHA_BNK
   # Baseflow alpha factor for bank storage
   # estimate  Std. Error
@@ -247,7 +239,7 @@ for(iter in 15:20){
   ALPHA_BNK_mean <- fitted_ALPHA_BNK$estimate[1]
   ALPHA_BNK_sd <- fitted_ALPHA_BNK$estimate[2]
   ALPHA_BNK <- rtruncnorm(new_nsims, 0, 1, mean = ALPHA_BNK_mean, sd = ALPHA_BNK_sd)
-  
+
   # fitted_CH_K2
   # Effective hydraulic conductivity in main channel alluvium
   # estimate Std. Error
@@ -272,8 +264,8 @@ for(iter in 15:20){
   TRNSRCH_mean <- fitted_TRNSRCH$estimate[1]
   TRNSRCH_sd <- fitted_TRNSRCH$estimate[2]
   TRNSRCH <- rtruncnorm(new_nsims, 0, 1, mean = TRNSRCH_mean, sd = TRNSRCH_sd)
-  
-  # fitted_CH_N1
+
+  # fitted_CH_N1 
   # estimate   Std. Error
   # mean 0.09991472 0.0003314811
   # sd   0.02343925 0.0002324755
@@ -289,7 +281,6 @@ for(iter in 15:20){
   CH_K1_sd <- fitted_CH_K1$estimate[2]
   CH_K1 <- rtruncnorm(new_nsims, 0, 300, mean = CH_K1_mean, sd = CH_K1_sd)
   
-  
   # fitted_RCHRG_DP
   # estimate  Std. Error
   # mean 0.4808134 0.003439768
@@ -297,7 +288,6 @@ for(iter in 15:20){
   RCHRG_DP_mean <- fitted_RCHRG_DP$estimate[1]
   RCHRG_DP_sd <- fitted_RCHRG_DP$estimate[2]
   RCHRG_DP <- rtruncnorm(new_nsims, 0, 1, mean = RCHRG_DP_mean, sd = RCHRG_DP_sd)
-  
   
   # fitted_SFTMP
   # estimate Std. Error
@@ -315,7 +305,6 @@ for(iter in 15:20){
   SMTMP_sd <- fitted_SMTMP$estimate[2]
   SMTMP <- rtruncnorm(new_nsims, -5, 5, mean = SMTMP_mean, sd = SMTMP_sd)
   
-  
   # fitted_DEP_IMP
   # estimate Std. Error
   # mean 3667.422   18.83298
@@ -324,7 +313,6 @@ for(iter in 15:20){
   DEP_IMP_sd <- fitted_DEP_IMP$estimate[2]
   DEP_IMP <- rtruncnorm(new_nsims, 0, 6000, mean = DEP_IMP_mean, sd = DEP_IMP_sd)
   
-  
   # fitted_DDRAIN
   # estimate Std. Error
   # mean 902.7242   6.710620
@@ -332,7 +320,6 @@ for(iter in 15:20){
   DDRAIN_mean <- fitted_DDRAIN$estimate[1]
   DDRAIN_sd <- fitted_DDRAIN$estimate[2]
   DDRAIN <- rtruncnorm(new_nsims, 0, 2000, mean = DDRAIN_mean, sd = DDRAIN_sd)
-  
   
   # fitted_GDRAIN
   # estimate Std. Error
@@ -349,7 +336,6 @@ for(iter in 15:20){
   BACTKDQ_mean <- fitted_BACTKDQ$estimate[1]
   BACTKDQ_sd <- fitted_BACTKDQ$estimate[2]
   BACTKDQ <- rtruncnorm(new_nsims, 0, 500, mean = BACTKDQ_mean, sd = BACTKDQ_sd)
-  
   
   # fitted_BACT_SWF
   # estimate  Std. Error

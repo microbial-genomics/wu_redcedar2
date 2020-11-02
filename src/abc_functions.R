@@ -1,28 +1,28 @@
 
 
 create_tibble_initial <- function(nsims){
-  pars_tibble <- tibble("CN2.mgt|change = relchg"= runif(nsims,-0.25,0.1),
-                        "SOL_K(1).sol|change = relchg" = runif(nsims,-0.8,0.8),
-                        "SOL_AWC(1).sol|change = relchg" = runif(nsims,-0.8,2),
-                        "OV_N.hru|change = relchg" = runif(nsims,-0.8,2),
-                        "ALPHA_BF.gw|change = relchg" = runif(nsims,-0.3,0.3),
-                        "GW_DELAY.gw|change = relchg" = runif(nsims,-15,10),
+  pars_tibble <- tibble(#hydrology parameters (11)
+                        "CN2.mgt|change = relchg"= runif(nsims,-0.25,0.1),
                         "GWQMN.gw|change = relchg" = runif(nsims,-0.5, 2),
-                        "HRU_SLP.hru|change = relchg" = runif(nsims,-15,10),
-                        "SLSUBBSN.hru|change = relchg" = runif(nsims,-0.5, 3),	
-                        "ALPHA_BNK.rte|change = absval" = runif(nsims, 0, 1),
+                        "ALPHA_BNK.rte|change = absval" =c(0, 1),
                         "CH_K2.rte|change = absval" = runif(nsims, 0, 500),
                         "CH_N2.rte|change = absval" = runif(nsims, 0, 0.3),
-                        "ESCO.bsn |change = absval" = runif(nsims, 0, 1),
-                        "EPCO.bsn|change = absval" = runif(nsims, 0, 1),
                         "TRNSRCH.bsn|change = absval" = runif(nsims, 0, 1),
-                        "SURLAG.bsn|change = absval" = runif(nsims, 1, 24),
                         "CH_N1.sub|change = absval" = runif(nsims, 0.01, 30),
                         "CH_K1.sub|change = absval" = runif(nsims, 0, 300),
-                        "REVAPMN.gw |change = absval" = runif(nsims, 0, 1000),
-                        "GW_REVAP.gw|change = absval" = runif(nsims, 0.02, 0.2),
                         "RCHRG_DP.gw|change = absval" = runif(nsims, 0, 1),
-                        "GW_SPYLD.gw|change = absval" = runif(nsims, 0, 0.4))
+                        "SFTMP.bsn|change = absval"= c(-5, 5),
+                        "SMTMP.bsn|change = absval"= c(-5,5),
+                        #tile drainage and sediments (3)
+                        "DEP_IMP.hru|change = absval"= c(0,6000),
+                        "DDRAIN.mgt|change = absval"= c(0, 2000),
+                        "GDRAIN.mgt|change = absval"= c(0, 100),
+                        #bacteria submodel (4)
+                        "BACTKDQ.bsn|change = absval" = c(0, 500),
+                        "BACT_SWF.bsn|change = absval" = c(0, 1),
+                        "THBACT.bsn|change = absval"= c(0, 10),
+                        "WDPRCH.bsn|change = absval"= c(0, 1)
+  )
 }
 
 run_swat_red_cedar <- function(swat_path, swat_parameters){
@@ -38,4 +38,15 @@ run_swat_red_cedar <- function(swat_path, swat_parameters){
                end_date = "2013-12-31",
                years_skip = 2,
                n_thread = 32)
+}
+
+simulate_generation_zero <- function(nsims, pars_initial){
+  # run the initial set of swat simulations
+  print(paste("About to run generation 0 with", nsims, "simulations"))
+  swat_output0 <- run_swat_red_cedar(swat_path, pars_initial)
+  
+  #save the simulations
+  save_file <- paste(base_dir,"rcr_swat_output0.RData",sep="")
+  save(swat_output0, file=save_file)
+  return(swat_output0)
 }
