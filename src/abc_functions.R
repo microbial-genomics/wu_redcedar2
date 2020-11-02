@@ -40,7 +40,7 @@ run_swat_red_cedar <- function(swat_path, swat_parameters){
                n_thread = 32)
 }
 
-simulate_generation_zero <- function(nsims, pars_initial){
+simulate_generation_zero <- function(nsims, swat_path, base_dir, pars_initial){
   # run the initial set of swat simulations
   print(paste("About to run generation 0 with", nsims, "simulations"))
   swat_output0 <- run_swat_red_cedar(swat_path, pars_initial)

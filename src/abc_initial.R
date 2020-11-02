@@ -20,4 +20,4 @@ source(file.path(src_dir,"abc_functions.R"))
 # the median score of these candidates will be used as the cutoff for the next generation
 nsims=5000
 pars_initial <- create_tibble_initial(nsims)
-simulate_generation_zero(nsims, pars_initial)
+simulate_generation_zero(nsims, swat_path, base_dir, pars_initial)
