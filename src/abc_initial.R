@@ -12,7 +12,7 @@ if(Sys.info()[4]=="LZ2626UTPURUCKE"){
 } else {
   base_dir <- file.path("/work","OVERFLOW","stp","MSU") #hpc
   src_dir <- base_dir
-  data_in_dir <- base_dir
+  data_in_dir <- file.path(base_dir,"data_in")
   swat_path <- base_dir
 }
 print(base_dir)
@@ -31,5 +31,5 @@ print(paste("About to run generation 0 with", nsims, "simulations"))
 swat_output0 <- run_swat_red_cedar(swat_path, pars_initial)
 
 #save the simulations
-save_file <- file.path(base_dir, "rcr_swat_output0.RData")
+save_file <- file.path(data_in_dir, "rcr_swat_output0.RData")
 save(swat_output0, file = save_file)
