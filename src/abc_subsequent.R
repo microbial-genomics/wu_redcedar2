@@ -49,6 +49,7 @@ load(file = paste(data_in_dir,'/pcp_obs2.RData', sep=""))
 load(file= paste(data_in_dir, '/q_obs.RData', sep=""))
 load(file= paste(data_in_dir, '/q_obs2.RData', sep=""))
 
+
 # ### initial run
 # pars <- tibble("CN2.mgt|change = relchg"= runif(nsims,-0.25,0.1),
 #                "SOL_K(1).sol|change = relchg" = runif(nsims,-0.8,0.8),
@@ -363,12 +364,7 @@ for(iter in 16:20){
   
   
   
-  load(file='/work/OVERFLOW/stp/MSU/q_obs.RData')
-  load(file='/work/OVERFLOW/stp/MSU/bac_obs.RData')
-  
-  
-  path <- "/work/OVERFLOW/stp/MSU"
-  
+
   
   pars <- tibble(
     "CN2.mgt|change = relchg"= CN2,
@@ -390,7 +386,7 @@ for(iter in 16:20){
     "THBACT.bsn|change = absval"= THBACT,
     "WDPRCH.bsn|change = absval"= WDPRCH)
   
-  bac_cal1 <- run_swat2012(project_path = path,
+  bac_cal1 <- run_swat2012(project_path = base_dir,
                            output = list(q_out = define_output(file = "rch",
                                                                variable = "FLOW_OUT",
                                                                unit = 4),
@@ -404,7 +400,7 @@ for(iter in 16:20){
                            n_thread = 32)
   
   print(paste("swat runs finished for generation ", iter+1))
-  rdata_file_out <- paste('/work/OVERFLOW/stp/MSU', '/bac_cal', iter+1, '.RData', sep="")
+  rdata_file_out <- paste(base_dir, '/bac_cal', iter+1, '.RData', sep="")
   save(bac_cal1, file=rdata_file_out)
   print(paste("radata file for generation ", iter+1, " saved to ", rdata_file_out))
   previous_median_score = new_median_score
