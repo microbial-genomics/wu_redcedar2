@@ -38,7 +38,7 @@ if(Sys.info()[4]=="LZ2626UTPURUCKE"){
   data_in_dir <- paste(base_dir,"data_in",sep="")
 }else{
   base_dir <- "/work/OVERFLOW/stp/MSU"
-  data_in_dir <- "/work/OVERFLOW/stp/MSU"
+  data_in_dir <- "/work/OVERFLOW/stp/MSU/data_in"
 }
 
 #load outside data
@@ -96,7 +96,7 @@ load(file= paste(data_in_dir, '/q_obs2.RData', sep=""))
 #score13 <- -5
 #score14 <- -1.679666
 previous_median_score <- -1000000
-for(iter in 15:20){
+for(iter in 16:20){
   ### subsequent runs
   #load in last set of simulations
   # list with parameter and simulation elements
