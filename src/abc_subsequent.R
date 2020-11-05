@@ -97,7 +97,7 @@ load(file= paste(data_in_dir, '/q_obs2.RData', sep=""))
 #score13 <- -5
 #score14 <- -1.679666
 previous_median_score <- -1000000
-for(iter in 17:20){
+for(iter in 18:20){
   ### subsequent runs
   #load in last set of simulations
   # list with parameter and simulation elements
