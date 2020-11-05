@@ -42,12 +42,12 @@ if(Sys.info()[4]=="LZ2626UTPURUCKE"){
 }
 
 #load outside data
-load(file= paste(data_in_dir,'/bac_obs.RData', sep=""))
-load(file = paste(data_in_dir,'/flux_obs.RData', sep=""))
-load(file = paste(data_in_dir,'/pcp_obs.RData', sep=""))
-load(file = paste(data_in_dir,'/pcp_obs2.RData', sep=""))
-load(file= paste(data_in_dir, '/q_obs.RData', sep=""))
-load(file= paste(data_in_dir, '/q_obs2.RData', sep=""))
+load(file= paste(base_dir,'/bac_obs.RData', sep=""))
+load(file = paste(base_dir,'/flux_obs.RData', sep=""))
+load(file = paste(base_dir,'/pcp_obs.RData', sep=""))
+load(file = paste(base_dir,'/pcp_obs2.RData', sep=""))
+load(file= paste(base_dir, '/q_obs.RData', sep=""))
+load(file= paste(base_dir, '/q_obs2.RData', sep=""))
 
 
 # ### initial run
@@ -101,7 +101,7 @@ for(iter in 18:20){
   ### subsequent runs
   #load in last set of simulations
   # list with parameter and simulation elements
-  rdata_file_in <- paste(data_in_dir, '/bac_cal', iter, '.RData', sep="")
+  rdata_file_in <- paste('/bac_cal', iter, '.RData', sep="")
   print(paste("loading data file: ", rdata_file_in))
   load(file = rdata_file_in)
   
@@ -216,7 +216,7 @@ for(iter in 18:20){
   fitted_WDPRCH <- fitdist(sim_pars_keepers$WDPRCH, "norm")
   
   #reset nsims based on acceptance frequency of last generation
-  new_nsims <- round(n_to_keep/proportion_kept)*2
+  new_nsims <- max(10000, round(n_to_keep/proportion_kept)*2)
   print(paste("next round we will do", new_nsims, "simulations"))
   
   #hard coding truncated parameters based on values from Sensitivity.R
