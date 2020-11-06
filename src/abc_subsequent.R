@@ -97,11 +97,11 @@ load(file= paste(base_dir, '/q_obs2.RData', sep=""))
 #score13 <- -5
 #score14 <- -1.679666
 previous_median_score <- -1000000
-for(iter in 18:20){
+for(iter in 18:22){
   ### subsequent runs
   #load in last set of simulations
   # list with parameter and simulation elements
-  rdata_file_in <- paste('/bac_cal', iter, '.RData', sep="")
+  rdata_file_in <- paste(base_dir, '/bac_cal', iter, '.RData', sep="")
   print(paste("loading data file: ", rdata_file_in))
   load(file = rdata_file_in)
   
