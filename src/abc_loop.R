@@ -97,8 +97,7 @@ load(file= paste(base_dir, '/q_obs2.RData', sep=""))
 #score13 <- -5
 #score14 <- -1.679666
 previous_median_score <- -1000000
-previous_median_score_original = -1.679666 #from previous generation, from 14
-for(iter in 15:22){
+for(iter in 18:22){
   ### subsequent runs
   #load in last set of simulations
   # list with parameter and simulation elements
@@ -119,28 +118,28 @@ for(iter in 15:22){
   sim_q <- bac_cal1$simulation$q_out
   sim_pars <- bac_cal1$parameter$values
   
-  # merge simulated and observed bacteria concentrations, calculate nses for all sims
+  # merge simulated and observed bacteria concentrations, calculate nses
   nse_bac <- right_join(sim_bac,bac_obs,by="date")%>%
     select(-date) %>% select(-bacteria) %>%
     map_dbl(., ~NSE(.x, bac_obs$bacteria))
   sort(nse_bac, decreasing = T) %>% enframe()
   
-  # merge simulated and observed flows, calculate nses for all sims
+  # merge simulated and observed flows, calculate nses
   nse_q <- right_join(sim_q,q_obs,by="date") %>%
     select(-date) %>% select(-discharge) %>%
     map_dbl(., ~NSE(.x, q_obs$discharge))
   sort(nse_q, decreasing = T) %>% enframe()
   
-  # calculate the simulated fluxes from concs and flows for all sims
+  # calculate the simulated fluxes from concs and flows
   flux_sim <- sim_bac[c(97:167),c(-1)]*
     sim_q[c(97:167), c(-1)]*10^4
   
-  #merge simulated and observed fluxes, calculate nses for all sims
+  #merge simulated and observed fluxes, calculate nses
   nse_flux <- flux_sim %>%
     map_dbl(., ~NSE(.x, flux_obs[,1]))
   sort(nse_flux, decreasing = T) %>% enframe()
   
-  #calculate average nse of conc, flow and flux for all sims
+  #calculate average nse of conc, flow and flux
   nse_mean_calc <- matrix(data=NA, nrow=previous_nsims, ncol=1)
   for(i in 1:previous_nsims){
     #print(i)
@@ -148,15 +147,15 @@ for(iter in 15:22){
   }
   sort(nse_mean_calc, decreasing = T) %>% enframe()
   
-  #create new df with average of the 3 nses for all sims
+  #create new df with average of the 3 nses
   run <- c(1:previous_nsims)
   nse_mean <-cbind(run, nse_mean_calc)
   colnames(nse_mean)<-c("run", "nse_mean")
   
   #should make this a 3D dataframe across the generations
-
-  
   #use the median score from the last generation to sort the keepers
+  median_score <- mean(nse_mean[1250:1251,2])
+  previous_median_score_original = -1.679666 #from previous generation
   previous_median_score <- max(previous_median_score, previous_median_score_original)
   all_keepers <- which(nse_mean[,2] > previous_median_score)
   n_all_keepers <- length(all_keepers)
@@ -186,10 +185,7 @@ for(iter in 15:22){
   print(paste("median score for the last generation was:", previous_median_score))
   print(paste("generation x:",n_all_keepers, "of", format(previous_nsims,scientific=F), " simulations kept; proportion kept =", round(proportion_kept,4)))
   print(paste("best kept mean nse for this generation is:", max(round(nse_mean_keepers,4))))
-  print(paste("best bacteria nse for this generation is:", max(round(nse_bac,4))))
-  print(paste("best flow nse for this generation is:", max(round(nse_q,4))))
-  print(paste("best flux nse for this generation is:", max(round(nse_flux,4))))
-  print(paste("median mean nse score for this generation is:", round(new_median_score,4)))
+  print(paste("median score for this generation is:", round(new_median_score,4)))
   
   ##################
   ################
@@ -226,7 +222,6 @@ for(iter in 15:22){
   #hard coding truncated parameters based on values from Sensitivity.R
   CN2_mean <- fitted_CN2$estimate[1]
   CN2_sd <- fitted_CN2$estimate[2]
-  print(paste("generation", iter, "CN2", CN2_mean, CN2_sd))
   CN2 <- rtruncnorm(new_nsims, -0.25, 0.1, mean = CN2_mean, sd =  CN2_sd)
   
   # fitted_GWQMN
@@ -235,7 +230,6 @@ for(iter in 15:22){
   # sd   0.5589768 0.005589688
   GWQMN_mean <- fitted_GWQMN$estimate[1]
   GWQMN_sd <- fitted_GWQMN$estimate[2]
-  print(paste("generation", iter, "GWQMN", GWQMN_mean, GWQMN_sd))
   GWQMN <- rtruncnorm(new_nsims, -0.5, 2, mean =GWQMN_mean, sd = GWQMN_sd)
 
   # fitted_ALPHA_BNK
@@ -245,7 +239,6 @@ for(iter in 15:22){
   # sd   0.2382690 0.002382501
   ALPHA_BNK_mean <- fitted_ALPHA_BNK$estimate[1]
   ALPHA_BNK_sd <- fitted_ALPHA_BNK$estimate[2]
-  print(paste("generation", iter, "ALPHA_BNK", ALPHA_BNK_mean, ALPHA_BNK_sd))
   ALPHA_BNK <- rtruncnorm(new_nsims, 0, 1, mean = ALPHA_BNK_mean, sd = ALPHA_BNK_sd)
 
   # fitted_CH_K2
@@ -255,7 +248,6 @@ for(iter in 15:22){
   # sd   11.56662  0.1156662
   CH_K2_mean <- fitted_CH_K2$estimate[1]
   CH_K2_sd <- fitted_CH_K2$estimate[2]
-  print(paste("generation", iter, "CH_K2", CH_K2_mean, CH_K2_sd))
   CH_K2 <- rtruncnorm(new_nsims, 0, 500, mean = CH_K2_mean, sd = CH_K2_sd)
   
   # fitted_CH_N2
@@ -264,7 +256,6 @@ for(iter in 15:22){
   # sd   0.02342214 0.0002323030
   CH_N2_mean <- fitted_CH_N2$estimate[1]
   CH_N2_sd <- fitted_CH_N2$estimate[2]
-  print(paste("generation", iter, "CH_N2", CH_N2_mean, CH_N2_sd))
   CH_N2 <- rtruncnorm(new_nsims, 0, 0.3, mean = CH_N2_mean, sd = CH_N2_sd)
   
   # fitted_TRNSRCH
@@ -273,7 +264,6 @@ for(iter in 15:22){
   # sd   0.06925731 0.0006919234
   TRNSRCH_mean <- fitted_TRNSRCH$estimate[1]
   TRNSRCH_sd <- fitted_TRNSRCH$estimate[2]
-  print(paste("generation", iter, "TRNSRCH", TRNSRCH_mean, TRNSRCH_sd))
   TRNSRCH <- rtruncnorm(new_nsims, 0, 1, mean = TRNSRCH_mean, sd = TRNSRCH_sd)
 
   # fitted_CH_N1 
@@ -282,7 +272,6 @@ for(iter in 15:22){
   # sd   0.02343925 0.0002324755
   CH_N1_mean <- fitted_CH_N1$estimate[1]
   CH_N1_sd <- fitted_CH_N1$estimate[2]
-  print(paste("generation", iter, "CH_N1", CH_N1_mean, CH_N1_sd))
   CH_N1 <- rtruncnorm(new_nsims, 0.01, 30, mean = CH_N1_mean, sd = CH_N1_sd)
   
   # fitted_CH_K1
@@ -291,7 +280,6 @@ for(iter in 15:22){
   # sd    67.87685  0.6787685
   CH_K1_mean <- fitted_CH_K1$estimate[1]
   CH_K1_sd <- fitted_CH_K1$estimate[2]
-  print(paste("generation", iter, "CH_K1", CH_K1_mean, CH_K1_sd))
   CH_K1 <- rtruncnorm(new_nsims, 0, 300, mean = CH_K1_mean, sd = CH_K1_sd)
   
   # fitted_RCHRG_DP
@@ -300,7 +288,6 @@ for(iter in 15:22){
   # sd   0.2432284 0.002432099
   RCHRG_DP_mean <- fitted_RCHRG_DP$estimate[1]
   RCHRG_DP_sd <- fitted_RCHRG_DP$estimate[2]
-  print(paste("generation", iter, "RCHRG_DP", RCHRG_DP_mean, RCHRG_DP_sd))
   RCHRG_DP <- rtruncnorm(new_nsims, 0, 1, mean = RCHRG_DP_mean, sd = RCHRG_DP_sd)
   
   # fitted_SFTMP
@@ -309,7 +296,6 @@ for(iter in 15:22){
   # sd   2.3345547 0.02334553
   SFTMP_mean <- fitted_SFTMP$estimate[1]
   SFTMP_sd <- fitted_SFTMP$estimate[2]
-  print(paste("generation", iter, "SFTMP", SFTMP_mean, SFTMP_sd))
   SFTMP <- rtruncnorm(new_nsims, -5, 5, mean = SFTMP_mean, sd = SFTMP_sd)
   
   # fitted_SMTMP
@@ -318,7 +304,6 @@ for(iter in 15:22){
   # sd   2.3611645 0.02361163
   SMTMP_mean <- fitted_SMTMP$estimate[1]
   SMTMP_sd <- fitted_SMTMP$estimate[2]
-  print(paste("generation", iter, "SMTMP", SMTMP_mean, SMTMP_sd))
   SMTMP <- rtruncnorm(new_nsims, -5, 5, mean = SMTMP_mean, sd = SMTMP_sd)
   
   # fitted_DEP_IMP
@@ -327,7 +312,6 @@ for(iter in 15:22){
   # sd   1331.808   13.31908
   DEP_IMP_mean <- fitted_DEP_IMP$estimate[1]
   DEP_IMP_sd <- fitted_DEP_IMP$estimate[2]
-  print(paste("generation", iter, "DEP_IMP", DEP_IMP_mean, DEP_IMP_sd))
   DEP_IMP <- rtruncnorm(new_nsims, 0, 6000, mean = DEP_IMP_mean, sd = DEP_IMP_sd)
   
   # fitted_DDRAIN
@@ -336,17 +320,15 @@ for(iter in 15:22){
   # sd   474.4889   4.744931
   DDRAIN_mean <- fitted_DDRAIN$estimate[1]
   DDRAIN_sd <- fitted_DDRAIN$estimate[2]
-  print(paste("generation", iter, "DDRAIN", DDRAIN_mean, DDRAIN_sd))
   DDRAIN <- rtruncnorm(new_nsims, 0, 2000, mean = DDRAIN_mean, sd = DDRAIN_sd)
   
   # fitted_GDRAIN
   # estimate Std. Error
   # mean 53.36850  0.3311553
   # sd   23.41622  0.2341622
-  GDRAIN_mean <- fitted_GDRAIN$estimate[1]
-  GDRAIN_sd <- fitted_GDRAIN$estimate[2]
-  print(paste("generation", iter, "GDRAIN", GDRAIN_mean, GDRAIN_sd))
-  GDRAIN <- rtruncnorm(new_nsims, 0, 100, mean = GDRAIN_mean, sd = GDRAIN_sd)
+  GDRAIn_mean <- fitted_GDRAIN$estimate[1]
+  GDRAIn_sd <- fitted_GDRAIN$estimate[2]
+  GDRAIN <- rtruncnorm(new_nsims, 0, 100, mean = GDRAIn_mean, sd = GDRAIn_sd)
   
   # fitted_BACTKDQ
   # estimate Std. Error
@@ -354,7 +336,6 @@ for(iter in 15:22){
   # sd   109.6619   1.096619
   BACTKDQ_mean <- fitted_BACTKDQ$estimate[1]
   BACTKDQ_sd <- fitted_BACTKDQ$estimate[2]
-  print(paste("generation", iter, "BACTKDQ", BACTKDQ_mean, BACTKDQ_sd))
   BACTKDQ <- rtruncnorm(new_nsims, 0, 500, mean = BACTKDQ_mean, sd = BACTKDQ_sd)
   
   # fitted_BACT_SWF
@@ -363,7 +344,6 @@ for(iter in 15:22){
   # sd   0.2322516 0.002322323
   BACT_SWF_mean <- fitted_BACT_SWF$estimate[1]
   BACT_SWF_sd <- fitted_BACT_SWF$estimate[2]
-  print(paste("generation", iter, "BACT_SWF", BACT_SWF_mean, BACT_SWF_sd))
   BACT_SWF <- rtruncnorm(new_nsims, 0, 1, mean = BACT_SWF_mean, sd = BACT_SWF_sd)
   
   # fitted_THBACT
@@ -372,7 +352,6 @@ for(iter in 15:22){
   # sd   1.673996 0.01673994
   THBACT_mean <- fitted_THBACT$estimate[1]
   THBACT_sd <- fitted_THBACT$estimate[2]
-  print(paste("generation", iter, "THBACT", THBACT_mean, THBACT_sd))
   THBACT <- rtruncnorm(new_nsims, 0, 10, mean = THBACT_mean, sd = THBACT_sd)
   
   # fitted_WDPRCH
@@ -381,7 +360,6 @@ for(iter in 15:22){
   # sd   0.2187718 0.002187513
   WDPRCH_mean <- fitted_WDPRCH$estimate[1]
   WDPRCH_sd <- fitted_WDPRCH$estimate[2]
-  print(paste("generation", iter, "WDPRCH", WDPRCH_mean, WDPRCH_sd))
   WDPRCH <- rtruncnorm(new_nsims, 0, 1, mean = WDPRCH_mean, sd = WDPRCH_sd)
   
   
