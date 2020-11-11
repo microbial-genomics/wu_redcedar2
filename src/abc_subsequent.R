@@ -34,20 +34,20 @@ library(SWATplusR)
 # and you must have exe privileges on it
 
 if(Sys.info()[4]=="LZ2626UTPURUCKE"){
-  base_dir <- "c:/git/wu_redcedar2/"
-  data_in_dir <- paste(base_dir,"data_in",sep="")
+  base_dir <- file.path("c:", "git", "wu_redcedar2")
+  data_in_dir <- file.path(base_dir, "data_in")
 }else{
-  base_dir <- "/work/OVERFLOW/stp/MSU"
-  data_in_dir <- "/work/OVERFLOW/stp/MSU/data_in"
+  base_dir <- file.path("/work", "OVERFLOW", "stp", "MSU")
+  data_in_dir <- base_dir
 }
 
 #load outside data
-load(file= paste(base_dir,'/bac_obs.RData', sep=""))
-load(file = paste(base_dir,'/flux_obs.RData', sep=""))
-load(file = paste(base_dir,'/pcp_obs.RData', sep=""))
-load(file = paste(base_dir,'/pcp_obs2.RData', sep=""))
-load(file= paste(base_dir, '/q_obs.RData', sep=""))
-load(file= paste(base_dir, '/q_obs2.RData', sep=""))
+load(file= file.path(data_in_dir,'bac_obs.RData'))
+load(file = file.path(data_in_dir,'flux_obs.RData'))
+load(file = file.path(data_in_dir,'pcp_obs.RData'))
+load(file = file.path(data_in_dir,'pcp_obs2.RData'))
+load(file= file.path(data_in_dir, 'q_obs.RData'))
+load(file= file.path(data_in_dir, 'q_obs2.RData'))
 
 
 # ### initial run
@@ -102,7 +102,8 @@ for(iter in 15:22){
   ### subsequent runs
   #load in last set of simulations
   # list with parameter and simulation elements
-  rdata_file_in <- paste(base_dir, '/bac_cal', iter, '.RData', sep="")
+  bac_cal_filename <- paste('bac_cal', iter, '.RData', sep="")
+  rdata_file_in <- file.path(data_in_dir, bac_cal_filename)
   print(paste("loading data file: ", rdata_file_in))
   load(file = rdata_file_in)
   
@@ -121,13 +122,13 @@ for(iter in 15:22){
   
   # merge simulated and observed bacteria concentrations, calculate nses for all sims
   nse_bac <- right_join(sim_bac,bac_obs,by="date")%>%
-    select(-date) %>% select(-bacteria) %>%
+    dplyr::select(-date) %>% dplyr::select(-bacteria) %>%
     map_dbl(., ~NSE(.x, bac_obs$bacteria))
   sort(nse_bac, decreasing = T) %>% enframe()
   
   # merge simulated and observed flows, calculate nses for all sims
   nse_q <- right_join(sim_q,q_obs,by="date") %>%
-    select(-date) %>% select(-discharge) %>%
+    dplyr::select(-date) %>% dplyr::select(-discharge) %>%
     map_dbl(., ~NSE(.x, q_obs$discharge))
   sort(nse_q, decreasing = T) %>% enframe()
   
