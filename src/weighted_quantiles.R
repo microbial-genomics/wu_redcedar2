@@ -204,8 +204,5 @@ ggsave("kde.pdf")
    facet_wrap(.~par, nrow=5, scales = "free") +
     theme_bw()
 ggsave("/home/hwu/wu_redcedar2/graphics/kde2.pdf")
-~
-~
-~
-~
+
 
