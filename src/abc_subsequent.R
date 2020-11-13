@@ -162,6 +162,7 @@ for(iter in 23:26){
   #kluge until we write a tracker csv
   if(iter==15){previous_median_score = -1.679666} #from previous generation -- 14}
   if(iter==16){previous_median_score = -0.84941146160688} #from previous generation -- 15}
+  if(iter==23){previous_median_score = -0.0161426045727871}
   all_keepers <- which(nse_mean[,2] > previous_median_score)
   n_all_keepers <- length(all_keepers)
   valid_keepers <- head(all_keepers, n = n_to_keep)
