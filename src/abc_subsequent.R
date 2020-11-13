@@ -98,7 +98,7 @@ load(file= file.path(data_in_dir, 'q_obs2.RData'))
 
 
 ## start the loop here
-for(iter in 16:22){
+for(iter in 23:26){
 
   ### subsequent runs
   #load in last set of simulations
