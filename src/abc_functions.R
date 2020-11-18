@@ -132,11 +132,14 @@ log_results <- function(){
   print(paste("Generation ", iter))
   print(paste("median score for the last generation was:", previous_median_score))
   print(paste("generation x:",n_all_keepers, "of", format(previous_nsims,scientific=F), " simulations kept; proportion kept =", round(proportion_kept,4)))
-  print(paste("best kept mean nse for this generation is:", max(round(nse_mean_keepers,4))))
-  print(paste("best bacteria nse for this generation is:", max(round(nse_bac,4))))
-  print(paste("best flow nse for this generation is:", max(round(nse_q,4))))
-  print(paste("best flux nse for this generation is:", max(round(nse_flux,4))))
-  print(paste("median mean nse score for this generation is:", round(new_median_score,4)))
+  print("###########")
+  print(paste("range of accepted particles for mean nse for this generation is: (", min(round(nse_mean_keepers,4), ",", max(round(nse_mean_keepers,4), ")"))))
+  print(paste("range of accepted particles for bacteria nse for this generation is: (", min(round(nse_bac,4), ",", max(round(nse_bac,4), ")"))))
+  print(paste("range of accepted particles for flow nse for this generation is: (", min(round(nse_q,4), ",", max(round(nse_q,4), ")"))))
+  print(paste("range of accepted particles for flux nse for this generation is: (", min(round(nse_flux,4), ",", max(round(nse_flux,4), ")"))))
+  print("###########")
+  print(paste("median mean nse score for this generation is (this is the cutoff score for next):", new_median_score,4))
+  print("###########")
 }
 
 load_previous_swat_simulations <- function(){

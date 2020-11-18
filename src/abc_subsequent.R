@@ -98,7 +98,7 @@ load(file= file.path(data_in_dir, 'q_obs2.RData'))
 
 
 ## start the loop here
-for(iter in 23:26){
+for(iter in 27:30){
 
   ### subsequent runs
   #load in last set of simulations
@@ -163,6 +163,7 @@ for(iter in 23:26){
   if(iter==15){previous_median_score = -1.679666} #from previous generation -- 14}
   if(iter==16){previous_median_score = -0.84941146160688} #from previous generation -- 15}
   if(iter==23){previous_median_score = -0.0161426045727871}
+  if(iter==27){previous_median_score = 0.0857}
   all_keepers <- which(nse_mean[,2] > previous_median_score)
   n_all_keepers <- length(all_keepers)
   valid_keepers <- head(all_keepers, n = n_to_keep)
@@ -193,11 +194,13 @@ for(iter in 23:26){
   print(paste("Generation ", iter))
   print(paste("median score for the last generation was:", previous_median_score))
   print(paste("generation x:",n_all_keepers, "of", format(previous_nsims,scientific=F), " simulations kept; proportion kept =", round(proportion_kept,4)))
-  print(paste("best kept mean nse for this generation is:", max(round(nse_mean_keepers,4))))
-  print(paste("best bacteria nse for this generation is:", max(round(nse_bac,4))))
-  print(paste("best flow nse for this generation is:", max(round(nse_q,4))))
-  print(paste("best flux nse for this generation is:", max(round(nse_flux,4))))
-  print(paste("median mean nse score for this generation is:", round(new_median_score,4)))
+  print("###########")
+  print(paste("range of accepted particles for mean nse for this generation is: (", min(round(nse_mean_keepers,4), ",", max(round(nse_mean_keepers,4), ")"))))
+  print(paste("range of accepted particles for bacteria nse for this generation is: (", min(round(nse_bac,4), ",", max(round(nse_bac,4), ")"))))
+  print(paste("range of accepted particles for flow nse for this generation is: (", min(round(nse_q,4), ",", max(round(nse_q,4), ")"))))
+  print(paste("range of accepted particles for flux nse for this generation is: (", min(round(nse_flux,4), ",", max(round(nse_flux,4), ")"))))
+  print("###########")
+  print(paste("median mean nse score for this generation is (this is the cutoff score for next):", new_median_score,4))
   
 
   # fit the new distributions assuming normality from the keepers
