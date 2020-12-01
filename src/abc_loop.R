@@ -35,7 +35,20 @@ library(SWATplusR)
 # the swat executable swat2012_rev670 needs to be copied to the run directory
 # and you must have exe privileges on it
 
+set_working_paths <- function(){
+  if(Sys.info()[4]=="LZ2626UTPURUCKE"){
+    base_dir <- file.path("c:", "git", "wu_redcedar2")
+    data_in_dir <- file.path(base_dir, "data_in")
+    graphics_dir <- file.path(base_dir, "graphics")
+  }else{
+    base_dir <- file.path("/work", "OVERFLOW", "stp", "MSU")
+    data_in_dir <- base_dir
+    graphics_dir <- base_dir
+  }
+}
+
 # source support functions
+set_working_paths()
 print("load support functions")
 source(file.path(src_dir, "abc_functions.R"))
 

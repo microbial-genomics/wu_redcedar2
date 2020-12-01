@@ -25,28 +25,6 @@ create_tibble_initial <- function(nsims){
   )
 }
 
-create_tibble_subsequent(){
-  tibble(
-    "CN2.mgt|change = relchg"= CN2,
-    "GWQMN.gw|change = relchg" = GWQMN,
-    "ALPHA_BNK.rte|change = absval" = ALPHA_BNK,
-    "CH_K2.rte|change = absval" = CH_K2,
-    "CH_N2.rte|change = absval" = CH_N2,
-    "TRNSRCH.bsn|change = absval" = TRNSRCH,
-    "CH_N1.sub|change = absval" = CH_N1,
-    "CH_K1.sub|change = absval" = CH_K1,
-    "RCHRG_DP.gw|change = absval" = RCHRG_DP,
-    "SFTMP.bsn|change = absval"= SFTMP,
-    "SMTMP.bsn|change = absval"= SMTMP,
-    "DEP_IMP.hru|change = absval"= DEP_IMP,
-    "DDRAIN.mgt|change = absval"= DDRAIN,
-    "GDRAIN.mgt|change = absval"= GDRAIN,
-    "BACTKDQ.bsn|change = absval" = BACTKDQ,
-    "BACT_SWF.bsn|change = absval" = BACT_SWF,
-    "THBACT.bsn|change = absval"= THBACT,
-    "WDPRCH.bsn|change = absval"= WDPRCH)
-}
-
 run_swat_red_cedar <- function(swat_path, swat_parameters){
   run_swat2012(project_path = swat_path,
                output = list(q_out = define_output(file = "rch",
@@ -71,18 +49,6 @@ simulate_generation_zero <- function(nsims, swat_path, base_dir, pars_initial){
   save_file <- file.path(base_dir, "rcr_swat_output0.RData")
   save(swat_output0, file=save_file)
   return(swat_output0)
-}
-
-set_working_paths <- function(){
-  if(Sys.info()[4]=="LZ2626UTPURUCKE"){
-    base_dir <- file.path("c:", "git", "wu_redcedar2")
-    data_in_dir <- file.path(base_dir, "data_in")
-    graphics_dir <- file.path(base_dir, "graphics")
-  }else{
-    base_dir <- file.path("/work", "OVERFLOW", "stp", "MSU")
-    data_in_dir <- base_dir
-    graphics_dir <- base_dir
-  }
 }
 
 save_kde_pdf <- function(){
