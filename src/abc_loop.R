@@ -34,9 +34,9 @@ library(SWATplusR)
 
 # the swat executable swat2012_rev670 needs to be copied to the run directory
 # and you must have exe privileges on it
-
 # source support functions
 print("load support functions")
+src_dir <- "/work/OVERFLOW/RCR/stp/MSU"
 source(file.path(src_dir, "abc_functions.R"))
 
 #set paths for local machine or hpc
@@ -61,8 +61,10 @@ if(startgen==0){
   previous_median_score <- read.csv(median_filename)
 }
 
+swat_path <- "/work/OVERFLOW/RCR/stp/MSU"
+
 ## start the loop here
-for(iter in stargen:ngens){
+for(iter in startgen:ngens){
 
   # first (zeroeth) generation  
   if(iter==0){

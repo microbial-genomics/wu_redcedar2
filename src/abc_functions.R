@@ -1,4 +1,5 @@
-
+data_in_dir <- "/work/OVERFLOW/RCR/stp/MSU"
+base_dir <- "/work/OVERFLOW/RCR/stp/MSU"
 
 create_tibble_initial <- function(nsims){
   pars_tibble <- tibble(#hydrology parameters (11)
@@ -25,27 +26,27 @@ create_tibble_initial <- function(nsims){
   )
 }
 
-create_tibble_subsequent(){
-  tibble(
-    "CN2.mgt|change = relchg"= CN2,
-    "GWQMN.gw|change = relchg" = GWQMN,
-    "ALPHA_BNK.rte|change = absval" = ALPHA_BNK,
-    "CH_K2.rte|change = absval" = CH_K2,
-    "CH_N2.rte|change = absval" = CH_N2,
-    "TRNSRCH.bsn|change = absval" = TRNSRCH,
-    "CH_N1.sub|change = absval" = CH_N1,
-    "CH_K1.sub|change = absval" = CH_K1,
-    "RCHRG_DP.gw|change = absval" = RCHRG_DP,
-    "SFTMP.bsn|change = absval"= SFTMP,
-    "SMTMP.bsn|change = absval"= SMTMP,
-    "DEP_IMP.hru|change = absval"= DEP_IMP,
-    "DDRAIN.mgt|change = absval"= DDRAIN,
-    "GDRAIN.mgt|change = absval"= GDRAIN,
-    "BACTKDQ.bsn|change = absval" = BACTKDQ,
-    "BACT_SWF.bsn|change = absval" = BACT_SWF,
-    "THBACT.bsn|change = absval"= THBACT,
-    "WDPRCH.bsn|change = absval"= WDPRCH)
-}
+#create_tibble_subsequent(){
+#   tibble(
+#    "CN2.mgt|change = relchg"= CN2,
+#    "GWQMN.gw|change = relchg" = GWQMN,
+#    "ALPHA_BNK.rte|change = absval" = ALPHA_BNK,
+#    "CH_K2.rte|change = absval" = CH_K2,
+#    "CH_N2.rte|change = absval" = CH_N2,
+#    "TRNSRCH.bsn|change = absval" = TRNSRCH,
+#    "CH_N1.sub|change = absval" = CH_N1,
+#    "CH_K1.sub|change = absval" = CH_K1,
+#    "RCHRG_DP.gw|change = absval" = RCHRG_DP,
+#    "SFTMP.bsn|change = absval"= SFTMP,
+#    "SMTMP.bsn|change = absval"= SMTMP,
+#    "DEP_IMP.hru|change = absval"= DEP_IMP,
+#    "DDRAIN.mgt|change = absval"= DDRAIN,
+#    "GDRAIN.mgt|change = absval"= GDRAIN,
+#    "BACTKDQ.bsn|change = absval" = BACTKDQ,
+#    "BACT_SWF.bsn|change = absval" = BACT_SWF,
+#    "THBACT.bsn|change = absval"= THBACT,
+#    "WDPRCH.bsn|change = absval"= WDPRCH)
+#}
 
 run_swat_red_cedar <- function(swat_path, swat_parameters){
   run_swat2012(project_path = swat_path,
@@ -61,6 +62,8 @@ run_swat_red_cedar <- function(swat_path, swat_parameters){
                years_skip = 2,
                n_thread = 32)
 }
+
+project_path <- "/work/OVERFLOW/RCR/stp/MSU"
 
 simulate_generation_zero <- function(nsims, swat_path, base_dir, pars_initial){
   # run the initial set of swat simulations
@@ -79,7 +82,7 @@ set_working_paths <- function(){
     data_in_dir <- file.path(base_dir, "data_in")
     graphics_dir <- file.path(base_dir, "graphics")
   }else{
-    base_dir <- file.path("/work", "OVERFLOW", "stp", "MSU")
+    base_dir <- file.path("/work", "OVERFLOW","RCR", "stp", "MSU")
     data_in_dir <- base_dir
     graphics_dir <- base_dir
   }
@@ -132,13 +135,11 @@ log_results <- function(){
   print(paste("Generation ", iter))
   print(paste("median score for the last generation was:", previous_median_score))
   print(paste("generation x:",n_all_keepers, "of", format(previous_nsims,scientific=F), " simulations kept; proportion kept =", round(proportion_kept,4)))
-  print("###########")
-  print(paste("range of accepted particles for mean nse for this generation is: (", min(round(nse_mean_keepers,4)), ",", max(round(nse_mean_keepers,4)), ")"))
-  print(paste("range of accepted particles for bacteria nse for this generation is: (", min(round(nse_bac,4)), ",", max(round(nse_bac,4)), ")"))
-  print(paste("range of accepted particles for flow nse for this generation is: (", min(round(nse_q,4)), ",", max(round(nse_q,4)), ")"))
-  print(paste("range of accepted particles for flux nse for this generation is: (", min(round(nse_flux,4)), ",", max(round(nse_flux,4)), ")"))
-  print("###########")
-  print(paste("median mean nse score for this generation is (this is the cutoff score for next):", new_median_score,4))
+  print(paste("best kept mean nse for this generation is:", max(round(nse_mean_keepers,4))))
+  print(paste("best bacteria nse for this generation is:", max(round(nse_bac,4))))
+  print(paste("best flow nse for this generation is:", max(round(nse_q,4))))
+  print(paste("best flux nse for this generation is:", max(round(nse_flux,4))))
+  print(paste("median mean nse score for this generation is:", round(new_median_score,4)))
 }
 
 load_previous_swat_simulations <- function(){

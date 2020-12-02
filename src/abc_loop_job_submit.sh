@@ -5,10 +5,10 @@
 #SBATCH --time=60:00:00
 #SBACTH --ntasks=64
 #SBATCH --mem=16g
-#SBARCH --mail-user=Purucker.Tom@epa.gov
+#SBARCH --mail-user=wu.huiyun@epa.gov
 #SBATCH --mail-type=BEGIN,END
 
-setenv TMPDIR /work/OVERFLOW/stp/MSU
+setenv TMPDIR /work/OVERFLOW/RCR/stp/MSU
 
 module load intel/19.0.5
 module load R/3.6.2
