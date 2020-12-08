@@ -34,26 +34,11 @@ library(SWATplusR)
 
 # the swat executable swat2012_rev670 needs to be copied to the run directory
 # and you must have exe privileges on it
-<<<<<<< HEAD
-=======
-
-set_working_paths <- function(){
-  if(Sys.info()[4]=="LZ2626UTPURUCKE"){
-    base_dir <- file.path("c:", "git", "wu_redcedar2")
-    data_in_dir <- file.path(base_dir, "data_in")
-    graphics_dir <- file.path(base_dir, "graphics")
-  }else{
-    base_dir <- file.path("/work", "OVERFLOW", "stp", "MSU")
-    data_in_dir <- base_dir
-    graphics_dir <- base_dir
-  }
-}
-
->>>>>>> 92782766a59c629b9d74e4dadf052b79f6247108
 # source support functions
-set_working_paths()
 print("load support functions")
 src_dir <- "/work/OVERFLOW/RCR/stp/MSU"
+base_dir <- "/work/OVERFLOW/RCR/stp/MSU"
+graphics_dir <- file.path(base_dir, "graphics")
 source(file.path(src_dir, "abc_functions.R"))
 
 #set paths for local machine or hpc
@@ -62,6 +47,13 @@ set_working_paths()
 
 #load outside data
 load_observations()
+load(file= file.path(data_in_dir,'bac_obs.RData'))
+load(file = file.path(data_in_dir,'flux_obs.RData'))
+load(file = file.path(data_in_dir,'pcp_obs.RData'))
+load(file = file.path(data_in_dir,'pcp_obs2.RData'))
+load(file= file.path(data_in_dir, 'q_obs.RData'))
+load(file= file.path(data_in_dir, 'q_obs2.RData'))
+
 
 # preset the generations to be simulated
 # stargen = 0 means starting from scratch
@@ -92,11 +84,11 @@ for(iter in startgen:ngens){
     #simulate_generation_zero(nsims, swat_path, base_dir, pars_initial)
     # run the initial set of swat simulations
     print(paste("About to run generation 0 with", nsims, "simulations"))
-    swat_output0 <- run_swat_red_cedar(swat_path, pars_initial)
+    bac_cal1 <- run_swat_red_cedar(swat_path, pars_initial)
     
     #save the simulations
-    save_file <- file.path(data_in_dir, "rcr_swat_output0.RData")
-    save(swat_output0, file = save_file)
+    save_file <- file.path(data_in_dir, "bac_cal0.RData")
+    save(bac_cal1, file = save_file)
     previous_median_score[iter] <- -1000000
   }
   
@@ -117,9 +109,40 @@ for(iter in startgen:ngens){
   
   # merge simulated data with above observations, calculate nses
   nse_simulations_v_observations()
+  # merge simulated and observed bacteria concentrations, calculate nses for all sims
+  nse_bac <- right_join(sim_bac,bac_obs,by="date")%>%
+    dplyr::select(-date) %>% dplyr::select(-bacteria) %>%
+    map_dbl(., ~NSE(.x, bac_obs$bacteria))
+  sort(nse_bac, decreasing = T) %>% enframe()
+  
+  # merge simulated and observed flows, calculate nses for all sims
+  nse_q <- right_join(sim_q,q_obs,by="date") %>%
+    dplyr::select(-date) %>% dplyr::select(-discharge) %>%
+    map_dbl(., ~NSE(.x, q_obs$discharge))
+  sort(nse_q, decreasing = T) %>% enframe()
+  
+  # calculate the simulated fluxes from concs and flows for all sims
+  flux_sim <- sim_bac[c(97:167),c(-1)]*
+    sim_q[c(97:167), c(-1)]*10^4
+  
+  #merge simulated and observed fluxes, calculate nses for all sims
+  nse_flux <- flux_sim %>%
+    map_dbl(., ~NSE(.x, flux_obs[,1]))
+  sort(nse_flux, decreasing = T) %>% enframe()
     
   #calculate average nse of conc, flow and flux for all sims
   calculate_mean_nses()
+  #calculate average nse of conc, flow and flux for all sims
+  nse_mean_calc <- matrix(data=NA, nrow=previous_nsims, ncol=1)
+  for(i in 1:previous_nsims){
+    #print(i)
+    nse_mean_calc[i] <- mean(c(nse_bac[i], nse_q[i], nse_flux[i]))
+  }
+  sort(nse_mean_calc, decreasing = T) %>% enframe()
+  
+  run <- c(1:previous_nsims)
+  nse_mean <-cbind(run, nse_mean_calc)
+  colnames(nse_mean)<-c("run", "nse_mean")
   
   #should make this a 3D dataframe across the generations
   # but we will start with just saving the median scores
@@ -137,7 +160,7 @@ for(iter in startgen:ngens){
     gather(key = "par", value = "parameter_range")
   
   # print the distributions
-  save_kde_pdf()
+  #save_kde_pdf()
 
   # find the median score that will be used for the next generation
   new_median_score <- median(nse_mean_keepers)

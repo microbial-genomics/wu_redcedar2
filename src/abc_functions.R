@@ -26,7 +26,6 @@ create_tibble_initial <- function(nsims){
   )
 }
 
-<<<<<<< HEAD
 #create_tibble_subsequent(){
 #   tibble(
 #    "CN2.mgt|change = relchg"= CN2,
@@ -49,8 +48,6 @@ create_tibble_initial <- function(nsims){
 #    "WDPRCH.bsn|change = absval"= WDPRCH)
 #}
 
-=======
->>>>>>> 92782766a59c629b9d74e4dadf052b79f6247108
 run_swat_red_cedar <- function(swat_path, swat_parameters){
   run_swat2012(project_path = swat_path,
                output = list(q_out = define_output(file = "rch",
@@ -71,15 +68,14 @@ project_path <- "/work/OVERFLOW/RCR/stp/MSU"
 simulate_generation_zero <- function(nsims, swat_path, base_dir, pars_initial){
   # run the initial set of swat simulations
   print(paste("About to run generation 0 with", nsims, "simulations"))
-  swat_output0 <- run_swat_red_cedar(swat_path, pars_initial)
+  bac_cal0 <- run_swat_red_cedar(swat_path, pars_initial)
   
   #save the simulations
-  save_file <- file.path(base_dir, "rcr_swat_output0.RData")
-  save(swat_output0, file=save_file)
-  return(swat_output0)
+  save_file <- file.path(base_dir, "bac_cal0.RData")
+  save(bac_cal0, file=save_file)
+  return(bac_cal0)
 }
 
-<<<<<<< HEAD
 set_working_paths <- function(){
   if(Sys.info()[4]=="LZ2626UTPURUCKE"){
     base_dir <- file.path("c:", "git", "wu_redcedar2")
@@ -92,8 +88,6 @@ set_working_paths <- function(){
   }
 }
 
-=======
->>>>>>> 92782766a59c629b9d74e4dadf052b79f6247108
 save_kde_pdf <- function(){
   ggplot(data = kde_next_gen) +
     geom_density(aes(x = parameter_range)) +
