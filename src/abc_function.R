@@ -68,12 +68,12 @@ project_path <- "/work/OVERFLOW/RCR/stp/MSU"
 simulate_generation_zero <- function(nsims, swat_path, base_dir, pars_initial){
   # run the initial set of swat simulations
   print(paste("About to run generation 0 with", nsims, "simulations"))
-  bac_cal0 <- run_swat_red_cedar(swat_path, pars_initial)
+  swat_output0 <- run_swat_red_cedar(swat_path, pars_initial)
   
   #save the simulations
-  save_file <- file.path(base_dir, "bac_cal0.RData")
-  save(bac_cal0, file=save_file)
-  return(bac_cal0)
+  save_file <- file.path(base_dir, "rcr_swat_output0.RData")
+  save(swat_output0, file=save_file)
+  return(swat_output0)
 }
 
 set_working_paths <- function(){
@@ -116,7 +116,7 @@ post_process_swat <- function(){
   rdata_out_filename <- paste('bac_cal', iter+1, '.RData', sep = "")
   rdata_file_out <- file.path(data_in_dir, rdata_out_filename)
   save(bac_cal1, file=rdata_file_out)
-  print(paste("rdata file for generation ", iter+1, " saved to ", rdata_file_out))
+  print(paste("radata file for generation ", iter+1, " saved to ", rdata_file_out))
   previous_median_score[iter] = new_median_score
   write.csv(previous_median_score, file = median_filename)
   print(paste("the median score cutoff used to create particles for generation ", iter+1, " was ", previous_median_score))
