@@ -1,5 +1,3 @@
-data_in_dir <- "/work/OVERFLOW/RCR/stp/MSU"
-base_dir <- "/work/OVERFLOW/RCR/stp/MSU"
 
 create_tibble_initial <- function(nsims){
   pars_tibble <- tibble(#hydrology parameters (11)
@@ -63,7 +61,7 @@ run_swat_red_cedar <- function(swat_path, swat_parameters){
                n_thread = 32)
 }
 
-project_path <- "/work/OVERFLOW/RCR/stp/MSU"
+
 
 simulate_generation_zero <- function(nsims, swat_path, base_dir, pars_initial){
   # run the initial set of swat simulations
@@ -74,18 +72,6 @@ simulate_generation_zero <- function(nsims, swat_path, base_dir, pars_initial){
   save_file <- file.path(base_dir, "bac_cal0.RData")
   save(bac_cal0, file=save_file)
   return(bac_cal0)
-}
-
-set_working_paths <- function(){
-  if(Sys.info()[4]=="LZ2626UTPURUCKE"){
-    base_dir <- file.path("c:", "git", "wu_redcedar2")
-    data_in_dir <- file.path(base_dir, "data_in")
-    graphics_dir <- file.path(base_dir, "graphics")
-  }else{
-    base_dir <- file.path("/work", "OVERFLOW","RCR", "stp", "MSU")
-    data_in_dir <- base_dir
-    graphics_dir <- base_dir
-  }
 }
 
 save_kde_pdf <- function(){

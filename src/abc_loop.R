@@ -34,16 +34,39 @@ library(SWATplusR)
 
 # the swat executable swat2012_rev670 needs to be copied to the run directory
 # and you must have exe privileges on it
-# source support functions
-print("load support functions")
-src_dir <- "/work/OVERFLOW/RCR/stp/MSU"
-base_dir <- "/work/OVERFLOW/RCR/stp/MSU"
-graphics_dir <- file.path(base_dir, "graphics")
-source(file.path(src_dir, "abc_functions.R"))
 
+#setup directory structure
 #set paths for local machine or hpc
 # we are dumping everything in root directory on hpc
-set_working_paths()
+huiyun <- FALSE #Huiyun set to true when you are running this code
+print("load support functions")
+if(huiyun){
+  base_dir <- file.path("/work", "OVERFLOW", "RCR", "stp", "MSU")
+  data_in_dir <- base_dir
+  graphics_dir <- base_dir
+  src_dir <- base_dir
+  project_path <- base_dir
+  swat_path <- base_dir
+}else{
+  if(Sys.info()[4]=="LZ2626UTPURUCKE"){
+    base_dir <- file.path("c:", "git", "wu_redcedar2")
+    data_in_dir <- file.path(base_dir, "data_in")
+    graphics_dir <- file.path(base_dir, "graphics")
+    src_dir <- file.path(base_dir, "src")
+    project_path <- base_dir
+    swat_path <- base_dir
+  }else{
+    base_dir <- file.path("/work", "OVERFLOW", "stp", "MSU")
+    data_in_dir <- base_dir
+    graphics_dir <- base_dir
+    src_dir <- base_dir
+    project_path <- base_dir
+    swat_path <- base_dir
+  }
+}
+
+# source support functions
+source(file.path(src_dir, "abc_functions.R"))
 
 #load outside data
 load_observations()
@@ -53,7 +76,6 @@ load(file = file.path(data_in_dir,'pcp_obs.RData'))
 load(file = file.path(data_in_dir,'pcp_obs2.RData'))
 load(file= file.path(data_in_dir, 'q_obs.RData'))
 load(file= file.path(data_in_dir, 'q_obs2.RData'))
-
 
 # preset the generations to be simulated
 # stargen = 0 means starting from scratch
@@ -70,7 +92,7 @@ if(startgen==0){
   previous_median_score <- read.csv(median_filename)
 }
 
-swat_path <- "/work/OVERFLOW/RCR/stp/MSU"
+
 
 ## start the loop here
 for(iter in startgen:ngens){
