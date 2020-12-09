@@ -24,7 +24,7 @@ get_cutoff_median_score <- function(iter){
     load(file= cutoff_median_filename, .GlobalEnv)
     return_cutoff_median <- cutoff_median_score[iter] #get the cutoff that was saved at the last generation
   }
-  return(return_median)
+  return(return_cutoff_median)
 }
 
 create_tibble_initial <- function(nsims){
