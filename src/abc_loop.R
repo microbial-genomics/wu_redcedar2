@@ -70,12 +70,6 @@ source(file.path(src_dir, "abc_functions.R"))
 
 #load outside data
 load_observations()
-load(file= file.path(data_in_dir,'bac_obs.RData'))
-load(file = file.path(data_in_dir,'flux_obs.RData'))
-load(file = file.path(data_in_dir,'pcp_obs.RData'))
-load(file = file.path(data_in_dir,'pcp_obs2.RData'))
-load(file= file.path(data_in_dir, 'q_obs.RData'))
-load(file= file.path(data_in_dir, 'q_obs2.RData'))
 
 # preset the generations to be simulated
 # stargen = 0 means starting from scratch

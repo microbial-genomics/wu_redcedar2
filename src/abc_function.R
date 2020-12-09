@@ -123,12 +123,12 @@ post_process_swat <- function(){
 }
 
 load_observations <- function(){
-  load(file= file.path(data_in_dir,'bac_obs.RData'))
-  load(file = file.path(data_in_dir,'flux_obs.RData'))
-  load(file = file.path(data_in_dir,'pcp_obs.RData'))
-  load(file = file.path(data_in_dir,'pcp_obs2.RData'))
-  load(file= file.path(data_in_dir, 'q_obs.RData'))
-  load(file= file.path(data_in_dir, 'q_obs2.RData'))
+  load(file= file.path(data_in_dir,'bac_obs.RData'), .GlobalEnv)
+  load(file = file.path(data_in_dir,'flux_obs.RData'), .GlobalEnv)
+  load(file = file.path(data_in_dir,'pcp_obs.RData'), .GlobalEnv)
+  load(file = file.path(data_in_dir,'pcp_obs2.RData'), .GlobalEnv)
+  load(file= file.path(data_in_dir, 'q_obs.RData'), .GlobalEnv)
+  load(file= file.path(data_in_dir, 'q_obs2.RData'), .GlobalEnv)
 }
 
 log_results <- function(){
