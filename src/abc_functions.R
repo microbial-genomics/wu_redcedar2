@@ -1,4 +1,32 @@
 
+load_observations <- function(){
+  load(file= file.path(data_in_dir,'bac_obs.RData'), .GlobalEnv)
+  load(file = file.path(data_in_dir,'flux_obs.RData'), .GlobalEnv)
+  load(file = file.path(data_in_dir,'pcp_obs.RData'), .GlobalEnv)
+  load(file = file.path(data_in_dir,'pcp_obs2.RData'), .GlobalEnv)
+  load(file= file.path(data_in_dir, 'q_obs.RData'), .GlobalEnv)
+  load(file= file.path(data_in_dir, 'q_obs2.RData'), .GlobalEnv)
+}
+
+get_cutoff_median_score <- function(iter){
+  # initialize if starting from generation 0
+  # if we are starting at zero we need to wipe out the previous_median_score_vector
+  # otherwise we will save it after every loop
+  cutoff_median_filename <- file.path(data_in_dir,"cutoff_median_scores.RData")
+  if(iter==0){
+    cutoff_median_score <- rep(NA, 40) # if we are starting over at gen 0 we need to delete past scores
+    save(cutoff_median_score, file = cutoff_median_filename)
+    return_cutoff_median <- NA # we do not need to save this because median score is not used for gen 0
+  }else{
+    # if starting at gen greater than zero we will 
+    # calculate it based on the output of the previous generation,
+    # but we load it to make sure the vector exists when we save it later
+    load(file= cutoff_median_filename, .GlobalEnv)
+    return_cutoff_median <- cutoff_median_score[iter] #get the cutoff that was saved at the last generation
+  }
+  return(return_median)
+}
+
 create_tibble_initial <- function(nsims){
   pars_tibble <- tibble(#hydrology parameters (11)
                         "CN2.mgt|change = relchg"= runif(nsims, -0.25, 0.1),
@@ -46,6 +74,14 @@ create_tibble_initial <- function(nsims){
 #    "WDPRCH.bsn|change = absval"= WDPRCH)
 #}
 
+simulate_generation_zero <- function(nsims, swat_path, base_dir, pars_initial){
+  # run the initial set of swat simulations
+  print(paste("About to run generation 0 with", nsims, "simulations"))
+  bac_cal_output <- run_swat_red_cedar(swat_path, pars_initial)
+  print(paste("swat runs finished for generation ", iter))
+  return(bac_cal_output)
+}
+
 run_swat_red_cedar <- function(swat_path, swat_parameters){
   run_swat2012(project_path = swat_path,
                output = list(q_out = define_output(file = "rch",
@@ -61,26 +97,17 @@ run_swat_red_cedar <- function(swat_path, swat_parameters){
                n_thread = 32)
 }
 
-
-
-simulate_generation_zero <- function(nsims, swat_path, base_dir, pars_initial){
-  # run the initial set of swat simulations
-  print(paste("About to run generation 0 with", nsims, "simulations"))
-  bac_cal0 <- run_swat_red_cedar(swat_path, pars_initial)
-  
-  #save the simulations
-  save_file <- file.path(base_dir, "bac_cal0.RData")
-  save(bac_cal0, file=save_file)
-  return(bac_cal0)
+save_bac_cal_output <- function(iter, bac_cal_output){
+  rdata_out_filename <- paste('bac_cal', iter, '.RData', sep = "")
+  rdata_file_out <- file.path(data_in_dir, rdata_out_filename)
+  save(bac_cal1, file=rdata_file_out)
+  print(paste("rdata file for generation ", iter, " saved to ", rdata_file_out))
 }
 
-save_kde_pdf <- function(){
-  ggplot(data = kde_next_gen) +
-    geom_density(aes(x = parameter_range)) +
-    facet_wrap(.~par, nrow=5, scales = "free") +
-    theme_bw()
-  density_plot_filename <- paste("kde_mcabc_gen", iter, ".pdf", sep="")
-  ggsave(file.path(graphics_dir, density_plot_filename))  
+post_process_swat <- function(iter){
+  previous_median_score[iter] = new_median_score
+  write.csv(previous_median_score, file = median_filename)
+  print(paste("the median score cutoff used to create particles for generation ", iter, " was ", previous_median_score))
 }
 
 calculate_mean_nses <- function(){
@@ -97,25 +124,16 @@ calculate_mean_nses <- function(){
   colnames(nse_mean)<-c("run", "nse_mean")
 }
 
-post_process_swat <- function(){
-  print(paste("swat runs finished for generation ", iter+1))
-  rdata_out_filename <- paste('bac_cal', iter+1, '.RData', sep = "")
-  rdata_file_out <- file.path(data_in_dir, rdata_out_filename)
-  save(bac_cal1, file=rdata_file_out)
-  print(paste("rdata file for generation ", iter+1, " saved to ", rdata_file_out))
-  previous_median_score[iter] = new_median_score
-  write.csv(previous_median_score, file = median_filename)
-  print(paste("the median score cutoff used to create particles for generation ", iter+1, " was ", previous_median_score))
+save_kde_pdf <- function(){
+  ggplot(data = kde_next_gen) +
+    geom_density(aes(x = parameter_range)) +
+    facet_wrap(.~par, nrow=5, scales = "free") +
+    theme_bw()
+  density_plot_filename <- paste("kde_mcabc_gen", iter, ".pdf", sep="")
+  ggsave(file.path(graphics_dir, density_plot_filename))  
 }
 
-load_observations <- function(){
-  load(file= file.path(data_in_dir,'bac_obs.RData'), .GlobalEnv)
-  load(file = file.path(data_in_dir,'flux_obs.RData'), .GlobalEnv)
-  load(file = file.path(data_in_dir,'pcp_obs.RData'), .GlobalEnv)
-  load(file = file.path(data_in_dir,'pcp_obs2.RData'), .GlobalEnv)
-  load(file= file.path(data_in_dir, 'q_obs.RData'), .GlobalEnv)
-  load(file= file.path(data_in_dir, 'q_obs2.RData'), .GlobalEnv)
-}
+
 
 log_results <- function(){
   print(paste("Generation ", iter-1))
@@ -138,7 +156,12 @@ load_previous_swat_simulations <- function(){
   dim(bac_cal1$simulation$bac_out)
 }
 
-nse_simulations_v_observations <- function(){
+nse_simulations_v_observations <- function(bac_cal_output, bac_obs, q_obs, flux_obs){
+  #load the simulated concentrations, flows, inputs for last simulations
+  sim_bac <- bac_cal_output$simulation$bac_out
+  sim_q <- bac_cal_output$simulation$q_out
+  sim_pars <- bac_cal_output$parameter$values
+  
   # merge simulated and observed bacteria concentrations, calculate nses for all sims
   nse_bac <- right_join(sim_bac,bac_obs,by="date")%>%
     dplyr::select(-date) %>% dplyr::select(-bacteria) %>%
@@ -161,7 +184,7 @@ nse_simulations_v_observations <- function(){
   sort(nse_flux, decreasing = T) %>% enframe()
 }
 
-fit_normal_parameters <- function(){
+fit_normal_parameters <- function(sim_pars_keepers){
   fitted_CN2 <- fitdist(sim_pars_keepers$CN2, "norm")
   fitted_GWQMN <- fitdist(sim_pars_keepers$GWQMN, "norm")
   fitted_ALPHA_BNK <- fitdist(sim_pars_keepers$ALPHA_BNK, "norm")

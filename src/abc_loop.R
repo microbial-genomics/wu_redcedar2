@@ -38,7 +38,7 @@ library(SWATplusR)
 #setup directory structure
 #set paths for local machine or hpc
 # we are dumping everything in root directory on hpc
-huiyun <- TRUE #Huiyun set to true when you are running this code
+huiyun <- FALSE #Huiyun set to true when you are running this code
 print("load support functions")
 if(huiyun){
   base_dir <- file.path("/work", "OVERFLOW", "RCR", "stp", "MSU")
@@ -73,42 +73,38 @@ load_observations()
 
 # preset the generations to be simulated
 # stargen = 0 means starting from scratch
-startgen <- 1
-ngens <- 22
+startgen <- 0
+ngens <- 40
 
-# if we are starting at zero we will wipe out the previous_median_score_vector
-median_filename <- file.path(data_in_dir,"previous_median_scores.RData")
-if(startgen==0){
-  previous_median_score <- -10^8
-  save(previous_median_score, file = file.path(data_in_dir,'previous_median_scores.RData'))
-} else {
-  # if starting at gen greater than zero we will read it from the existing file
-  load(file= file.path(data_in_dir, 'previous_median_scores.RData'))
-  previous_median_score
-}
-
+# start the loop here
 for(iter in startgen:ngens){
-
-## start the loop here
- # for(iter in startgen:ngens){
- # 
- #  first (zeroeth) generation
- #  if(iter==0){
- #    # every generation will have 5000 accepted particles
- #    # the median score of these 5000 particles will be used as the cutoff for the next generation
- #    nsims <- 5000
- #    pars_initial <- create_tibble_initial(nsims)
- #    #simulate_generation_zero(nsims, swat_path, base_dir, pars_initial)
- #    # run the initial set of swat simulations
- #    print(paste("About to run generation 0 with", nsims, "simulations"))
- #    bac_cal1 <- run_swat_red_cedar(swat_path, pars_initial)
- # 
- #    #save the simulations
- #    save_file <- file.path(data_in_dir, "bac_cal0.RData")
- #    save(bac_cal1, file = save_file)
- #    previous_median_score[iter] <- -1000000
- #  }
-
+  
+  #will be NA for generation 0 because not needed
+  cutoff_median_score <- get_cutoff_median_score(iter)
+ 
+  #  first (zeroeth) generation
+  if(iter==0){
+    # every generation will have 5000 accepted particles
+    # the median score of these 5000 particles will be used as the cutoff for the next generation
+    # the first generation will be 5000 without rejection
+    nsims <- 5000
+    pars_initial <- create_tibble_initial(nsims)
+    #simulate_generation_zero(nsims, swat_path, base_dir, pars_initial)
+    # run the initial set of swat simulations
+    bac_cal_output <- simulate_generation_zero(nsims, swat_path, base_dir, pars_initial)
+    # save output to disk
+    save_bac_cal_output(iter, bac_cal_output)
+    # calculate various nses
+    nse_simulations_v_observations(bac_cal_output, bac_obs, q_obs, flux_obs)
+    # calculate nse means
+    
+    # calculate median score
+    
+    # update parameter inputs
+    
+  }
+}
+else{
   #
   ### subsequent runs
   #load in last set of simulations
