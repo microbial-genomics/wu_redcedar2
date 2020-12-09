@@ -118,7 +118,7 @@ load_observations <- function(){
 }
 
 log_results <- function(){
-  print(paste("Generation ", iter))
+  print(paste("Generation ", iter-1))
   print(paste("median score for the last generation was:", previous_median_score))
   print(paste("generation x:",n_all_keepers, "of", format(previous_nsims,scientific=F), " simulations kept; proportion kept =", round(proportion_kept,4)))
   print(paste("best kept mean nse for this generation is:", max(round(nse_mean_keepers,4))))
@@ -129,7 +129,7 @@ log_results <- function(){
 }
 
 load_previous_swat_simulations <- function(){
-  bac_cal_filename <- paste('bac_cal', iter, '.RData', sep="")
+  bac_cal_filename <- paste('bac_cal', iter-1, '.RData', sep="")
   rdata_file_in <- file.path(data_in_dir, bac_cal_filename)
   print(paste("loading data file: ", rdata_file_in))
   load(file = rdata_file_in)

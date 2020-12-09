@@ -38,7 +38,7 @@ library(SWATplusR)
 #setup directory structure
 #set paths for local machine or hpc
 # we are dumping everything in root directory on hpc
-huiyun <- FALSE #Huiyun set to true when you are running this code
+huiyun <- TRUE #Huiyun set to true when you are running this code
 print("load support functions")
 if(huiyun){
   base_dir <- file.path("/work", "OVERFLOW", "RCR", "stp", "MSU")
@@ -79,49 +79,56 @@ load(file= file.path(data_in_dir, 'q_obs2.RData'))
 
 # preset the generations to be simulated
 # stargen = 0 means starting from scratch
-startgen <- 0
+startgen <- 1
 ngens <- 22
 
 # if we are starting at zero we will wipe out the previous_median_score_vector
-median_filename <- file.path(data_in_dir, "previous_median_scores.csv")
+median_filename <- file.path(data_in_dir,"previous_median_scores.RData")
 if(startgen==0){
-  previous_median_score <- rep(NA, ngens+1)
-  write.csv(previous_median_score, file = median_filename)
+  previous_median_score <- -10^8
+  save(previous_median_score, file = file.path(data_in_dir,'previous_median_scores.RData'))
 } else {
   # if starting at gen greater than zero we will read it from the existing file
-  previous_median_score <- read.csv(median_filename)
+  load(file= file.path(data_in_dir, 'previous_median_scores.RData'))
+  previous_median_score
 }
 
-
-
-## start the loop here
 for(iter in startgen:ngens){
 
-  # first (zeroeth) generation  
-  if(iter==0){
-    # every generation will have 5000 accepted particles
-    # the median score of these 5000 particles will be used as the cutoff for the next generation
-    nsims <- 5000
-    pars_initial <- create_tibble_initial(nsims)
-    #simulate_generation_zero(nsims, swat_path, base_dir, pars_initial)
-    # run the initial set of swat simulations
-    print(paste("About to run generation 0 with", nsims, "simulations"))
-    bac_cal1 <- run_swat_red_cedar(swat_path, pars_initial)
-    
-    #save the simulations
-    save_file <- file.path(data_in_dir, "bac_cal0.RData")
-    save(bac_cal1, file = save_file)
-    previous_median_score[iter] <- -1000000
-  }
-  
+## start the loop here
+ # for(iter in startgen:ngens){
+ # 
+ #  first (zeroeth) generation
+ #  if(iter==0){
+ #    # every generation will have 5000 accepted particles
+ #    # the median score of these 5000 particles will be used as the cutoff for the next generation
+ #    nsims <- 5000
+ #    pars_initial <- create_tibble_initial(nsims)
+ #    #simulate_generation_zero(nsims, swat_path, base_dir, pars_initial)
+ #    # run the initial set of swat simulations
+ #    print(paste("About to run generation 0 with", nsims, "simulations"))
+ #    bac_cal1 <- run_swat_red_cedar(swat_path, pars_initial)
+ # 
+ #    #save the simulations
+ #    save_file <- file.path(data_in_dir, "bac_cal0.RData")
+ #    save(bac_cal1, file = save_file)
+ #    previous_median_score[iter] <- -1000000
+ #  }
+
+  #
   ### subsequent runs
   #load in last set of simulations
   # list with parameter and simulation elements
-  load_previous_swat_simulations()
+ # load_previous_swat_simulations()
+  bac_cal_filename <- paste('bac_cal', iter-1, '.RData', sep="")
+  rdata_file_in <- file.path(data_in_dir, bac_cal_filename)
+  print(paste("loading data file: ", rdata_file_in))
+  load(file = rdata_file_in)
+  
   
   #set variables
   previous_nsims <- ncol(bac_cal1$simulation$bac_out) - 1
-  print(paste("the last generation ", iter, " had ", previous_nsims, " sims"))
+  print(paste("the last generation ", iter-1, " had ", previous_nsims, " sims"))
   n_to_keep <- 5000 #number to keep each generation
   
   #load the simulated concentrations, flows, inputs for last simulations
@@ -131,33 +138,27 @@ for(iter in startgen:ngens){
   
   # merge simulated data with above observations, calculate nses
   nse_simulations_v_observations()
-  # merge simulated and observed bacteria concentrations, calculate nses for all sims
   nse_bac <- right_join(sim_bac,bac_obs,by="date")%>%
     dplyr::select(-date) %>% dplyr::select(-bacteria) %>%
     map_dbl(., ~NSE(.x, bac_obs$bacteria))
   sort(nse_bac, decreasing = T) %>% enframe()
   
-  # merge simulated and observed flows, calculate nses for all sims
   nse_q <- right_join(sim_q,q_obs,by="date") %>%
     dplyr::select(-date) %>% dplyr::select(-discharge) %>%
     map_dbl(., ~NSE(.x, q_obs$discharge))
   sort(nse_q, decreasing = T) %>% enframe()
   
-  # calculate the simulated fluxes from concs and flows for all sims
   flux_sim <- sim_bac[c(97:167),c(-1)]*
     sim_q[c(97:167), c(-1)]*10^4
   
-  #merge simulated and observed fluxes, calculate nses for all sims
   nse_flux <- flux_sim %>%
     map_dbl(., ~NSE(.x, flux_obs[,1]))
   sort(nse_flux, decreasing = T) %>% enframe()
     
   #calculate average nse of conc, flow and flux for all sims
   calculate_mean_nses()
-  #calculate average nse of conc, flow and flux for all sims
   nse_mean_calc <- matrix(data=NA, nrow=previous_nsims, ncol=1)
   for(i in 1:previous_nsims){
-    #print(i)
     nse_mean_calc[i] <- mean(c(nse_bac[i], nse_q[i], nse_flux[i]))
   }
   sort(nse_mean_calc, decreasing = T) %>% enframe()
@@ -182,7 +183,7 @@ for(iter in startgen:ngens){
     gather(key = "par", value = "parameter_range")
   
   # print the distributions
-  #save_kde_pdf()
+  save_kde_pdf()
 
   # find the median score that will be used for the next generation
   new_median_score <- median(nse_mean_keepers)
@@ -194,6 +195,24 @@ for(iter in startgen:ngens){
   #fit to the normal distribution, truncate at the original range limits for each parameter.
   # fit the new distributions assuming normality from the keepers
   fit_normal_parameters()
+  fitted_CN2 <- fitdist(sim_pars_keepers$CN2, "norm")
+  fitted_GWQMN <- fitdist(sim_pars_keepers$GWQMN, "norm")
+  fitted_ALPHA_BNK <- fitdist(sim_pars_keepers$ALPHA_BNK, "norm")
+  fitted_CH_K2 <- fitdist(sim_pars_keepers$CH_K2, "norm")
+  fitted_CH_N2 <- fitdist(sim_pars_keepers$CH_N2, "norm")
+  fitted_TRNSRCH <- fitdist(sim_pars_keepers$TRNSRCH, "norm")
+  fitted_CH_N1 <- fitdist(sim_pars_keepers$CH_N1, "norm")
+  fitted_CH_K1 <- fitdist(sim_pars_keepers$CH_K1, "norm")
+  fitted_RCHRG_DP <- fitdist(sim_pars_keepers$RCHRG_DP, "norm")
+  fitted_SFTMP <- fitdist(sim_pars_keepers$SFTMP, "norm")
+  fitted_SMTMP <- fitdist(sim_pars_keepers$SMTMP, "norm")
+  fitted_DEP_IMP <- fitdist(sim_pars_keepers$DEP_IMP, "norm")
+  fitted_DDRAIN <- fitdist(sim_pars_keepers$DDRAIN, "norm")
+  fitted_GDRAIN <- fitdist(sim_pars_keepers$GDRAIN, "norm")
+  fitted_BACTKDQ <- fitdist(sim_pars_keepers$BACTKDQ, "norm")
+  fitted_BACT_SWF<- fitdist(sim_pars_keepers$BACT_SWF, "norm")
+  fitted_THBACT <- fitdist(sim_pars_keepers$THBACT, "norm")
+  fitted_WDPRCH <- fitdist(sim_pars_keepers$WDPRCH, "norm")
   
   #reset nsims based on acceptance frequency of last generation
   new_nsims <- max(10000, round(n_to_keep/proportion_kept)*2)
@@ -203,11 +222,34 @@ for(iter in startgen:ngens){
   sample_truncated_normals()  
 
   # create tibble for next generation of monte carlo
-  pars <- create_tibble_subsequent()
-  
+  # pars <- create_tibble_subsequent()
+
+  pars <- tibble(#hydrology parameters (11)
+    "CN2.mgt|change = relchg"= runif(new_nsims, -0.25, 0.1),
+    "GWQMN.gw|change = relchg" = runif(new_nsims, -0.5, 2),
+    "ALPHA_BNK.rte|change = absval" =runif(new_nsims, 0, 1),
+    "CH_K2.rte|change = absval" = runif(new_nsims, 0, 500),
+    "CH_N2.rte|change = absval" = runif(new_nsims, 0, 0.3),
+    "TRNSRCH.bsn|change = absval" = runif(new_nsims, 0, 1),
+    "CH_N1.sub|change = absval" = runif(new_nsims, 0.01, 30),
+    "CH_K1.sub|change = absval" = runif(new_nsims, 0, 300),
+    "RCHRG_DP.gw|change = absval" = runif(new_nsims, 0, 1),
+    "SFTMP.bsn|change = absval"= runif(new_nsims, -5, 5),
+    "SMTMP.bsn|change = absval"= runif(new_nsims, -5, 5),
+    #tile drainage and sediments (3)
+    "DEP_IMP.hru|change = absval"= runif(new_nsims, 0, 6000),
+    "DDRAIN.mgt|change = absval"= runif(new_nsims, 0, 2000),
+    "GDRAIN.mgt|change = absval"= runif(new_nsims, 0, 100),
+    #bacteria submodel (4)
+    "BACTKDQ.bsn|change = absval" = runif(new_nsims, 0, 500),
+    "BACT_SWF.bsn|change = absval" = runif(new_nsims, 0, 1),
+    "THBACT.bsn|change = absval"= runif(new_nsims, 0, 10),
+    "WDPRCH.bsn|change = absval"= runif(new_nsims, 0, 1)
+  )
   # run swat
   bac_cal1 <- run_swat_red_cedar(base_dir, pars)
 
   # post-process swat with logging
   post_process_swat()
 }
+
