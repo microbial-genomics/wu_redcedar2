@@ -5,7 +5,7 @@
 #SBATCH --time=60:00:00
 #SBACTH --ntasks=64
 #SBATCH --mem=16g
-#SBARCH --mail-user=wu.huiyun@epa.gov
+#SBARCH --mail-user=purucker.tom@epa.gov
 #SBATCH --mail-type=BEGIN,END
 
 setenv TMPDIR /work/OVERFLOW/RCR/stp/MSU
