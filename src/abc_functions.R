@@ -48,7 +48,7 @@ save_nses_parameters <- function(iter, data_in_dir, nses_parameters){
   print(paste("nses and parameter inputs for generation ", iter, " saved to ", nses_parameters_filename))
 }
 
-calculate_next_nsims <- function(nsims){
+calculate_next_nsims <- function(nsims, n_to_keep, proportion_kept){
   new_nsims <- max(12000, round(n_to_keep/proportion_kept)*2)
   print(paste("next round we will do", new_nsims, "simulations"))
   return(new_nsims)
@@ -206,7 +206,7 @@ fit_normal_parameters <- function(sim_pars_keepers){
 save_fitted_parameter_list <- function(iter, data_in, fitted_parameter_list){
   fitted_parameter_filename <- file.path(data_in_dir,paste("fitted_parameters", iter, ".RData", sep=""))
   save(fitted_parameter_list, file = fitted_parameter_filename)
-  print(paste("fitted psoterior parameters from generation", iter, "saved to file:", fitted_parameter_filename))
+  print(paste("fitted posterior parameters from generation", iter, "saved to file:", fitted_parameter_filename))
 }
 
 load_parameter_input_sims <- function(iter, data_in_dir){

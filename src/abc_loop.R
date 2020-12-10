@@ -73,7 +73,7 @@ load_observations()
 
 # preset the generations to be simulated
 # stargen = 0 means starting from scratch
-startgen <- 0
+startgen <- 1
 ngens <- 40
 
 # every generation will have 5000 accepted particles
@@ -128,64 +128,64 @@ for(iter in startgen:ngens){
     generation_stats <- update_generation_stats(iter, generation_stats, next_nsims, max(nse_mean), next_median_score)
     save_generation_stats(iter, data_in_dir, generation_stats)
   }else{
-  #
-  ### subsequent runs from iter <- 1
-  #number to keep each generation
-  n_to_keep <- 5000 
-  #load current generation stats
-  load_generation_stats(iter, data_in_dir)
-  #get nsims for this iteration
-  nsims_todo <- generation_stats$nsims[iter+1]
-  #load parameter_input_sims
-  load_parameter_input_sims(iter, data_in_dir)
-  #assign parameters to input tibble
-  pars_subsequent <- create_next_sim_tibble(parameter_input_sims)
-  # run the swat simulations for this iteration
-  bac_cal_output <- simulate_generation_zero(nsims_todo, swat_path, base_dir, pars_subsequent)  
-  # save output to disk
-  save_bac_cal_output(iter, bac_cal_output)
-  #get parameter names and values
-  sim_pars <- bac_cal_output$parameter$values
-  # calculate various nses
-  nse_bac <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
-  nse_q <- calculate_nse_q(iter, bac_cal_output, q_obs)
-  nse_flux <- calculate_nse_flux(iter, bac_cal_output, bac_obs, q_obs)
-  # calculate nse means
-  nse_mean <- calculate_nse_mean(iter, nse_bac, nse_q, nse_flux)
-  # find the top 5k
-  #use the median score from the last generation to sort the keepers
-  previous_median_score <- get_cutoff_median_score(iter, generation_stats)
-  #determine the first 5k to keep, combine keeper nses w parameters into a df
-  all_keepers <- which(nse_mean > previous_median_score)
-  n_all_keepers <- length(all_keepers)
-  valid_keepers <- head(all_keepers, n = n_to_keep)
-  nses_w_parameters <- cbind(nse_bac[valid_keepers], nse_flux[valid_keepers], nse_q[valid_keepers], nse_mean[valid_keepers], sim_pars[valid_keepers])
-  ## find the updated unweighted kernel densities based on these new 5k simulations
-  #kde_next_gen <- sim_pars_keepers %>% 
-  #  gather(key = "par", value = "parameter_range")
-  ## print the distributions
-  #save_kde_pdf()  
-  #save nses_parameters
-  save_nses_parameters(iter, data_in_dir, nses_w_parameters)
-  # calculate median score
-  next_median_score <- median(nses_w_parameters$nse_mean)
-  # save next median score for future use
-  update_cutoff_median_score(iter, generation_stats, next_median_score)
-  # log results
-  log_results(iter, cutoff_median_score, nsims, nsims, nse_mean,
-              nse_bac, nse_q, nse_flux, next_median_score)
-  # update and save parameter inputs
-  fitted_parameter_list <- fit_normal_parameters(sim_pars)
-  save_fitted_parameter_list(iter, data_in, fitted_parameter_list)
-  # calculate nsims for next generation
-  proportion_kept <- n_all_keepers/nsims_todo
-  next_nsims <- calculate_next_nsims(proportion_kept)
-  # sample from input distributions for next generation
-  parameter_input_sims <- sample_truncated_normals(iter, next_nsims, fitted_parameter_list)
-  # save parameter inputs for next round of simulations
-  save_parameter_input_sims(iter, data_in_dir, parameter_input_sims)
-  # save stats for next generation
-  generation_stats <- update_generation_stats(iter, generation_stats, next_nsims, max(nse_mean), next_median_score)
-  save_generation_stats(iter, data_in_dir, generation_stats)
+    #
+    ### subsequent runs from iter <- 1
+    #number to keep each generation
+    n_to_keep <- 5000 
+    #load current generation stats
+    load_generation_stats(iter, data_in_dir)
+    #get nsims for this iteration
+    nsims_todo <- generation_stats$nsims[iter+1]
+    #load parameter_input_sims
+    load_parameter_input_sims(iter, data_in_dir)
+    #assign parameters to input tibble
+    pars_subsequent <- create_next_sim_tibble(parameter_input_sims)
+    # run the swat simulations for this iteration
+    bac_cal_output <- simulate_generation_zero(nsims_todo, swat_path, base_dir, pars_subsequent)  
+    # save output to disk
+    save_bac_cal_output(iter, bac_cal_output)
+    #get parameter names and values
+    sim_pars <- bac_cal_output$parameter$values
+    # calculate various nses
+    nse_bac <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
+    nse_q <- calculate_nse_q(iter, bac_cal_output, q_obs)
+    nse_flux <- calculate_nse_flux(iter, bac_cal_output, bac_obs, q_obs)
+    # calculate nse means
+    nse_mean <- calculate_nse_mean(iter, nse_bac, nse_q, nse_flux)
+    # find the top 5k
+    #use the median score from the last generation to sort the keepers
+    previous_median_score <- get_cutoff_median_score(iter, generation_stats)
+    #determine the first 5k to keep, combine keeper nses w parameters into a df
+    all_keepers <- which(nse_mean > previous_median_score)
+    n_all_keepers <- length(all_keepers)
+    valid_keepers <- head(all_keepers, n = n_to_keep)
+    nses_w_parameters <- cbind(nse_bac[valid_keepers], nse_flux[valid_keepers], nse_q[valid_keepers], nse_mean[valid_keepers], sim_pars[valid_keepers])
+    ## find the updated unweighted kernel densities based on these new 5k simulations
+    #kde_next_gen <- sim_pars_keepers %>% 
+    #  gather(key = "par", value = "parameter_range")
+    ## print the distributions
+    #save_kde_pdf()  
+    #save nses_parameters
+    save_nses_parameters(iter, data_in_dir, nses_w_parameters)
+    # calculate median score
+    next_median_score <- median(nses_w_parameters$nse_mean)
+    # save next median score for future use
+    update_cutoff_median_score(iter, generation_stats, next_median_score)
+    # log results
+    log_results(iter, cutoff_median_score, nsims, nsims, nse_mean,
+                nse_bac, nse_q, nse_flux, next_median_score)
+    # update and save parameter inputs
+    fitted_parameter_list <- fit_normal_parameters(sim_pars)
+    save_fitted_parameter_list(iter, data_in, fitted_parameter_list)
+    # calculate nsims for next generation
+    proportion_kept <- n_all_keepers/nsims_todo
+    next_nsims <- calculate_next_nsims(proportion_kept, n_to_keep, proportion_kept)
+    # sample from input distributions for next generation
+    parameter_input_sims <- sample_truncated_normals(iter, next_nsims, fitted_parameter_list)
+    # save parameter inputs for next round of simulations
+    save_parameter_input_sims(iter, data_in_dir, parameter_input_sims)
+    # save stats for next generation
+    generation_stats <- update_generation_stats(iter, generation_stats, next_nsims, max(nse_mean), next_median_score)
+    save_generation_stats(iter, data_in_dir, generation_stats)
 }
 }
