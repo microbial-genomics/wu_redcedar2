@@ -127,8 +127,7 @@ for(iter in startgen:ngens){
     # save stats for next generation
     generation_stats <- update_generation_stats(iter, generation_stats, next_nsims, max(nse_mean), next_median_score)
     save_generation_stats(iter, data_in_dir, generation_stats)
-  }
-}else{
+  }else{
   #
   ### subsequent runs from iter <- 1
   #number to keep each generation
@@ -189,4 +188,4 @@ for(iter in startgen:ngens){
   generation_stats <- update_generation_stats(iter, generation_stats, next_nsims, max(nse_mean), next_median_score)
   save_generation_stats(iter, data_in_dir, generation_stats)
 }
-
+}
