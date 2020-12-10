@@ -73,7 +73,7 @@ load_observations()
 
 # preset the generations to be simulated
 # stargen = 0 means starting from scratch
-startgen <- 1
+startgen <- 0
 ngens <- 40
 
 # every generation will have 5000 accepted particles
