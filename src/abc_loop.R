@@ -119,7 +119,7 @@ for(iter in startgen:ngens){
     save_fitted_parameter_list(iter, data_in, fitted_parameter_list)
     # calculate nsims for next generation
     proportion_kept <- nsims/nsims
-    next_nsims <- calculate_next_nsims(proportion_kept)
+    next_nsims <- calculate_next_nsims(nsims, proportion_kept)
     # sample from input distributions for next generation
     parameter_input_sims <- sample_truncated_normals(iter, next_nsims, fitted_parameter_list)
     # save parameter inputs for next round of simulations
@@ -179,7 +179,7 @@ for(iter in startgen:ngens){
     save_fitted_parameter_list(iter, data_in, fitted_parameter_list)
     # calculate nsims for next generation
     proportion_kept <- n_all_keepers/nsims_todo
-    next_nsims <- calculate_next_nsims(proportion_kept, n_to_keep, proportion_kept)
+    next_nsims <- calculate_next_nsims(n_to_keep, proportion_kept)
     # sample from input distributions for next generation
     parameter_input_sims <- sample_truncated_normals(iter, next_nsims, fitted_parameter_list)
     # save parameter inputs for next round of simulations

@@ -48,7 +48,7 @@ save_nses_parameters <- function(iter, data_in_dir, nses_parameters){
   print(paste("nses and parameter inputs for generation ", iter, " saved to ", nses_parameters_filename))
 }
 
-calculate_next_nsims <- function(nsims, n_to_keep, proportion_kept){
+calculate_next_nsims <- function(n_to_keep, proportion_kept){
   new_nsims <- max(12000, round(n_to_keep/proportion_kept)*2)
   print(paste("next round we will do", new_nsims, "simulations"))
   return(new_nsims)
