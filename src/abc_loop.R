@@ -78,10 +78,8 @@ ngens <- 40
 
 # start the loop here
 for(iter in startgen:ngens){
-  
-  #will be NA for generation 0 because not needed
+  #will be NA for generation 0 because not needed, this routine will clear out the vector though
   cutoff_median_score <- get_cutoff_median_score(iter)
- 
   #  first (zeroeth) generation
   if(iter==0){
     # every generation will have 5000 accepted particles
@@ -94,30 +92,45 @@ for(iter in startgen:ngens){
     bac_cal_output <- simulate_generation_zero(nsims, swat_path, base_dir, pars_initial)
     # save output to disk
     save_bac_cal_output(iter, bac_cal_output)
+    #get parameter names and values
+    sim_pars <- bac_cal_output$parameter$values
     # calculate various nses
-    nse_simulations_v_observations(bac_cal_output, bac_obs, q_obs, flux_obs)
+    nse_bac <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
+    nse_q <- calculate_nse_q(iter, bac_cal_output, q_obs)
+    nse_flux <- calculate_nse_flux(iter, bac_cal_output, bac_obs, q_obs)
     # calculate nse means
-    
+    nse_mean <- calculate_nse_mean(iter, nse_bac, nse_q, nse_flux)
+    #combine nses w parameters
+    nses_w_parameters <- cbind(nse_bac, nse_flux, nse_q, nse_mean, sim_pars)
     # calculate median score
-    
-    # update parameter inputs
-    
+    next_median_score <- median(nses_w_parameters$nse_mean)
+    # save next median score for future use
+    save_cutoff_median_score(iter, data_in_dir, next_median_score)
+    # log results
+    log_results(iter, cutoff_median_score, nsims, nsims, nse_mean,
+                nse_bac, nse_q, nse_flux, next_median_score)
+    # update and save parameter inputs
+    fitted_parameter_list <- fit_normal_parameters(sim_pars)
+    save_fitted_parameter_list(iter, data_in, fitted_parameter_list)
+    # calculate nsims for next generation
+    #TODO
+    # sample from input distributions for next generation
+    parameter_input_sims <- sample_truncated_normals(iter, new_nsims, fitted_parameter_list)
+    save_parameter_input_sims(iter, data_in, parameter_input_sims) #TODO
   }
-}
-else{
+}else{
   #
   ### subsequent runs
   #load in last set of simulations
   # list with parameter and simulation elements
- # load_previous_swat_simulations()
-  bac_cal_filename <- paste('bac_cal', iter-1, '.RData', sep="")
-  rdata_file_in <- file.path(data_in_dir, bac_cal_filename)
-  print(paste("loading data file: ", rdata_file_in))
-  load(file = rdata_file_in)
+  load_previous_swat_simulations(iter, data_in_dir)
+
   
   
+  #determine number of simulations last time
+  length(bac_cal_output$simulation$bac_out)
   #set variables
-  previous_nsims <- ncol(bac_cal1$simulation$bac_out) - 1
+  previous_nsims <- ncol(bac_cal_output$simulation$bac_out) - 1
   print(paste("the last generation ", iter-1, " had ", previous_nsims, " sims"))
   n_to_keep <- 5000 #number to keep each generation
   

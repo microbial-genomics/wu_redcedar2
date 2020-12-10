@@ -14,15 +14,17 @@ get_cutoff_median_score <- function(iter){
   # otherwise we will save it after every loop
   cutoff_median_filename <- file.path(data_in_dir,"cutoff_median_scores.RData")
   if(iter==0){
-    cutoff_median_score <- rep(NA, 40) # if we are starting over at gen 0 we need to delete past scores
-    save(cutoff_median_score, file = cutoff_median_filename)
+    cutoff_median_score_all <- rep(NA, 40) # if we are starting over at gen 0 we need to delete past scores
+    save(cutoff_median_score_all, file = cutoff_median_filename)
     return_cutoff_median <- NA # we do not need to save this because median score is not used for gen 0
+    print("generation 0: cutoff scores have been cleared")
   }else{
     # if starting at gen greater than zero we will 
     # calculate it based on the output of the previous generation,
     # but we load it to make sure the vector exists when we save it later
     load(file= cutoff_median_filename, .GlobalEnv)
-    return_cutoff_median <- cutoff_median_score[iter] #get the cutoff that was saved at the last generation
+    return_cutoff_median <- cutoff_median_score_all[iter] #get the cutoff that was saved at the last generation
+    print(paste("cutoff score to be used for generation ", iter, " = ", return_cutoff_median))
   }
   return(return_cutoff_median)
 }
@@ -52,28 +54,6 @@ create_tibble_initial <- function(nsims){
   )
 }
 
-#create_tibble_subsequent(){
-#   tibble(
-#    "CN2.mgt|change = relchg"= CN2,
-#    "GWQMN.gw|change = relchg" = GWQMN,
-#    "ALPHA_BNK.rte|change = absval" = ALPHA_BNK,
-#    "CH_K2.rte|change = absval" = CH_K2,
-#    "CH_N2.rte|change = absval" = CH_N2,
-#    "TRNSRCH.bsn|change = absval" = TRNSRCH,
-#    "CH_N1.sub|change = absval" = CH_N1,
-#    "CH_K1.sub|change = absval" = CH_K1,
-#    "RCHRG_DP.gw|change = absval" = RCHRG_DP,
-#    "SFTMP.bsn|change = absval"= SFTMP,
-#    "SMTMP.bsn|change = absval"= SMTMP,
-#    "DEP_IMP.hru|change = absval"= DEP_IMP,
-#    "DDRAIN.mgt|change = absval"= DDRAIN,
-#    "GDRAIN.mgt|change = absval"= GDRAIN,
-#    "BACTKDQ.bsn|change = absval" = BACTKDQ,
-#    "BACT_SWF.bsn|change = absval" = BACT_SWF,
-#    "THBACT.bsn|change = absval"= THBACT,
-#    "WDPRCH.bsn|change = absval"= WDPRCH)
-#}
-
 simulate_generation_zero <- function(nsims, swat_path, base_dir, pars_initial){
   # run the initial set of swat simulations
   print(paste("About to run generation 0 with", nsims, "simulations"))
@@ -100,88 +80,73 @@ run_swat_red_cedar <- function(swat_path, swat_parameters){
 save_bac_cal_output <- function(iter, bac_cal_output){
   rdata_out_filename <- paste('bac_cal', iter, '.RData', sep = "")
   rdata_file_out <- file.path(data_in_dir, rdata_out_filename)
-  save(bac_cal1, file=rdata_file_out)
+  save(bac_cal_output, file=rdata_file_out)
   print(paste("rdata file for generation ", iter, " saved to ", rdata_file_out))
 }
 
-post_process_swat <- function(iter){
-  previous_median_score[iter] = new_median_score
-  write.csv(previous_median_score, file = median_filename)
-  print(paste("the median score cutoff used to create particles for generation ", iter, " was ", previous_median_score))
-}
-
-calculate_mean_nses <- function(){
-  nse_mean_calc <- matrix(data=NA, nrow=previous_nsims, ncol=1)
-  for(i in 1:previous_nsims){
-    #print(i)
-    nse_mean_calc[i] <- mean(c(nse_bac[i], nse_q[i], nse_flux[i]))
-  }
-  sort(nse_mean_calc, decreasing = T) %>% enframe()
-  
-  #create new df with average of the 3 nses for all sims
-  run <- c(1:previous_nsims)
-  nse_mean <-cbind(run, nse_mean_calc)
-  colnames(nse_mean)<-c("run", "nse_mean")
-}
-
-save_kde_pdf <- function(){
-  ggplot(data = kde_next_gen) +
-    geom_density(aes(x = parameter_range)) +
-    facet_wrap(.~par, nrow=5, scales = "free") +
-    theme_bw()
-  density_plot_filename <- paste("kde_mcabc_gen", iter, ".pdf", sep="")
-  ggsave(file.path(graphics_dir, density_plot_filename))  
-}
-
-
-
-log_results <- function(){
-  print(paste("Generation ", iter-1))
-  print(paste("median score for the last generation was:", previous_median_score))
-  print(paste("generation x:",n_all_keepers, "of", format(previous_nsims,scientific=F), " simulations kept; proportion kept =", round(proportion_kept,4)))
-  print(paste("best kept mean nse for this generation is:", max(round(nse_mean_keepers,4))))
-  print(paste("best bacteria nse for this generation is:", max(round(nse_bac,4))))
-  print(paste("best flow nse for this generation is:", max(round(nse_q,4))))
-  print(paste("best flux nse for this generation is:", max(round(nse_flux,4))))
-  print(paste("median mean nse score for this generation is:", round(new_median_score,4)))
-}
-
-load_previous_swat_simulations <- function(){
-  bac_cal_filename <- paste('bac_cal', iter-1, '.RData', sep="")
-  rdata_file_in <- file.path(data_in_dir, bac_cal_filename)
-  print(paste("loading data file: ", rdata_file_in))
-  load(file = rdata_file_in)
-  
-  #determine number of simulations last time
-  dim(bac_cal1$simulation$bac_out)
-}
-
-nse_simulations_v_observations <- function(bac_cal_output, bac_obs, q_obs, flux_obs){
-  #load the simulated concentrations, flows, inputs for last simulations
+calculate_nse_bac <- function(iter, bac_cal_output, bac_obs){
+  #load the simulated concentrations for last simulations
   sim_bac <- bac_cal_output$simulation$bac_out
-  sim_q <- bac_cal_output$simulation$q_out
-  sim_pars <- bac_cal_output$parameter$values
-  
   # merge simulated and observed bacteria concentrations, calculate nses for all sims
   nse_bac <- right_join(sim_bac,bac_obs,by="date")%>%
     dplyr::select(-date) %>% dplyr::select(-bacteria) %>%
     map_dbl(., ~NSE(.x, bac_obs$bacteria))
-  sort(nse_bac, decreasing = T) %>% enframe()
+  print(paste("best overall bacteria nse =", round(max(nse_bac),3), "for generation", iter))
+  return(nse_bac)
+}
   
+calculate_nse_q <- function(iter, bac_cal_output, q_obs){
+  #load the simulated flows, inputs for last simulations
+  sim_q <- bac_cal_output$simulation$q_out
   # merge simulated and observed flows, calculate nses for all sims
   nse_q <- right_join(sim_q,q_obs,by="date") %>%
     dplyr::select(-date) %>% dplyr::select(-discharge) %>%
     map_dbl(., ~NSE(.x, q_obs$discharge))
-  sort(nse_q, decreasing = T) %>% enframe()
-  
+  print(paste("best overall flow nse =", round(max(nse_q),3), "for generation", iter))
+  return(nse_q)
+}
+
+calculate_nse_flux <- function(iter, bac_cal_output, bac_obs, q_obs){  
+  #load the simulated concentrations for last simulations
+  sim_bac <- bac_cal_output$simulation$bac_out
+  sim_q <- bac_cal_output$simulation$q_out
   # calculate the simulated fluxes from concs and flows for all sims
   flux_sim <- sim_bac[c(97:167),c(-1)]*
     sim_q[c(97:167), c(-1)]*10^4
-  
   #merge simulated and observed fluxes, calculate nses for all sims
   nse_flux <- flux_sim %>%
     map_dbl(., ~NSE(.x, flux_obs[,1]))
-  sort(nse_flux, decreasing = T) %>% enframe()
+  print(paste("best overall flux nse =", round(max(nse_flux),3), "for generation", iter))
+  return(nse_flux)
+}
+
+calculate_nse_mean <- function(iter, nse_mean, nse_q, nse_flux){
+  # calculate nse means
+  nse_mean <- rowMeans(cbind(nse_bac, nse_q, nse_flux))
+  print(paste("best overall mean nse =", round(max(nse_mean),3), "for generation", iter))
+  return(nse_mean)
+}
+
+save_cutoff_median_score <- function(iter, data_in_dir, cutoff_median_score){
+  cutoff_median_filename <- file.path(data_in_dir,"cutoff_median_scores.RData")
+  load(cutoff_median_filename)
+  cutoff_median_score_all[iter + 1] <- cutoff_median_score
+  save(cutoff_median_score_all, file = cutoff_median_filename)
+  print(paste("cutoff score from generation", iter, "=", round(cutoff_median_score_all[iter + 1],6), "and will be used next generation"))
+  print(paste("cutoffs:", round(cutoff_median_score_all,6)))
+}
+
+log_results <- function(iter, previous_median_score, n_all_keepers, previous_nsims, nse_mean_keepers,
+                        nse_bac, nse_q, nse_flux, new_median_score){
+  print(paste("Generation ", iter-1))
+  print(paste("median score from the last generation was:", previous_median_score))
+  proportion_kept <- n_all_keepers/previous_nsims
+  print(paste("generation x:",n_all_keepers, "of", format(previous_nsims,scientific=F), " simulations kept; proportion kept =", round(proportion_kept,4)))
+  print(paste("best kept mean nse for this generation is:", max(round(nse_mean_keepers,4))))
+  print(paste("best kept bacteria nse for this generation is:", max(round(nse_bac,4))))
+  print(paste("best kept flow nse for this generation is:", max(round(nse_q,4))))
+  print(paste("best kept flux nse for this generation is:", max(round(nse_flux,4))))
+  print(paste("median mean nse score to be used for the next generation is:", round(new_median_score,4)))
 }
 
 fit_normal_parameters <- function(sim_pars_keepers){
@@ -203,9 +168,28 @@ fit_normal_parameters <- function(sim_pars_keepers){
   fitted_BACT_SWF<- fitdist(sim_pars_keepers$BACT_SWF, "norm")
   fitted_THBACT <- fitdist(sim_pars_keepers$THBACT, "norm")
   fitted_WDPRCH <- fitdist(sim_pars_keepers$WDPRCH, "norm")
+  return(list(fitted_CN2, fitted_GWQMN, fitted_ALPHA_BNK, fitted_CH_K2, fitted_CH_N2,
+              fitted_TRNSRCH, fitted_CH_N1, fitted_CH_K1, fitted_RCHRG_DP, fitted_SFTMP,
+              fitted_SMTMP, fitted_DEP_IMP, fitted_DDRAIN, fitted_GDRAIN, fitted_BACTKDQ,
+              fitted_BACT_SWF, fitted_THBACT, fitted_WDPRCH))
 }
 
-sample_truncated_normals <- function(){
+save_fitted_parameter_list <- function(iter, data_in, fitted_parameter_list){
+  fitted_parameter_filename <- file.path(data_in_dir,paste("fitted_parameters", iter, ".RData", sep=""))
+  save(fitted_parameter_list, file = fitted_parameter_filename)
+  print(paste("fitted parameters from generation", iter, "saved to file:", fitted_parameter_filename))
+  
+}
+
+load_previous_swat_simulations <- function(iter, data_in_dir){
+  bac_cal_filename <- paste('bac_cal', iter-1, '.RData', sep="")
+  rdata_file_in <- file.path(data_in_dir, bac_cal_filename)
+  print(paste("loading data file: ", rdata_file_in))
+  load(file = rdata_file_in, .GlobalEnv)
+}
+
+sample_truncated_normals <- function(iter, new_nsims, fitted_parameter_list){
+  fitted_CN2 <- fitted_parameter_list[[1]]
   CN2_mean <- fitted_CN2$estimate[1]
   CN2_sd <- fitted_CN2$estimate[2]
   print(paste("generation", iter, "CN2", round(CN2_mean,3), round(CN2_sd,3)))
@@ -215,6 +199,7 @@ sample_truncated_normals <- function(){
   # #     estimate  Std. Error
   # mean 0.4499712 0.007905126
   # sd   0.5589768 0.005589688
+  fitted_GWQMN <- fitted_parameter_list[[2]]
   GWQMN_mean <- fitted_GWQMN$estimate[1]
   GWQMN_sd <- fitted_GWQMN$estimate[2]
   print(paste("generation", iter, "GWQMN", round(GWQMN_mean,3), round(GWQMN_sd,3)))
@@ -225,6 +210,7 @@ sample_truncated_normals <- function(){
   # estimate  Std. Error
   # mean 0.4911617 0.003369632
   # sd   0.2382690 0.002382501
+  fitted_ALPHA_BNK <- fitted_parameter_list[[3]]
   ALPHA_BNK_mean <- fitted_ALPHA_BNK$estimate[1]
   ALPHA_BNK_sd <- fitted_ALPHA_BNK$estimate[2]
   print(paste("generation", iter, "ALPHA_BNK", round(ALPHA_BNK_mean,3), round(ALPHA_BNK_sd,3)))
@@ -235,6 +221,7 @@ sample_truncated_normals <- function(){
   # estimate Std. Error
   # mean 27.90991  0.1635768
   # sd   11.56662  0.1156662
+  fitted_CH_K2 <- fitted_parameter_list[[4]]
   CH_K2_mean <- fitted_CH_K2$estimate[1]
   CH_K2_sd <- fitted_CH_K2$estimate[2]
   print(paste("generation", iter, "CH_K2", round(CH_K2_mean,3), round(CH_K2_sd,3)))
@@ -244,6 +231,7 @@ sample_truncated_normals <- function(){
   # estimate   Std. Error
   # mean 0.10415042 0.0003312391
   # sd   0.02342214 0.0002323030
+  fitted_CH_N2 <- fitted_parameter_list[[5]]
   CH_N2_mean <- fitted_CH_N2$estimate[1]
   CH_N2_sd <- fitted_CH_N2$estimate[2]
   print(paste("generation", iter, "CH_N2", round(CH_N2_mean,3), round(CH_N2_sd,3)))
@@ -253,6 +241,7 @@ sample_truncated_normals <- function(){
   # estimate   Std. Error
   # mean 0.17602745 0.0009794462
   # sd   0.06925731 0.0006919234
+  fitted_TRNSRCH <- fitted_parameter_list[[6]]
   TRNSRCH_mean <- fitted_TRNSRCH$estimate[1]
   TRNSRCH_sd <- fitted_TRNSRCH$estimate[2]
   print(paste("generation", iter, "TRNSRCH", round(TRNSRCH_mean,3), round(TRNSRCH_sd,3)))
@@ -262,6 +251,7 @@ sample_truncated_normals <- function(){
   # estimate   Std. Error
   # mean 0.09991472 0.0003314811
   # sd   0.02343925 0.0002324755
+  fitted_CH_N1 <- fitted_parameter_list[[7]]
   CH_N1_mean <- fitted_CH_N1$estimate[1]
   CH_N1_sd <- fitted_CH_N1$estimate[2]
   print(paste("generation", iter, "CH_N1", round(CH_N1_mean,3), round(CH_N1_sd,3)))
@@ -271,6 +261,7 @@ sample_truncated_normals <- function(){
   # estimate Std. Error
   # mean 158.93894  0.9599238
   # sd    67.87685  0.6787685
+  fitted_CH_K1 <- fitted_parameter_list[[8]]
   CH_K1_mean <- fitted_CH_K1$estimate[1]
   CH_K1_sd <- fitted_CH_K1$estimate[2]
   print(paste("generation", iter, "CH_K1", round(CH_K1_mean,3), round(CH_K1_sd,3)))
@@ -280,6 +271,7 @@ sample_truncated_normals <- function(){
   # estimate  Std. Error
   # mean 0.4808134 0.003439768
   # sd   0.2432284 0.002432099
+  fitted_RCHRG_DP <- fitted_parameter_list[[9]]
   RCHRG_DP_mean <- fitted_RCHRG_DP$estimate[1]
   RCHRG_DP_sd <- fitted_RCHRG_DP$estimate[2]
   print(paste("generation", iter, "RCHRG_DP", round(RCHRG_DP_mean,3), round(RCHRG_DP_sd,3)))
@@ -289,6 +281,7 @@ sample_truncated_normals <- function(){
   # estimate Std. Error
   # mean 0.1230878 0.03301559
   # sd   2.3345547 0.02334553
+  fitted_SFTMP <- fitted_parameter_list[[10]]
   SFTMP_mean <- fitted_SFTMP$estimate[1]
   SFTMP_sd <- fitted_SFTMP$estimate[2]
   print(paste("generation", iter, "SFTMP", round(SFTMP_mean,3), round(SFTMP_sd,3)))
@@ -298,6 +291,7 @@ sample_truncated_normals <- function(){
   # estimate Std. Error
   # mean 0.1653056 0.03339191
   # sd   2.3611645 0.02361163
+  fitted_SMTMP <- fitted_parameter_list[[11]]
   SMTMP_mean <- fitted_SMTMP$estimate[1]
   SMTMP_sd <- fitted_SMTMP$estimate[2]
   print(paste("generation", iter, "SMTMP", round(SMTMP_mean,3), round(SMTMP_sd,3)))
@@ -307,6 +301,7 @@ sample_truncated_normals <- function(){
   # estimate Std. Error
   # mean 3667.422   18.83298
   # sd   1331.808   13.31908
+  fitted_DEP_IMP <- fitted_parameter_list[[12]]
   DEP_IMP_mean <- fitted_DEP_IMP$estimate[1]
   DEP_IMP_sd <- fitted_DEP_IMP$estimate[2]
   print(paste("generation", iter, "DEP_IMP", round(DEP_IMP_mean,3), round(DEP_IMP_sd,3)))
@@ -316,6 +311,7 @@ sample_truncated_normals <- function(){
   # estimate Std. Error
   # mean 902.7242   6.710620
   # sd   474.4889   4.744931
+  fitted_DDRAIN <- fitted_parameter_list[[13]]
   DDRAIN_mean <- fitted_DDRAIN$estimate[1]
   DDRAIN_sd <- fitted_DDRAIN$estimate[2]
   print(paste("generation", iter, "DDRAIN", round(DDRAIN_mean,3), round(DDRAIN_sd,3)))
@@ -325,6 +321,7 @@ sample_truncated_normals <- function(){
   # estimate Std. Error
   # mean 53.36850  0.3311553
   # sd   23.41622  0.2341622
+  fitted_GDRAIN <- fitted_parameter_list[[14]]
   GDRAIN_mean <- fitted_GDRAIN$estimate[1]
   GDRAIN_sd <- fitted_GDRAIN$estimate[2]
   print(paste("generation", iter, "GDRAIN", round(GDRAIN_mean,3), round(GDRAIN_sd,3)))
@@ -334,6 +331,7 @@ sample_truncated_normals <- function(){
   # estimate Std. Error
   # mean 284.6590   1.550853
   # sd   109.6619   1.096619
+  fitted_BACTKDQ <- fitted_parameter_list[[15]]
   BACTKDQ_mean <- fitted_BACTKDQ$estimate[1]
   BACTKDQ_sd <- fitted_BACTKDQ$estimate[2]
   print(paste("generation", iter, "BACTKDQ", round(BACTKDQ_mean,3), round(BACTKDQ_sd,3)))
@@ -343,6 +341,7 @@ sample_truncated_normals <- function(){
   # estimate  Std. Error
   # mean 0.4287223 0.003284534
   # sd   0.2322516 0.002322323
+  fitted_BACT_SWF <- fitted_parameter_list[[16]]
   BACT_SWF_mean <- fitted_BACT_SWF$estimate[1]
   BACT_SWF_sd <- fitted_BACT_SWF$estimate[2]
   print(paste("generation", iter, "BACT_SWF", round(BACT_SWF_mean,3), round(BACT_SWF_sd,3)))
@@ -352,6 +351,7 @@ sample_truncated_normals <- function(){
   # estimate Std. Error
   # mean 1.384695 0.02367388
   # sd   1.673996 0.01673994
+  fitted_THBACT <- fitted_parameter_list[[17]]
   THBACT_mean <- fitted_THBACT$estimate[1]
   THBACT_sd <- fitted_THBACT$estimate[2]
   print(paste("generation", iter, "THBACT", round(THBACT_mean,3), round(THBACT_sd,3)))
@@ -361,10 +361,51 @@ sample_truncated_normals <- function(){
   # estimate  Std. Error
   # mean 0.5643253 0.003093901
   # sd   0.2187718 0.002187513
+  fitted_WDPRCH <- fitted_parameter_list[[18]]
   WDPRCH_mean <- fitted_WDPRCH$estimate[1]
   WDPRCH_sd <- fitted_WDPRCH$estimate[2]
   print(paste("generation", iter, "WDPRCH", round(WDPRCH_mean,3), round(WDPRCH_sd,3)))
   WDPRCH <- rtruncnorm(new_nsims, 0, 1, mean = WDPRCH_mean, sd = WDPRCH_sd)
   
 }
+
+########################################################
+post_process_swat <- function(iter){
+  previous_median_score[iter] = new_median_score
+  write.csv(previous_median_score, file = median_filename)
+  print(paste("the median score cutoff used to create particles for generation ", iter, " was ", previous_median_score))
+}
+
+save_kde_pdf <- function(){
+  ggplot(data = kde_next_gen) +
+    geom_density(aes(x = parameter_range)) +
+    facet_wrap(.~par, nrow=5, scales = "free") +
+    theme_bw()
+  density_plot_filename <- paste("kde_mcabc_gen", iter, ".pdf", sep="")
+  ggsave(file.path(graphics_dir, density_plot_filename))  
+}
+
+
+
   
+#create_tibble_subsequent(){
+#   tibble(
+#    "CN2.mgt|change = relchg"= CN2,
+#    "GWQMN.gw|change = relchg" = GWQMN,
+#    "ALPHA_BNK.rte|change = absval" = ALPHA_BNK,
+#    "CH_K2.rte|change = absval" = CH_K2,
+#    "CH_N2.rte|change = absval" = CH_N2,
+#    "TRNSRCH.bsn|change = absval" = TRNSRCH,
+#    "CH_N1.sub|change = absval" = CH_N1,
+#    "CH_K1.sub|change = absval" = CH_K1,
+#    "RCHRG_DP.gw|change = absval" = RCHRG_DP,
+#    "SFTMP.bsn|change = absval"= SFTMP,
+#    "SMTMP.bsn|change = absval"= SMTMP,
+#    "DEP_IMP.hru|change = absval"= DEP_IMP,
+#    "DDRAIN.mgt|change = absval"= DDRAIN,
+#    "GDRAIN.mgt|change = absval"= GDRAIN,
+#    "BACTKDQ.bsn|change = absval" = BACTKDQ,
+#    "BACT_SWF.bsn|change = absval" = BACT_SWF,
+#    "THBACT.bsn|change = absval"= THBACT,
+#    "WDPRCH.bsn|change = absval"= WDPRCH)
+#}
