@@ -1,119 +1,8 @@
 
-load_observations <- function(){
-  load(file= file.path(data_in_dir,'bac_obs.RData'), .GlobalEnv)
-  load(file = file.path(data_in_dir,'flux_obs.RData'), .GlobalEnv)
-  load(file = file.path(data_in_dir,'pcp_obs.RData'), .GlobalEnv)
-  load(file = file.path(data_in_dir,'pcp_obs2.RData'), .GlobalEnv)
-  load(file= file.path(data_in_dir, 'q_obs.RData'), .GlobalEnv)
-  load(file= file.path(data_in_dir, 'q_obs2.RData'), .GlobalEnv)
-}
-
-create_generation_stats <- function(startgen, ngens, nsims){
-  n <- ngens + 1
-  df <- data.frame(generation = integer(n),
-                   nsims = integer(n),
-                   proportion_kept = double(n),
-                   best_mean_nse = double(n),
-                   cutoff_median_score = double(n),
-                   stringsAsFactors=FALSE)
-  df$generation <- seq(startgen, ngens)
-  df$nsims[1] <- nsims
-  df$proportion_kept[1] <- 1.0
-  df$cutoff_median_score[1] <- -1e+12 #accept everything first time through
-  return(df)
-}
-
-update_generation_stats <- function(iter, generation_stats, next_nsims, max_mean_nse, new_cutoff){
-  generation_stats$nsims[iter+2] <- next_nsims
-  generation_stats$best_mean_nse[iter+1] <- max_mean_nse
-  generation_stats$cutoff_median_score[iter+2] <- new_cutoff
-  return(generation_stats)
-}
-
-save_generation_stats <- function(iter, data_in_dir, generation_stats){
-  generation_stats_filename <- file.path(data_in_dir,paste("generation_stats",iter,".RData",sep=""))
-  save(generation_stats, file= generation_stats_filename)
-  print(paste("generation stats for generation ", iter, " saved to ", generation_stats_filename))
-}
-
-load_generation_stats <- function(iter, data_in_dir){
-  generation_stats_filename <- file.path(data_in_dir,paste("generation_stats",iter-1,".RData",sep=""))
-  load(file= generation_stats_filename, .GlobalEnv)
-  print(paste("generation stats for generation", iter-1, "loaded from", generation_stats_filename))
-}
-
-save_nses_parameters <- function(iter, data_in_dir, nses_parameters){
-  nses_parameters_filename <- file.path(data_in_dir,paste("nses_parameters",iter,".RData",sep=""))
-  save(nses_parameters, file= nses_parameters_filename)
-  print(paste("nses and parameter inputs for generation ", iter, " saved to ", nses_parameters_filename))
-}
-
 calculate_next_nsims <- function(n_to_keep, proportion_kept){
   new_nsims <- max(12000, round(n_to_keep/proportion_kept)*2)
   print(paste("next round we will do", new_nsims, "simulations"))
   return(new_nsims)
-}
-
-get_cutoff_median_score <- function(iter, generation_stats){
-  # load and retrieve previously saved cutoff
-  return_cutoff_median <- generation_stats$cutoff_median_score[iter+1] #get the cutoff that was saved at the last generation
-  print(paste("cutoff score to be used for generation ", iter, " = ", return_cutoff_median))
-  return(return_cutoff_median)
-}
-
-create_tibble_initial <- function(nsims){
-  pars_tibble <- tibble(#hydrology parameters (11)
-                        "CN2.mgt|change = relchg"= runif(nsims, -0.25, 0.1),
-                        "GWQMN.gw|change = relchg" = runif(nsims, -0.5, 2),
-                        "ALPHA_BNK.rte|change = absval" =runif(nsims, 0, 1),
-                        "CH_K2.rte|change = absval" = runif(nsims, 0, 500),
-                        "CH_N2.rte|change = absval" = runif(nsims, 0, 0.3),
-                        "TRNSRCH.bsn|change = absval" = runif(nsims, 0, 1),
-                        "CH_N1.sub|change = absval" = runif(nsims, 0.01, 30),
-                        "CH_K1.sub|change = absval" = runif(nsims, 0, 300),
-                        "RCHRG_DP.gw|change = absval" = runif(nsims, 0, 1),
-                        "SFTMP.bsn|change = absval"= runif(nsims, -5, 5),
-                        "SMTMP.bsn|change = absval"= runif(nsims, -5, 5),
-                        #tile drainage and sediments (3)
-                        "DEP_IMP.hru|change = absval"= runif(nsims, 0, 6000),
-                        "DDRAIN.mgt|change = absval"= runif(nsims, 0, 2000),
-                        "GDRAIN.mgt|change = absval"= runif(nsims, 0, 100),
-                        #bacteria submodel (4)
-                        "BACTKDQ.bsn|change = absval" = runif(nsims, 0, 500),
-                        "BACT_SWF.bsn|change = absval" = runif(nsims, 0, 1),
-                        "THBACT.bsn|change = absval"= runif(nsims, 0, 10),
-                        "WDPRCH.bsn|change = absval"= runif(nsims, 0, 1)
-  )
-}
-
-simulate_generation_zero <- function(nsims, swat_path, base_dir, pars_initial){
-  # run the initial set of swat simulations
-  print(paste("About to run generation 0 with", nsims, "simulations"))
-  bac_cal_output <- run_swat_red_cedar(swat_path, pars_initial)
-  print(paste("swat runs finished for generation ", iter))
-  return(bac_cal_output)
-}
-
-run_swat_red_cedar <- function(swat_path, swat_parameters){
-  run_swat2012(project_path = swat_path,
-               output = list(q_out = define_output(file = "rch",
-                                                   variable = "FLOW_OUT",
-                                                   unit = 4),
-                             bac_out = define_output(file = "rch",
-                                                     variable = "BACTP_OUT",
-                                                     unit = 4)),
-               parameter = swat_parameters,
-               start_date = "2011-01-01",
-               end_date = "2013-12-31",
-               years_skip = 2,
-               n_thread = 32)
-}
-
-save_bac_cal_output <- function(iter, bac_cal_output){
-  rdata_out_filename <- paste('bac_cal', iter, '.RData', sep = "")
-  rdata_file_out <- file.path(data_in_dir, rdata_out_filename)
-  save(bac_cal_output, file=rdata_file_out)
-  print(paste("rdata file for generation ", iter, " saved to ", rdata_file_out))
 }
 
 calculate_nse_bac <- function(iter, bac_cal_output, bac_obs){
@@ -126,7 +15,7 @@ calculate_nse_bac <- function(iter, bac_cal_output, bac_obs){
   print(paste("best overall bacteria nse =", round(max(nse_bac),3), "for generation", iter))
   return(nse_bac)
 }
-  
+
 calculate_nse_q <- function(iter, bac_cal_output, q_obs){
   #load the simulated flows, inputs for last simulations
   sim_q <- bac_cal_output$simulation$q_out
@@ -159,23 +48,68 @@ calculate_nse_mean <- function(iter, nse_mean, nse_q, nse_flux){
   return(nse_mean)
 }
 
-update_cutoff_median_score <- function(iter, generation_stats, cutoff_median_score){
-  generation_stats$cutoff_median_score[iter + 2] <- cutoff_median_score # +1 because zero-based and another +1 because stored in next generation slot
-  print(paste("cutoff score from generation", iter, "=", round(cutoff_median_score,6), "and will be used next generation"))
-  print(paste("cutoffs:", round(generation_stats$cutoff_median_score,6)))
+create_next_sim_tibble <- function(parameter_input_sims){
+  
+  next_tibble <- tibble(
+    "CN2.mgt|change = relchg"= parameter_input_sims[,1], #$CN2,
+    "GWQMN.gw|change = relchg" = parameter_input_sims[,2], #$GWQMN,
+    "ALPHA_BNK.rte|change = absval" = parameter_input_sims[,3], #$ALPHA_BNK,
+    "CH_K2.rte|change = absval" = parameter_input_sims[,4], #$CH_K2,
+    "CH_N2.rte|change = absval" = parameter_input_sims[,5], #$CH_N2,
+    "TRNSRCH.bsn|change = absval" = parameter_input_sims[,6], #$TRNSRCH,
+    "CH_N1.sub|change = absval" = parameter_input_sims[,7], #$CH_N1,
+    "CH_K1.sub|change = absval" = parameter_input_sims[,8], #$CH_K1,
+    "RCHRG_DP.gw|change = absval" = parameter_input_sims[,9], #RCHRG_DP,
+    "SFTMP.bsn|change = absval"= parameter_input_sims[,10], #SFTMP,
+    "SMTMP.bsn|change = absval"= parameter_input_sims[,11], #SMTMP,
+    "DEP_IMP.hru|change = absval"= parameter_input_sims[,12], #DEP_IMP,
+    "DDRAIN.mgt|change = absval"= parameter_input_sims[,13], #DDRAIN,
+    "GDRAIN.mgt|change = absval"= parameter_input_sims[,14], #GDRAIN,
+    "BACTKDQ.bsn|change = absval" = parameter_input_sims[,15], #BACTKDQ,
+    "BACT_SWF.bsn|change = absval" = parameter_input_sims[,16], #BACT_SWF,
+    "THBACT.bsn|change = absval"= parameter_input_sims[,17], #THBACT,
+    "WDPRCH.bsn|change = absval"= parameter_input_sims[,18]) #WDPRCH)
+  return(next_tibble)
 }
 
-log_results <- function(iter, previous_median_score, n_all_keepers, previous_nsims, nse_mean_keepers,
-                        nse_bac, nse_q, nse_flux, new_median_score){
-  print(paste("Generation ", iter))
-  print(paste("median score from the last generation was:", previous_median_score))
-  proportion_kept <- n_all_keepers/previous_nsims
-  print(paste("generation x:",n_all_keepers, "of", format(previous_nsims,scientific=F), " simulations kept; proportion kept =", round(proportion_kept,4)))
-  print(paste("best kept mean nse for this generation is:", max(round(nse_mean_keepers,4))))
-  print(paste("best kept bacteria nse for this generation is:", max(round(nse_bac,4))))
-  print(paste("best kept flow nse for this generation is:", max(round(nse_q,4))))
-  print(paste("best kept flux nse for this generation is:", max(round(nse_flux,4))))
-  print(paste("median mean nse score to be used for the next generation is:", round(new_median_score,4)))
+create_generation_stats <- function(startgen, ngens, nsims){
+  n <- ngens + 1
+  df <- data.frame(generation = integer(n),
+                   nsims = integer(n),
+                   proportion_kept = double(n),
+                   best_mean_nse = double(n),
+                   cutoff_median_score = double(n),
+                   stringsAsFactors=FALSE)
+  df$generation <- seq(startgen, ngens)
+  df$nsims[1] <- nsims
+  df$proportion_kept[1] <- 1.0
+  df$cutoff_median_score[1] <- -1e+12 #accept everything first time through
+  return(df)
+}
+
+create_tibble_initial <- function(nsims){
+  pars_tibble <- tibble(#hydrology parameters (11)
+    "CN2.mgt|change = relchg"= runif(nsims, -0.25, 0.1),
+    "GWQMN.gw|change = relchg" = runif(nsims, -0.5, 2),
+    "ALPHA_BNK.rte|change = absval" =runif(nsims, 0, 1),
+    "CH_K2.rte|change = absval" = runif(nsims, 0, 500),
+    "CH_N2.rte|change = absval" = runif(nsims, 0, 0.3),
+    "TRNSRCH.bsn|change = absval" = runif(nsims, 0, 1),
+    "CH_N1.sub|change = absval" = runif(nsims, 0.01, 30),
+    "CH_K1.sub|change = absval" = runif(nsims, 0, 300),
+    "RCHRG_DP.gw|change = absval" = runif(nsims, 0, 1),
+    "SFTMP.bsn|change = absval"= runif(nsims, -5, 5),
+    "SMTMP.bsn|change = absval"= runif(nsims, -5, 5),
+    #tile drainage and sediments (3)
+    "DEP_IMP.hru|change = absval"= runif(nsims, 0, 6000),
+    "DDRAIN.mgt|change = absval"= runif(nsims, 0, 2000),
+    "GDRAIN.mgt|change = absval"= runif(nsims, 0, 100),
+    #bacteria submodel (4)
+    "BACTKDQ.bsn|change = absval" = runif(nsims, 0, 500),
+    "BACT_SWF.bsn|change = absval" = runif(nsims, 0, 1),
+    "THBACT.bsn|change = absval"= runif(nsims, 0, 10),
+    "WDPRCH.bsn|change = absval"= runif(nsims, 0, 1)
+  )
 }
 
 fit_normal_parameters <- function(sim_pars_keepers){
@@ -203,22 +137,17 @@ fit_normal_parameters <- function(sim_pars_keepers){
               fitted_BACT_SWF, fitted_THBACT, fitted_WDPRCH))
 }
 
-save_fitted_parameter_list <- function(iter, data_in, fitted_parameter_list){
-  fitted_parameter_filename <- file.path(data_in_dir,paste("fitted_parameters", iter, ".RData", sep=""))
-  save(fitted_parameter_list, file = fitted_parameter_filename)
-  print(paste("fitted posterior parameters from generation", iter, "saved to file:", fitted_parameter_filename))
+get_cutoff_median_score <- function(iter, generation_stats){
+  # load and retrieve previously saved cutoff
+  return_cutoff_median <- generation_stats$cutoff_median_score[iter+1] #get the cutoff that was saved at the last generation
+  print(paste("cutoff score to be used for generation ", iter, " = ", return_cutoff_median))
+  return(return_cutoff_median)
 }
 
 load_parameter_input_sims <- function(iter, data_in_dir){
-  fitted_parameter_filename <- file.path(data_in_dir,paste("fitted_parameters", iter-1, ".RData", sep=""))
-  load(file = fitted_parameter_filename, .GlobalEnv)
-  print(paste("fitted posterior parameters from generation", iter-1, "loaded from file:", fitted_parameter_filename))  
-}
-
-save_parameter_input_sims <- function(iter, data_in_dir, parameter_input_sims){
-  parameter_input_sims_filename <- file.path(data_in_dir,paste("parameter_input_sims", iter, ".RData", sep=""))
-  save(parameter_input_sims, file = parameter_input_sims_filename)
-  print(paste("parameter input sims from generation", iter, "saved to file:", parameter_input_sims_filename))  
+  parameter_input_sims_filename <- file.path(data_in_dir, paste("parameter_input_sims", iter-1, ".RData", sep=""))
+  load(file = parameter_input_sims_filename, .GlobalEnv)
+  print(paste("parameter inputs from generation", iter-1, "loaded from file:", parameter_input_sims_filename))  
 }
 
 load_previous_swat_simulations <- function(iter, data_in_dir){
@@ -228,8 +157,51 @@ load_previous_swat_simulations <- function(iter, data_in_dir){
   load(file = rdata_file_in, .GlobalEnv)
 }
 
+load_generation_stats <- function(iter, data_in_dir){
+  generation_stats_filename <- file.path(data_in_dir,paste("generation_stats",iter-1,".RData",sep=""))
+  load(file= generation_stats_filename, .GlobalEnv)
+  print(paste("generation stats for generation", iter-1, "loaded from", generation_stats_filename))
+}
+
+load_observations <- function(){
+  load(file= file.path(data_in_dir,'bac_obs.RData'), .GlobalEnv)
+  load(file = file.path(data_in_dir,'flux_obs.RData'), .GlobalEnv)
+  load(file = file.path(data_in_dir,'pcp_obs.RData'), .GlobalEnv)
+  load(file = file.path(data_in_dir,'pcp_obs2.RData'), .GlobalEnv)
+  load(file= file.path(data_in_dir, 'q_obs.RData'), .GlobalEnv)
+  load(file= file.path(data_in_dir, 'q_obs2.RData'), .GlobalEnv)
+}
+
+log_results <- function(iter, previous_median_score, n_all_keepers, previous_nsims, nse_mean_keepers,
+                        nse_bac, nse_q, nse_flux, new_median_score){
+  print(paste("Generation ", iter))
+  print(paste("median score from the last generation was:", previous_median_score))
+  proportion_kept <- n_all_keepers/previous_nsims
+  print(paste("generation x:",n_all_keepers, "of", format(previous_nsims,scientific=F), " simulations kept; proportion kept =", round(proportion_kept,4)))
+  print(paste("best kept mean nse for this generation is:", max(round(nse_mean_keepers,4))))
+  print(paste("best kept bacteria nse for this generation is:", max(round(nse_bac,4))))
+  print(paste("best kept flow nse for this generation is:", max(round(nse_q,4))))
+  print(paste("best kept flux nse for this generation is:", max(round(nse_flux,4))))
+  print(paste("median mean nse score to be used for the next generation is:", round(new_median_score,4)))
+}
+
+run_swat_red_cedar <- function(swat_path, swat_parameters){
+  run_swat2012(project_path = swat_path,
+               output = list(q_out = define_output(file = "rch",
+                                                   variable = "FLOW_OUT",
+                                                   unit = 4),
+                             bac_out = define_output(file = "rch",
+                                                     variable = "BACTP_OUT",
+                                                     unit = 4)),
+               parameter = swat_parameters,
+               start_date = "2011-01-01",
+               end_date = "2013-12-31",
+               years_skip = 2,
+               n_thread = 32)
+}
+
 sample_truncated_normals <- function(iter, new_nsims, fitted_parameter_list){
-  fitted_CN2 <- fitted_parameter_list[[1]][1][1]
+  fitted_CN2 <- fitted_parameter_list[[1]]
   CN2_mean <- fitted_CN2$estimate[1]
   CN2_sd <- fitted_CN2$estimate[2]
   print(paste("generation", iter, "CN2", round(CN2_mean,3), round(CN2_sd,3)))
@@ -407,34 +379,49 @@ sample_truncated_normals <- function(iter, new_nsims, fitted_parameter_list){
   print(paste("generation", iter, "WDPRCH", round(WDPRCH_mean,3), round(WDPRCH_sd,3)))
   WDPRCH <- rtruncnorm(new_nsims, 0, 1, mean = WDPRCH_mean, sd = WDPRCH_sd)
   
-  inputs_df <- cbind(CN2, GWQMN, ALPHA_BNK, CH_K2, CH_N2, TRNSRCH, CH_N1, CH_K1, RCHRG_DP,
-                     SFTMP, SMTMP, DEP_IMP, DDRAIN, GDRAIN, BACTKDQ, BACT_SWF, THBACT, WDPRCH)
+  inputs_df <- as.matrix(cbind(CN2, GWQMN, ALPHA_BNK, CH_K2, CH_N2, TRNSRCH, CH_N1, CH_K1, RCHRG_DP,
+                     SFTMP, SMTMP, DEP_IMP, DDRAIN, GDRAIN, BACTKDQ, BACT_SWF, THBACT, WDPRCH))
   colnames(inputs_df)
   return(inputs_df)
 }
 
-create_next_sim_tibble <- function(parameter_input_sims){
-  
-  next_tibble <- tibble(
-   "CN2.mgt|change = relchg"= CN2,
-   "GWQMN.gw|change = relchg" = GWQMN,
-   "ALPHA_BNK.rte|change = absval" = ALPHA_BNK,
-   "CH_K2.rte|change = absval" = CH_K2,
-   "CH_N2.rte|change = absval" = CH_N2,
-   "TRNSRCH.bsn|change = absval" = TRNSRCH,
-   "CH_N1.sub|change = absval" = CH_N1,
-   "CH_K1.sub|change = absval" = CH_K1,
-   "RCHRG_DP.gw|change = absval" = RCHRG_DP,
-   "SFTMP.bsn|change = absval"= SFTMP,
-   "SMTMP.bsn|change = absval"= SMTMP,
-   "DEP_IMP.hru|change = absval"= DEP_IMP,
-   "DDRAIN.mgt|change = absval"= DDRAIN,
-   "GDRAIN.mgt|change = absval"= GDRAIN,
-   "BACTKDQ.bsn|change = absval" = BACTKDQ,
-   "BACT_SWF.bsn|change = absval" = BACT_SWF,
-   "THBACT.bsn|change = absval"= THBACT,
-   "WDPRCH.bsn|change = absval"= WDPRCH)
-  return(next_tibble)
+save_generation_stats <- function(iter, data_in_dir, generation_stats){
+  generation_stats_filename <- file.path(data_in_dir,paste("generation_stats",iter,".RData",sep=""))
+  save(generation_stats, file= generation_stats_filename)
+  print(paste("generation stats for generation ", iter, " saved to ", generation_stats_filename))
+}
+
+save_nses_parameters <- function(iter, data_in_dir, nses_parameters){
+  nses_parameters_filename <- file.path(data_in_dir,paste("nses_parameters",iter,".RData",sep=""))
+  save(nses_parameters, file= nses_parameters_filename)
+  print(paste("nses and parameter inputs for generation ", iter, " saved to ", nses_parameters_filename))
+}
+
+simulate_generation_zero <- function(nsims, swat_path, base_dir, pars_initial){
+  # run the initial set of swat simulations
+  print(paste("About to run generation 0 with", nsims, "simulations"))
+  bac_cal_output <- run_swat_red_cedar(swat_path, pars_initial)
+  print(paste("swat runs finished for generation ", iter))
+  return(bac_cal_output)
+}
+
+save_bac_cal_output <- function(iter, bac_cal_output){
+  rdata_out_filename <- paste('bac_cal', iter, '.RData', sep = "")
+  rdata_file_out <- file.path(data_in_dir, rdata_out_filename)
+  save(bac_cal_output, file=rdata_file_out)
+  print(paste("rdata file for generation ", iter, " saved to ", rdata_file_out))
+}
+
+save_fitted_parameter_list <- function(iter, data_in, fitted_parameter_list){
+  fitted_parameter_filename <- file.path(data_in_dir,paste("fitted_parameters", iter, ".RData", sep=""))
+  save(fitted_parameter_list, file = fitted_parameter_filename)
+  print(paste("fitted posterior parameters from generation", iter, "saved to file:", fitted_parameter_filename))
+}
+
+save_parameter_input_sims <- function(iter, data_in_dir, parameter_input_sims){
+  parameter_input_sims_filename <- file.path(data_in_dir,paste("parameter_input_sims", iter, ".RData", sep=""))
+  save(parameter_input_sims, file = parameter_input_sims_filename)
+  print(paste("parameter input sims from generation", iter, "saved to file:", parameter_input_sims_filename))  
 }
 
 save_kde_pdf <- function(){
@@ -446,6 +433,16 @@ save_kde_pdf <- function(){
   ggsave(file.path(graphics_dir, density_plot_filename))  
 }
 
+update_generation_stats <- function(iter, generation_stats, next_nsims, max_mean_nse, new_cutoff){
+  generation_stats$nsims[iter+2] <- next_nsims
+  generation_stats$best_mean_nse[iter+1] <- max_mean_nse
+  generation_stats$cutoff_median_score[iter+2] <- new_cutoff
+  return(generation_stats)
+}
 
-
+update_cutoff_median_score <- function(iter, generation_stats, cutoff_median_score){
+  generation_stats$cutoff_median_score[iter + 2] <- cutoff_median_score # +1 because zero-based and another +1 because stored in next generation slot
+  print(paste("cutoff score from generation", iter, "=", round(cutoff_median_score,6), "and will be used next generation"))
+  print(paste("cutoffs:", round(generation_stats$cutoff_median_score,6)))
+}
 
