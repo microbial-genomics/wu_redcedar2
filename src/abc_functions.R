@@ -405,6 +405,14 @@ simulate_generation_zero <- function(nsims, swat_path, base_dir, pars_initial){
   return(bac_cal_output)
 }
 
+simulate_generation_next <- function(iter, nsims, swat_path, base_dir, pars_subsequent){
+  # run the initial set of swat simulations
+  print(paste("About to run generation", iter, "with", nsims, "simulations"))
+  bac_cal_output <- run_swat_red_cedar(swat_path, pars_subsequent)
+  print(paste("swat runs finished for generation ", iter))
+  return(bac_cal_output)
+}
+
 save_bac_cal_output <- function(iter, bac_cal_output){
   rdata_out_filename <- paste('bac_cal', iter, '.RData', sep = "")
   rdata_file_out <- file.path(data_in_dir, rdata_out_filename)

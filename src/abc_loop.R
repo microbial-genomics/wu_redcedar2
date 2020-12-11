@@ -141,7 +141,7 @@ for(iter in startgen:ngens){
     #assign parameters to input tibble
     pars_subsequent <- create_next_sim_tibble(parameter_input_sims)
     # run the swat simulations for this iteration
-    bac_cal_output <- simulate_generation_zero(nsims_todo, swat_path, base_dir, pars_subsequent)  
+    bac_cal_output <- simulate_generation_next(iter, nsims_todo, swat_path, base_dir, pars_subsequent)  
     # save output to disk
     save_bac_cal_output(iter, bac_cal_output)
     #get parameter names and values
@@ -158,8 +158,9 @@ for(iter in startgen:ngens){
     #determine the first 5k to keep, combine keeper nses w parameters into a df
     all_keepers <- which(nse_mean > previous_median_score)
     n_all_keepers <- length(all_keepers)
+    print(paste("we had", n_all_keepers, "of", nsims_todo, "simulations that had a better mean_nse score of", previous_median_score))
     valid_keepers <- head(all_keepers, n = n_to_keep)
-    nses_w_parameters <- cbind(nse_bac[valid_keepers], nse_flux[valid_keepers], nse_q[valid_keepers], nse_mean[valid_keepers], sim_pars[valid_keepers])
+    nses_w_parameters <- cbind(nse_bac[valid_keepers], nse_flux[valid_keepers], nse_q[valid_keepers], nse_mean[valid_keepers], sim_pars[valid_keepers,])
     ## find the updated unweighted kernel densities based on these new 5k simulations
     #kde_next_gen <- sim_pars_keepers %>% 
     #  gather(key = "par", value = "parameter_range")
@@ -172,7 +173,7 @@ for(iter in startgen:ngens){
     # save next median score for future use
     update_cutoff_median_score(iter, generation_stats, next_median_score)
     # log results
-    log_results(iter, cutoff_median_score, nsims, nsims, nse_mean,
+    log_results(iter, cutoff_median_score, n_all_keepers, nsims_todo, nse_mean,
                 nse_bac, nse_q, nse_flux, next_median_score)
     # update and save parameter inputs
     fitted_parameter_list <- fit_normal_parameters(sim_pars)
