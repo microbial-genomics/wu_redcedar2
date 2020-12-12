@@ -12,7 +12,7 @@ calculate_nse_bac <- function(iter, bac_cal_output, bac_obs){
   nse_bac <- right_join(sim_bac,bac_obs,by="date")%>%
     dplyr::select(-date) %>% dplyr::select(-bacteria) %>%
     map_dbl(., ~NSE(.x, bac_obs$bacteria))
-  print(paste("best overall bacteria nse =", round(max(nse_bac),3), "for generation", iter))
+  print(paste("range of all bacteria nse is (", round(min(nse_bac),3), ",", round(max(nse_bac),3), ") for generation", iter))
   return(nse_bac)
 }
 
@@ -23,7 +23,7 @@ calculate_nse_q <- function(iter, bac_cal_output, q_obs){
   nse_q <- right_join(sim_q,q_obs,by="date") %>%
     dplyr::select(-date) %>% dplyr::select(-discharge) %>%
     map_dbl(., ~NSE(.x, q_obs$discharge))
-  print(paste("best overall flow nse =", round(max(nse_q),3), "for generation", iter))
+  print(paste("range of all overall flow nse is (", round(min(nse_q),3), ",", round(max(nse_q),3), ") for generation", iter))
   return(nse_q)
 }
 
@@ -37,14 +37,14 @@ calculate_nse_flux <- function(iter, bac_cal_output, bac_obs, q_obs){
   #merge simulated and observed fluxes, calculate nses for all sims
   nse_flux <- flux_sim %>%
     map_dbl(., ~NSE(.x, flux_obs[,1]))
-  print(paste("best overall flux nse =", round(max(nse_flux),3), "for generation", iter))
+  print(paste("range of all overall flux nse is (", round(min(nse_flux),3), ",", round(max(nse_flux),3), ") for generation", iter))
   return(nse_flux)
 }
 
 calculate_nse_mean <- function(iter, nse_mean, nse_q, nse_flux){
   # calculate nse means
   nse_mean <- rowMeans(cbind(nse_bac, nse_q, nse_flux))
-  print(paste("best overall mean nse =", round(max(nse_mean),3), "for generation", iter))
+  print(paste("range of all overall mean nse is (", round(min(nse_mean),3), ",", round(max(nse_mean),3), ") for generation", iter))
   return(nse_mean)
 }
 

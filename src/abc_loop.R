@@ -85,6 +85,7 @@ nsims <- 5000
 for(iter in startgen:ngens){
   #  first (zeroeth) generation
   if(iter==0){
+    print("*********** begin generation 0 **********************")
     pars_initial <- create_tibble_initial(nsims)
     # create dataframe to persistently store stats
     generation_stats <- create_generation_stats(startgen, ngens, nsims)
@@ -127,7 +128,9 @@ for(iter in startgen:ngens){
     # save stats for next generation
     generation_stats <- update_generation_stats(iter, generation_stats, next_nsims, max(nse_mean), next_median_score)
     save_generation_stats(iter, data_in_dir, generation_stats)
+    print("*********** end generation 0 **********************")
   }else{
+    print(paste("*********** begin generation", iter, "**********************"))
     #
     ### subsequent runs from iter <- 1
     #number to keep each generation
@@ -188,5 +191,6 @@ for(iter in startgen:ngens){
     # save stats for next generation
     generation_stats <- update_generation_stats(iter, generation_stats, next_nsims, max(nse_mean), next_median_score)
     save_generation_stats(iter, data_in_dir, generation_stats)
+    print(paste("*********** end generation", iter, "**********************"))
 }
 }
