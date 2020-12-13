@@ -172,17 +172,17 @@ load_observations <- function(){
   load(file= file.path(data_in_dir, 'q_obs2.RData'), .GlobalEnv)
 }
 
-log_results <- function(iter, previous_median_score, n_all_keepers, previous_nsims, nse_mean_keepers,
-                        nse_bac, nse_q, nse_flux, new_median_score){
+log_results <- function(iter, this_cutoff_median_score, n_all_keepers, previous_nsims, nse_mean_keepers,
+                        nse_bac, nse_q, nse_flux, next_cutoff_median_score){
   print(paste("Generation ", iter))
-  print(paste("median score from the last generation was:", previous_median_score))
+  print(paste("median score from the last generation was:", this_cutoff_median_score))
   proportion_kept <- n_all_keepers/previous_nsims
   print(paste("generation x:",n_all_keepers, "of", format(previous_nsims,scientific=F), " simulations kept; proportion kept =", round(proportion_kept,4)))
   print(paste("best kept mean nse for this generation is:", max(round(nse_mean_keepers,4))))
   print(paste("best kept bacteria nse for this generation is:", max(round(nse_bac,4))))
   print(paste("best kept flow nse for this generation is:", max(round(nse_q,4))))
   print(paste("best kept flux nse for this generation is:", max(round(nse_flux,4))))
-  print(paste("median mean nse score to be used for the next generation is:", round(new_median_score,4)))
+  print(paste("median mean nse score to be used for the next generation is:", round(next_cutoff_median_score,4)))
 }
 
 run_swat_red_cedar <- function(swat_path, swat_parameters){
