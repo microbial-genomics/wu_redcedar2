@@ -76,24 +76,24 @@ load_observations()
 startgen <- 0
 ngens <- 40
 
-# every generation will have 5000 accepted particles
-# the median score of these 5000 particles will be used as the cutoff for the next generation
-# the first generation will be the top 5000 of 20000 simulations
+# every generation will have n_to_keep accepted particles
+# the median score of these n_to_keep particles will be used as the cutoff for the next generation
+# the first generation will be the top n_to_keep of nsims_todo simulations
 # start the loop here
 for(iter in startgen:ngens){
   print(paste("*********** begin generation", iter, "**********************"))
   #
   #number to keep each generation
   if(iter==0){
-    nsims_todo <- 20000
-    n_to_keep <- 5000
+    nsims_todo <- 10000
+    n_to_keep <- 2000
     pars_tibble <- create_tibble_initial(nsims_todo)
     # create dataframe to persistently store stats
     generation_stats <- create_generation_stats(startgen, ngens, n_to_keep)
     #will be NA for generation 0 because not needed, this routine will clear out the vector though
-    cutoff_median_score <- get_cutoff_median_score(iter, generation_stats)      
+    cutoff_mean_nse_score <- get_cutoff_mean_nse_score(iter, generation_stats)      
   }else{
-    n_to_keep <- 5000 
+    n_to_keep <- 2000 
     #load current generation stats
     load_generation_stats(iter, data_in_dir)
     #get nsims for this iteration
@@ -118,15 +118,15 @@ for(iter in startgen:ngens){
   # find the top 5k
   if(iter==0){
     # find the 75th percentile of nse_mean
-    this_cutoff_median_score <- quantile(nse_mean, probs=0.75)
+    this_cutoff_mean_nse_score <- quantile(nse_mean, probs=0.75)
   }else{  
-    #use the median score from the last generation to sort the keepers
-    this_cutoff_median_score <- get_cutoff_median_score(iter, generation_stats)
+    #use the mean_nse score from the last generation to sort the keepers
+    this_cutoff_mean_nse_score <- get_cutoff_mean_nse_score(iter, generation_stats)
   }
   #determine the first 5k to keep, combine keeper nses w parameters into a df
-  all_keepers <- which(nse_mean > this_cutoff_median_score)
+  all_keepers <- which(nse_mean > this_cutoff_mean_nse_score)
   n_all_keepers <- length(all_keepers)
-  print(paste("we had", n_all_keepers, "of", nsims_todo, "simulations that had a better mean_nse score of", this_cutoff_median_score))
+  print(paste("we had", n_all_keepers, "of", nsims_todo, "simulations that had a better mean_nse score of", this_cutoff_mean_nse_score))
   valid_keepers <- head(all_keepers, n = n_to_keep)
   nses_w_parameters <- cbind(nse_bac[valid_keepers], nse_flux[valid_keepers], nse_q[valid_keepers], nse_mean[valid_keepers], sim_pars[valid_keepers,])
   ## find the updated unweighted kernel densities based on these new 5k simulations
@@ -136,13 +136,13 @@ for(iter in startgen:ngens){
   #save_kde_pdf()  
   #save nses_parameters
   save_nses_parameters(iter, data_in_dir, nses_w_parameters)
-  # calculate median score
-  next_cutoff_median_score <- median(nses_w_parameters$nse_mean)
-  # save next median score for future use
-  update_cutoff_median_score(iter, generation_stats, next_cutoff_median_score)
+  # calculate mean_nse score
+  next_cutoff_mean_nse_score <- median(nses_w_parameters$nse_mean)
+  # save next mean_nse score for future use
+  update_cutoff_mean_nse_score(iter, generation_stats, next_cutoff_mean_nse_score)
   # log results
-  log_results(iter, this_cutoff_median_score, n_all_keepers, nsims_todo, nse_mean,
-              nse_bac, nse_q, nse_flux, next_cutoff_median_score)
+  log_results(iter, this_cutoff_mean_nse_score, n_all_keepers, nsims_todo, nse_mean,
+              nse_bac, nse_q, nse_flux, next_cutoff_mean_nse_score)
   # update and save parameter inputs
   fitted_parameter_list <- fit_normal_parameters(sim_pars)
   save_fitted_parameter_list(iter, data_in, fitted_parameter_list)
@@ -154,7 +154,7 @@ for(iter in startgen:ngens){
   # save parameter inputs for next round of simulations
   save_parameter_input_sims(iter, data_in_dir, parameter_input_sims)
   # save stats for next generation
-  generation_stats <- update_generation_stats(iter, generation_stats, next_nsims, max(nse_mean), next_cutoff_median_score)
+  generation_stats <- update_generation_stats(iter, generation_stats, next_nsims, max(nse_mean), next_cutoff_mean_nse_score)
   save_generation_stats(iter, data_in_dir, generation_stats)
   print(paste("*********** end generation", iter, "**********************"))
 }
