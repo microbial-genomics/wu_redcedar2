@@ -126,9 +126,11 @@ for(iter in startgen:ngens){
   #determine the first 5k to keep, combine keeper nses w parameters into a df
   all_keepers <- which(nse_mean > this_cutoff_mean_nse_score)
   n_all_keepers <- length(all_keepers)
+  proportion_kept <- n_all_keepers/nsims_todo
   print(paste("we had", n_all_keepers, "of", nsims_todo, "simulations that had a better mean_nse score of", this_cutoff_mean_nse_score))
   valid_keepers <- head(all_keepers, n = n_to_keep)
-  nses_w_parameters <- cbind(nse_bac[valid_keepers], nse_flux[valid_keepers], nse_q[valid_keepers], nse_mean[valid_keepers], sim_pars[valid_keepers,])
+  nses_w_parameters <- cbind(nse_bac[valid_keepers], nse_flux[valid_keepers], nse_q[valid_keepers], 
+                             nse_mean[valid_keepers], sim_pars[valid_keepers,])
   ## find the updated unweighted kernel densities based on these new 5k simulations
   #kde_next_gen <- sim_pars_keepers %>% 
   #  gather(key = "par", value = "parameter_range")
@@ -136,6 +138,9 @@ for(iter in startgen:ngens){
   #save_kde_pdf()  
   #save nses_parameters
   save_nses_parameters(iter, data_in_dir, nses_w_parameters)
+  # save concentration time series output to an .RData file 
+  # for later sensitivity analyses TODO
+  # delete the local bac_cal file TODO
   # calculate mean_nse score
   next_cutoff_mean_nse_score <- median(nses_w_parameters$nse_mean)
   # save next mean_nse score for future use
@@ -154,7 +159,8 @@ for(iter in startgen:ngens){
   # save parameter inputs for next round of simulations
   save_parameter_input_sims(iter, data_in_dir, parameter_input_sims)
   # save stats for next generation
-  generation_stats <- update_generation_stats(iter, generation_stats, next_nsims, max(nse_mean), next_cutoff_mean_nse_score)
+  generation_stats <- update_generation_stats(iter, generation_stats, next_nsims, max(nse_mean), 
+                                              proportion_kept, next_cutoff_mean_nse_score)
   save_generation_stats(iter, data_in_dir, generation_stats)
   print(paste("*********** end generation", iter, "**********************"))
 }

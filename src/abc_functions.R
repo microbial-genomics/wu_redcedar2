@@ -441,9 +441,10 @@ save_kde_pdf <- function(){
   ggsave(file.path(graphics_dir, density_plot_filename))  
 }
 
-update_generation_stats <- function(iter, generation_stats, next_nsims, max_mean_nse, new_cutoff){
+update_generation_stats <- function(iter, generation_stats, next_nsims, max_mean_nse, proportion_kept, new_cutoff){
   generation_stats$nsims[iter+2] <- next_nsims
   generation_stats$best_mean_nse[iter+1] <- max_mean_nse
+  generation_stats$proportion_kept[iter+1] <- proportion_kept
   generation_stats$cutoff_mean_nse_score[iter+2] <- new_cutoff
   return(generation_stats)
 }
