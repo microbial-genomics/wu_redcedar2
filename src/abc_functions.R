@@ -197,7 +197,7 @@ run_swat_red_cedar <- function(swat_path, swat_parameters){
                start_date = "2011-01-01",
                end_date = "2013-12-31",
                years_skip = 2,
-               n_thread = 32)
+               n_thread = 192)
 }
 
 sample_truncated_normals <- function(iter, new_nsims, fitted_parameter_list){
