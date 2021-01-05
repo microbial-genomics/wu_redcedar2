@@ -48,28 +48,32 @@ calculate_nse_mean <- function(iter, nse_mean, nse_q, nse_flux){
   return(nse_mean)
 }
 
-create_next_sim_tibble <- function(parameter_input_sims){
+create_next_sim_tibble <- function(nsims_todo, parameter_input_sims){
   
+  if(nsims_todo > nrow(parameter_input_sims)){
+    print(paste("major problem, more sims requested than parameter inputs"))
+  }else{
   next_tibble <- tibble(
-    "CN2.mgt|change = relchg"= parameter_input_sims[,1], #$CN2,
-    "GWQMN.gw|change = relchg" = parameter_input_sims[,2], #$GWQMN,
-    "ALPHA_BNK.rte|change = absval" = parameter_input_sims[,3], #$ALPHA_BNK,
-    "CH_K2.rte|change = absval" = parameter_input_sims[,4], #$CH_K2,
-    "CH_N2.rte|change = absval" = parameter_input_sims[,5], #$CH_N2,
-    "TRNSRCH.bsn|change = absval" = parameter_input_sims[,6], #$TRNSRCH,
-    "CH_N1.sub|change = absval" = parameter_input_sims[,7], #$CH_N1,
-    "CH_K1.sub|change = absval" = parameter_input_sims[,8], #$CH_K1,
-    "RCHRG_DP.gw|change = absval" = parameter_input_sims[,9], #RCHRG_DP,
-    "SFTMP.bsn|change = absval"= parameter_input_sims[,10], #SFTMP,
-    "SMTMP.bsn|change = absval"= parameter_input_sims[,11], #SMTMP,
-    "DEP_IMP.hru|change = absval"= parameter_input_sims[,12], #DEP_IMP,
-    "DDRAIN.mgt|change = absval"= parameter_input_sims[,13], #DDRAIN,
-    "GDRAIN.mgt|change = absval"= parameter_input_sims[,14], #GDRAIN,
-    "BACTKDQ.bsn|change = absval" = parameter_input_sims[,15], #BACTKDQ,
-    "BACT_SWF.bsn|change = absval" = parameter_input_sims[,16], #BACT_SWF,
-    "THBACT.bsn|change = absval"= parameter_input_sims[,17], #THBACT,
-    "WDPRCH.bsn|change = absval"= parameter_input_sims[,18]) #WDPRCH)
+    "CN2.mgt|change = relchg"= parameter_input_sims[1:nsims_todo,1], #$CN2,
+    "GWQMN.gw|change = relchg" = parameter_input_sims[1:nsims_todo,2], #$GWQMN,
+    "ALPHA_BNK.rte|change = absval" = parameter_input_sims[1:nsims_todo,3], #$ALPHA_BNK,
+    "CH_K2.rte|change = absval" = parameter_input_sims[1:nsims_todo,4], #$CH_K2,
+    "CH_N2.rte|change = absval" = parameter_input_sims[1:nsims_todo,5], #$CH_N2,
+    "TRNSRCH.bsn|change = absval" = parameter_input_sims[1:nsims_todo,6], #$TRNSRCH,
+    "CH_N1.sub|change = absval" = parameter_input_sims[1:nsims_todo,7], #$CH_N1,
+    "CH_K1.sub|change = absval" = parameter_input_sims[1:nsims_todo,8], #$CH_K1,
+    "RCHRG_DP.gw|change = absval" = parameter_input_sims[1:nsims_todo,9], #RCHRG_DP,
+    "SFTMP.bsn|change = absval"= parameter_input_sims[1:nsims_todo,10], #SFTMP,
+    "SMTMP.bsn|change = absval"= parameter_input_sims[1:nsims_todo,11], #SMTMP,
+    "DEP_IMP.hru|change = absval"= parameter_input_sims[1:nsims_todo,12], #DEP_IMP,
+    "DDRAIN.mgt|change = absval"= parameter_input_sims[1:nsims_todo,13], #DDRAIN,
+    "GDRAIN.mgt|change = absval"= parameter_input_sims[1:nsims_todo,14], #GDRAIN,
+    "BACTKDQ.bsn|change = absval" = parameter_input_sims[1:nsims_todo,15], #BACTKDQ,
+    "BACT_SWF.bsn|change = absval" = parameter_input_sims[1:nsims_todo,16], #BACT_SWF,
+    "THBACT.bsn|change = absval"= parameter_input_sims[1:nsims_todo,17], #THBACT,
+    "WDPRCH.bsn|change = absval"= parameter_input_sims[1:nsims_todo,18]) #WDPRCH)
   return(next_tibble)
+  }
 }
 
 create_generation_stats <- function(startgen, ngens, nsims){
@@ -400,6 +404,8 @@ save_nses_parameters <- function(iter, data_in_dir, nses_parameters){
 simulate_generation_zero <- function(nsims, swat_path, base_dir, pars_initial){
   # run the initial set of swat simulations
   print(paste("About to run generation 0 with", nsims, "simulations"))
+  # instead of this we could make a while loop and send batch jobs 
+  # with 1000 inputs until we get required nuumber of winners
   bac_cal_output <- run_swat_red_cedar(swat_path, pars_initial)
   print(paste("swat runs finished for generation ", iter))
   return(bac_cal_output)

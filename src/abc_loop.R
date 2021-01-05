@@ -101,7 +101,7 @@ for(iter in startgen:ngens){
     #load parameter_input_sims
     load_parameter_input_sims(iter, data_in_dir)
     #assign parameters to input tibble
-    pars_tibble <- create_next_sim_tibble(parameter_input_sims)
+    pars_tibble <- create_next_sim_tibble(nsims_todo, parameter_input_sims)
   }
   # run the swat simulations for this iteration
   bac_cal_output <- simulate_generation_next(iter, nsims_todo, swat_path, base_dir, pars_tibble)  
