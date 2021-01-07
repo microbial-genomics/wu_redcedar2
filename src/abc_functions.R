@@ -53,26 +53,26 @@ create_next_sim_tibble <- function(nsims_todo, parameter_input_sims){
   if(nsims_todo > nrow(parameter_input_sims)){
     print(paste("major problem, more sims requested than parameter inputs"))
   }else{
-  next_tibble <- tibble(
-    "CN2.mgt|change = relchg"= parameter_input_sims[1:nsims_todo,1], #$CN2,
-    "GWQMN.gw|change = relchg" = parameter_input_sims[1:nsims_todo,2], #$GWQMN,
-    "ALPHA_BNK.rte|change = absval" = parameter_input_sims[1:nsims_todo,3], #$ALPHA_BNK,
-    "CH_K2.rte|change = absval" = parameter_input_sims[1:nsims_todo,4], #$CH_K2,
-    "CH_N2.rte|change = absval" = parameter_input_sims[1:nsims_todo,5], #$CH_N2,
-    "TRNSRCH.bsn|change = absval" = parameter_input_sims[1:nsims_todo,6], #$TRNSRCH,
-    "CH_N1.sub|change = absval" = parameter_input_sims[1:nsims_todo,7], #$CH_N1,
-    "CH_K1.sub|change = absval" = parameter_input_sims[1:nsims_todo,8], #$CH_K1,
-    "RCHRG_DP.gw|change = absval" = parameter_input_sims[1:nsims_todo,9], #RCHRG_DP,
-    "SFTMP.bsn|change = absval"= parameter_input_sims[1:nsims_todo,10], #SFTMP,
-    "SMTMP.bsn|change = absval"= parameter_input_sims[1:nsims_todo,11], #SMTMP,
-    "DEP_IMP.hru|change = absval"= parameter_input_sims[1:nsims_todo,12], #DEP_IMP,
-    "DDRAIN.mgt|change = absval"= parameter_input_sims[1:nsims_todo,13], #DDRAIN,
-    "GDRAIN.mgt|change = absval"= parameter_input_sims[1:nsims_todo,14], #GDRAIN,
-    "BACTKDQ.bsn|change = absval" = parameter_input_sims[1:nsims_todo,15], #BACTKDQ,
-    "BACT_SWF.bsn|change = absval" = parameter_input_sims[1:nsims_todo,16], #BACT_SWF,
-    "THBACT.bsn|change = absval"= parameter_input_sims[1:nsims_todo,17], #THBACT,
-    "WDPRCH.bsn|change = absval"= parameter_input_sims[1:nsims_todo,18]) #WDPRCH)
-  return(next_tibble)
+    next_tibble <- tibble(
+      "CN2.mgt|change = relchg"= parameter_input_sims[1:nsims_todo,1], #$CN2,
+      "GWQMN.gw|change = relchg" = parameter_input_sims[1:nsims_todo,2], #$GWQMN,
+      "ALPHA_BNK.rte|change = absval" = parameter_input_sims[1:nsims_todo,3], #$ALPHA_BNK,
+      "CH_K2.rte|change = absval" = parameter_input_sims[1:nsims_todo,4], #$CH_K2,
+      "CH_N2.rte|change = absval" = parameter_input_sims[1:nsims_todo,5], #$CH_N2,
+      "TRNSRCH.bsn|change = absval" = parameter_input_sims[1:nsims_todo,6], #$TRNSRCH,
+      "CH_N1.sub|change = absval" = parameter_input_sims[1:nsims_todo,7], #$CH_N1,
+      "CH_K1.sub|change = absval" = parameter_input_sims[1:nsims_todo,8], #$CH_K1,
+      "RCHRG_DP.gw|change = absval" = parameter_input_sims[1:nsims_todo,9], #RCHRG_DP,
+      "SFTMP.bsn|change = absval"= parameter_input_sims[1:nsims_todo,10], #SFTMP,
+      "SMTMP.bsn|change = absval"= parameter_input_sims[1:nsims_todo,11], #SMTMP,
+      "DEP_IMP.hru|change = absval"= parameter_input_sims[1:nsims_todo,12], #DEP_IMP,
+      "DDRAIN.mgt|change = absval"= parameter_input_sims[1:nsims_todo,13], #DDRAIN,
+      "GDRAIN.mgt|change = absval"= parameter_input_sims[1:nsims_todo,14], #GDRAIN,
+      "BACTKDQ.bsn|change = absval" = parameter_input_sims[1:nsims_todo,15], #BACTKDQ,
+      "BACT_SWF.bsn|change = absval" = parameter_input_sims[1:nsims_todo,16], #BACT_SWF,
+      "THBACT.bsn|change = absval"= parameter_input_sims[1:nsims_todo,17], #THBACT,
+      "WDPRCH.bsn|change = absval"= parameter_input_sims[1:nsims_todo,18]) #WDPRCH)
+    return(next_tibble)
   }
 }
 
@@ -438,12 +438,12 @@ save_parameter_input_sims <- function(iter, data_in_dir, parameter_input_sims){
   print(paste("parameter input sims from generation", iter, "saved to file:", parameter_input_sims_filename))  
 }
 
-save_kde_pdf <- function(){
+save_kde_pdf <- function(iter, kde_next_gen){
   ggplot(data = kde_next_gen) +
     geom_density(aes(x = parameter_range)) +
     facet_wrap(.~par, nrow=5, scales = "free") +
     theme_bw()
-  density_plot_filename <- paste("kde_mcabc_gen", iter, ".pdf", sep="")
+  density_plot_filename <- paste("kde_mcabc_gen", iter+1, ".pdf", sep="")
   ggsave(file.path(graphics_dir, density_plot_filename))  
 }
 

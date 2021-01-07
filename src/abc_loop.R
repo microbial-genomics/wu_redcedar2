@@ -131,11 +131,6 @@ for(iter in startgen:ngens){
   valid_keepers <- head(all_keepers, n = n_to_keep)
   nses_w_parameters <- cbind(nse_bac[valid_keepers], nse_flux[valid_keepers], nse_q[valid_keepers], 
                              nse_mean[valid_keepers], sim_pars[valid_keepers,])
-  ## find the updated unweighted kernel densities based on these new 5k simulations
-  #kde_next_gen <- sim_pars_keepers %>% 
-  #  gather(key = "par", value = "parameter_range")
-  ## print the distributions
-  #save_kde_pdf()  
   #save nses_parameters
   save_nses_parameters(iter, data_in_dir, nses_w_parameters)
   # save concentration time series output to an .RData file 
@@ -149,8 +144,13 @@ for(iter in startgen:ngens){
   log_results(iter, this_cutoff_mean_nse_score, n_all_keepers, nsims_todo, nse_mean,
               nse_bac, nse_q, nse_flux, next_cutoff_mean_nse_score)
   # update and save parameter inputs
-  fitted_parameter_list <- fit_normal_parameters(sim_pars)
+  fitted_parameter_list <- fit_normal_parameters(sim_pars[valid_keepers,])
   save_fitted_parameter_list(iter, data_in, fitted_parameter_list)
+  ## find the updated unweighted kernel densities based on these new 5k simulations
+  kde_next_gen <- sim_pars[valid_keepers,] %>% 
+    gather(key = "par", value = "parameter_range")
+  ## print the distributions
+  save_kde_pdf(kde_next_gen)  
   # calculate nsims for next generation
   proportion_kept <- n_all_keepers/nsims_todo
   next_nsims <- calculate_next_nsims(n_to_keep, proportion_kept)
