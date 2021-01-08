@@ -150,7 +150,7 @@ for(iter in startgen:ngens){
   kde_next_gen <- sim_pars[valid_keepers,] %>% 
     gather(key = "par", value = "parameter_range")
   ## print the distributions
-  save_kde_pdf(kde_next_gen)  
+  save_kde_pdf(iter, kde_next_gen)  
   # calculate nsims for next generation
   proportion_kept <- n_all_keepers/nsims_todo
   next_nsims <- calculate_next_nsims(n_to_keep, proportion_kept)
