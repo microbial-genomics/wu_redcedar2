@@ -117,8 +117,8 @@ for(iter in startgen:ngens){
   nse_mean <- calculate_nse_mean(iter, nse_bac, nse_q, nse_flux)
   # find the top 5k
   if(iter==0){
-    # find the 75th percentile of nse_mean
-    this_cutoff_mean_nse_score <- quantile(nse_mean, probs=0.75)
+    # find the 80th percentile of nse_mean, top (2000 of 10000)
+    this_cutoff_mean_nse_score <- quantile(nse_mean, probs=0.8)
   }else{  
     #use the mean_nse score from the last generation to sort the keepers
     this_cutoff_mean_nse_score <- get_cutoff_mean_nse_score(iter, generation_stats)
