@@ -141,8 +141,8 @@ for(iter in startgen:ngens){
   # save next mean_nse score for future use
   update_cutoff_mean_nse_score(iter, generation_stats, next_cutoff_mean_nse_score)
   # log results
-  log_results(iter, this_cutoff_mean_nse_score, n_all_keepers, nsims_todo, nse_mean,
-              nse_bac, nse_q, nse_flux, next_cutoff_mean_nse_score)
+  log_results(iter, this_cutoff_mean_nse_score, n_all_keepers, nsims_todo, nse_mean[valid_keepers],
+              nse_bac[valid_keepers], nse_q[valid_keepers], nse_flux[valid_keepers], next_cutoff_mean_nse_score)
   # update and save parameter inputs
   fitted_parameter_list <- fit_normal_parameters(sim_pars[valid_keepers,])
   save_fitted_parameter_list(iter, data_in, fitted_parameter_list)
