@@ -129,8 +129,16 @@ for(iter in startgen:ngens){
   proportion_kept <- n_all_keepers/nsims_todo
   print(paste("we had", n_all_keepers, "of", nsims_todo, "simulations that had a better mean_nse score of", this_cutoff_mean_nse_score))
   valid_keepers <- head(all_keepers, n = n_to_keep)
+  keeper <- array(data="reject", dim=nsims_todo)
+  keeper[all_keepers] <- "not_kept"
+  keeper[valid_keepers] <- "kept"
+  keeper <- as.factor(keeper)
+  nses_w_parameters_all <- cbind(keeper, nse_bac, nse_flux, nse_q, 
+                             nse_mean, sim_pars)
   nses_w_parameters <- cbind(nse_bac[valid_keepers], nse_flux[valid_keepers], nse_q[valid_keepers], 
                              nse_mean[valid_keepers], sim_pars[valid_keepers,])
+  # plot nses versus each other
+  plot_bac_v_flow_pdf(iter, nses_w_parameters_all)
   #save nses_parameters
   save_nses_parameters(iter, data_in_dir, nses_w_parameters)
   # save concentration time series output to an .RData file 
@@ -150,7 +158,7 @@ for(iter in startgen:ngens){
   kde_next_gen <- sim_pars[valid_keepers,] %>% 
     gather(key = "par", value = "parameter_range")
   ## print the distributions
-  save_kde_pdf(iter, kde_next_gen)  
+  plot_kde_pdf(iter, kde_next_gen)  
   # calculate nsims for next generation
   proportion_kept <- n_all_keepers/nsims_todo
   next_nsims <- calculate_next_nsims(n_to_keep, proportion_kept)

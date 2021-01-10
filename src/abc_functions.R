@@ -194,6 +194,22 @@ log_results <- function(iter, this_cutoff_mean_nse_score, n_all_keepers, previou
   print(paste("cutoff mean nse score to be used for the next generation is:", round(next_cutoff_mean_nse_score,4)))
 }
 
+plot_bac_v_flow_pdf <- function(iter, nses_w_parameters_all){
+  ggplot(nses_w_parameters_all, aes(x=nse_q, y=nse_bac, color=keeper)) +
+    geom_point()
+  nse_plot_filename <- paste("nse_bac_v_flow_gen", iter+1, ".pdf", sep="")
+  ggsave(file.path(graphics_dir, nse_plot_filename))  
+}
+
+plot_kde_pdf <- function(iter, kde_next_gen){
+  ggplot(data = kde_next_gen) +
+    geom_density(aes(x = parameter_range)) +
+    facet_wrap(.~par, nrow=5, scales = "free") +
+    theme_bw()
+  density_plot_filename <- paste("kde_mcabc_gen", iter, ".pdf", sep="")
+  ggsave(file.path(graphics_dir, density_plot_filename))  
+}
+
 run_swat_red_cedar <- function(swat_path, swat_parameters){
   run_swat2012(project_path = swat_path,
                output = list(q_out = define_output(file = "rch",
@@ -441,15 +457,6 @@ save_parameter_input_sims <- function(iter, data_in_dir, parameter_input_sims){
   parameter_input_sims_filename <- file.path(data_in_dir,paste("parameter_input_sims", iter, ".RData", sep=""))
   save(parameter_input_sims, file = parameter_input_sims_filename)
   print(paste("parameter input sims from generation", iter, "saved to file:", parameter_input_sims_filename))  
-}
-
-save_kde_pdf <- function(iter, kde_next_gen){
-  ggplot(data = kde_next_gen) +
-    geom_density(aes(x = parameter_range)) +
-    facet_wrap(.~par, nrow=5, scales = "free") +
-    theme_bw()
-  density_plot_filename <- paste("kde_mcabc_gen", iter+1, ".pdf", sep="")
-  ggsave(file.path(graphics_dir, density_plot_filename))  
 }
 
 update_generation_stats <- function(iter, generation_stats, next_nsims, max_mean_nse, proportion_kept, new_cutoff){
