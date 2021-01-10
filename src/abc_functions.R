@@ -93,28 +93,29 @@ create_generation_stats <- function(startgen, ngens, nsims){
 
 create_tibble_initial <- function(nsims){
   pars_tibble <- tibble(#hydrology parameters (11)
-    "CN2.mgt|change = relchg"= runif(nsims, -0.25, 0.1),
-    "GWQMN.gw|change = relchg" = runif(nsims, -0.5, 2),
-    "ALPHA_BNK.rte|change = absval" =runif(nsims, 0, 1),
-    "CH_K2.rte|change = absval" = runif(nsims, 0, 500),
-    "CH_N2.rte|change = absval" = runif(nsims, 0, 0.3),
-    "TRNSRCH.bsn|change = absval" = runif(nsims, 0, 1),
-    "CH_N1.sub|change = absval" = runif(nsims, 0.01, 30),
-    "CH_K1.sub|change = absval" = runif(nsims, 0, 300),
-    "RCHRG_DP.gw|change = absval" = runif(nsims, 0, 1),
-    "SFTMP.bsn|change = absval"= runif(nsims, -5, 5),
-    "SMTMP.bsn|change = absval"= runif(nsims, -5, 5),
+    "CN2.mgt|change = relchg"= runif(nsims, -0.25, 0.1), #"generation 21 CN2 -0.116 0.02"
+    "GWQMN.gw|change = relchg" = runif(nsims, -0.5, 0.5), # "generation 21 GWQMN -0.021 0.106"
+    "ALPHA_BNK.rte|change = absval" =runif(nsims, 0.5, 1), # "generation 21 ALPHA_BNK 0.811 0.053"
+    "CH_K2.rte|change = absval" = runif(nsims, 0, 250), # "generation 21 CH_K2 138.073 7.122"
+    "CH_N2.rte|change = absval" = runif(nsims, 0, 0.1), # "generation 21 CH_N2 0.034 0.007"
+    "TRNSRCH.bsn|change = absval" = runif(nsims, 0, 0.5), # "generation 21 TRNSRCH 0.172 0.005"
+    "CH_N1.sub|change = absval" = runif(nsims, 0.01, 30), # "generation 21 CH_N1 14.44 4.473"
+    "CH_K1.sub|change = absval" = runif(nsims, 0, 150), # "generation 21 CH_K1 73.601 20.81"
+    "RCHRG_DP.gw|change = absval" = runif(nsims, 0, 0.5), # "generation 21 RCHRG_DP 0.224 0.08"
+    "SFTMP.bsn|change = absval"= runif(nsims, -2.5, 2.5), # "generation 21 SFTMP 1.29 0.831"
+    "SMTMP.bsn|change = absval"= runif(nsims, -2.5, 2.5), # "generation 21 SMTMP 1.066 0.477"
     #tile drainage and sediments (3)
-    "DEP_IMP.hru|change = absval"= runif(nsims, 0, 6000),
-    "DDRAIN.mgt|change = absval"= runif(nsims, 0, 2000),
-    "GDRAIN.mgt|change = absval"= runif(nsims, 0, 100),
+    "DEP_IMP.hru|change = absval"= runif(nsims, 2000, 6000), # "generation 21 DEP_IMP 4010.712 31.167"
+    "DDRAIN.mgt|change = absval"= runif(nsims, 500, 1500), # "generation 21 DDRAIN 1105.285 107.537"
+    "GDRAIN.mgt|change = absval"= runif(nsims, 0, 50), # "generation 21 GDRAIN 24.686 11.354"
     #bacteria submodel (4)
-    "BACTKDQ.bsn|change = absval" = runif(nsims, 0, 500),
-    "BACT_SWF.bsn|change = absval" = runif(nsims, 0, 1),
-    "THBACT.bsn|change = absval"= runif(nsims, 0, 10),
-    "WDPRCH.bsn|change = absval"= runif(nsims, 0, 1)
+    "BACTKDQ.bsn|change = absval" = runif(nsims, 100, 500), # "generation 21 BACTKDQ 393.222 35.305"
+    "BACT_SWF.bsn|change = absval" = runif(nsims, 0, 0.2), # "generation 21 BACT_SWF 0.085 0.018"
+    "THBACT.bsn|change = absval"= runif(nsims, 0, 2), # "generation 21 THBACT 1.343 0.078"
+    "WDPRCH.bsn|change = absval"= runif(nsims, 0, 1) # "generation 21 WDPRCH 0.564 0.109"
   )
 }
+
 
 fit_normal_parameters <- function(sim_pars_keepers){
   fitted_CN2 <- fitdist(sim_pars_keepers$CN2, "norm")
@@ -183,9 +184,13 @@ log_results <- function(iter, this_cutoff_mean_nse_score, n_all_keepers, previou
   proportion_kept <- n_all_keepers/previous_nsims
   print(paste("generation x:",n_all_keepers, "of", format(previous_nsims,scientific=F), "simulations kept; proportion kept =", round(proportion_kept,4)))
   print(paste("range of kept bacteria nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
-  print(paste("range of kept overall flow nse is (", round(min(nse_q),4), ",", round(max(nse_q),4), ") for generation", iter))
-  print(paste("range of kept overall flux nse is (", round(min(nse_flux),4), ",", round(max(nse_flux),4), ") for generation", iter))
-  print(paste("range of kept overall mean nse is (", round(min(nse_mean_keepers),4), ",", round(max(nse_mean_keepers),4), ") for generation", iter))
+  print(paste("median of kept bacteria nse is (", round(median(nse_bac),4), ") for generation", iter))
+  print(paste("range of kept flow nse is (", round(min(nse_q),4), ",", round(max(nse_q),4), ") for generation", iter))
+  print(paste("median of kept flow nse is (", round(median(nse_q),4), ") for generation", iter))
+  print(paste("range of kept flux nse is (", round(min(nse_flux),4), ",", round(max(nse_flux),4), ") for generation", iter))
+  print(paste("median of kept flux nse is (", round(median(nse_flux),4), ") for generation", iter))
+  print(paste("range of kept mean nse is (", round(min(nse_mean_keepers),4), ",", round(max(nse_mean_keepers),4), ") for generation", iter))
+  print(paste("median of kept mean nse is (", round(median(nse_mean_keepers),4), ") for generation", iter))
   print(paste("cutoff mean nse score to be used for the next generation is:", round(next_cutoff_mean_nse_score,4)))
 }
 
