@@ -195,8 +195,8 @@ log_results <- function(iter, this_cutoff_mean_nse_score, n_all_keepers, previou
 }
 
 plot_bac_v_flow_pdf <- function(iter, nses_w_parameters_all){
-  ggplot(nses_w_parameters_all, aes(x=nse_q, y=nse_bac, color=keeper)) +
-    geom_point()
+  ggplot(nses_w_parameters_all %>% arrange(nse_bac)) +
+    geom_point(aes(x=nse_q, y=nse_bac, color=keeper))
   nse_plot_filename <- paste("nse_bac_v_flow_gen", iter+1, ".pdf", sep="")
   ggsave(file.path(graphics_dir, nse_plot_filename))  
 }
