@@ -76,18 +76,23 @@ create_next_sim_tibble <- function(nsims_todo, parameter_input_sims){
   }
 }
 
-create_generation_stats <- function(startgen, ngens, nsims){
+create_generation_stats <- function(startgen, ngens, opt_nse, nsims){
   n <- ngens + 1
   df <- data.frame(generation = integer(n),
                    nsims = integer(n),
                    proportion_kept = double(n),
+                   opt_variable = character(n),
                    best_mean_nse = double(n),
-                   cutoff_mean_nse_score = double(n),
+                   best_bac_nse = double(n),
+                   best_q_nse = double(n),
+                   best_flux_nse = double(n),
+                   cutoff_score = double(n),
                    stringsAsFactors=FALSE)
   df$generation <- seq(startgen, ngens)
   df$nsims[1] <- nsims
   df$proportion_kept[1] <- 1.0
-  df$cutoff_mean_nse_score[1] <- -1e+12 #accept everything first time through
+  df$opt_variable[1] <- opt_nse
+  df$cutoff_score[1] <- -1e+12 #accept everything first time through
   return(df)
 }
 
@@ -142,11 +147,11 @@ fit_normal_parameters <- function(sim_pars_keepers){
               fitted_BACT_SWF, fitted_THBACT, fitted_WDPRCH))
 }
 
-get_cutoff_mean_nse_score <- function(iter, generation_stats){
+get_cutoff_score <- function(iter, generation_stats){
   # load and retrieve previously saved cutoff
-  return_cutoff_mean_nse <- generation_stats$cutoff_mean_nse_score[iter+1] #get the cutoff that was saved at the last generation
-  print(paste("cutoff score to be used for generation ", iter, " = ", return_cutoff_mean_nse))
-  return(return_cutoff_mean_nse)
+  return_cutoff_score <- generation_stats$cutoff_score[iter+1] #get the cutoff that was saved at the last generation
+  print(paste("cutoff score to be used for generation ", iter, " = ", return_cutoff_score))
+  return(return_cutoff_score)
 }
 
 load_parameter_input_sims <- function(iter, data_in_dir){
@@ -177,21 +182,21 @@ load_observations <- function(){
   load(file= file.path(data_in_dir, 'q_obs2.RData'), .GlobalEnv)
 }
 
-log_results <- function(iter, this_cutoff_mean_nse_score, n_all_keepers, previous_nsims, nse_mean_keepers,
-                        nse_bac, nse_q, nse_flux, next_cutoff_mean_nse_score){
+log_results <- function(iter, this_cutoff_score, n_all_keepers, previous_nsims, nse_mean_keepers,
+                        nse_bac_keepers, nse_q_keepers, nse_flux_keepers, next_cutoff_score){
   print(paste("Generation ", iter))
-  print(paste("cutoff score from the last generation was:", this_cutoff_mean_nse_score))
+  print(paste("cutoff score from the last generation was:", this_cutoff_score))
   proportion_kept <- n_all_keepers/previous_nsims
   print(paste("generation x:",n_all_keepers, "of", format(previous_nsims,scientific=F), "simulations kept; proportion kept =", round(proportion_kept,4)))
-  print(paste("range of kept bacteria nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
-  print(paste("median of kept bacteria nse is (", round(median(nse_bac),4), ") for generation", iter))
-  print(paste("range of kept flow nse is (", round(min(nse_q),4), ",", round(max(nse_q),4), ") for generation", iter))
-  print(paste("median of kept flow nse is (", round(median(nse_q),4), ") for generation", iter))
-  print(paste("range of kept flux nse is (", round(min(nse_flux),4), ",", round(max(nse_flux),4), ") for generation", iter))
-  print(paste("median of kept flux nse is (", round(median(nse_flux),4), ") for generation", iter))
+  print(paste("range of kept bacteria nse is (", round(min(nse_bac_keepers),4), ",", round(max(nse_bac_keepers),4), ") for generation", iter))
+  print(paste("median of kept bacteria nse is (", round(median(nse_bac_keepers),4), ") for generation", iter))
+  print(paste("range of kept flow nse is (", round(min(nse_q_keepers),4), ",", round(max(nse_q_keepers),4), ") for generation", iter))
+  print(paste("median of kept flow nse is (", round(median(nse_q_keepers),4), ") for generation", iter))
+  print(paste("range of kept flux nse is (", round(min(nse_flux_keepers),4), ",", round(max(nse_flux_keepers),4), ") for generation", iter))
+  print(paste("median of kept flux nse is (", round(median(nse_flux_keepers),4), ") for generation", iter))
   print(paste("range of kept mean nse is (", round(min(nse_mean_keepers),4), ",", round(max(nse_mean_keepers),4), ") for generation", iter))
   print(paste("median of kept mean nse is (", round(median(nse_mean_keepers),4), ") for generation", iter))
-  print(paste("cutoff mean nse score to be used for the next generation is:", round(next_cutoff_mean_nse_score,4)))
+  print(paste("cutoff mean nse score to be used for the next generation is:", round(next_cutoff_score,4)))
 }
 
 plot_bac_v_flow_pdf <- function(iter, nses_w_parameters_all){
@@ -459,17 +464,22 @@ save_parameter_input_sims <- function(iter, data_in_dir, parameter_input_sims){
   print(paste("parameter input sims from generation", iter, "saved to file:", parameter_input_sims_filename))  
 }
 
-update_generation_stats <- function(iter, generation_stats, next_nsims, max_mean_nse, proportion_kept, new_cutoff){
+update_generation_stats <- function(iter, generation_stats, next_nsims, 
+                                    max_mean_nse, max_bac_nse, max_q_nse, max_flow_nse, 
+                                    proportion_kept, new_cutoff){
   generation_stats$nsims[iter+2] <- next_nsims
   generation_stats$best_mean_nse[iter+1] <- max_mean_nse
+  generation_stats$best_bac_nse[iter+1] <- max_bac_nse
+  generation_stats$best_q_nse[iter+1] <- max_q_nse
+  generation_stats$best_flow_nse[iter+1] <- max_flow_nse
   generation_stats$proportion_kept[iter+1] <- proportion_kept
-  generation_stats$cutoff_mean_nse_score[iter+2] <- new_cutoff
+  generation_stats$cutoff_score[iter+2] <- new_cutoff
   return(generation_stats)
 }
 
-update_cutoff_mean_nse_score <- function(iter, generation_stats, cutoff_mean_nse_score){
-  generation_stats$cutoff_mean_nse_score[iter + 2] <- cutoff_mean_nse_score # +1 because zero-based and another +1 because stored in next generation slot
-  print(paste("cutoff score from generation", iter, "=", round(cutoff_mean_nse_score,6), "and will be used next generation"))
-  print(paste("cutoffs:", round(generation_stats$cutoff_mean_nse_score,6)))
+update_cutoff_score <- function(iter, generation_stats, cutoff_score){
+  generation_stats$cutoff_score[iter + 2] <- cutoff_score # +1 because zero-based and another +1 because stored in next generation slot
+  print(paste("cutoff score from generation", iter, "=", round(cutoff_score,6), "and will be used next generation"))
+  print(paste("cutoffs:", round(generation_stats$cutoff_score,6)))
 }
 
