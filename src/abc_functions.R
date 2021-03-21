@@ -32,11 +32,15 @@ calculate_nse_flux <- function(iter, bac_cal_output, bac_obs, q_obs){
   sim_bac <- bac_cal_output$simulation$bac_out
   sim_q <- bac_cal_output$simulation$q_out
   # calculate the simulated fluxes from concs and flows for all sims
-  flux_sim <- sim_bac[c(97:167),c(-1)]*
-    sim_q[c(97:167), c(-1)]*10^4
+  # flux_sim <- sim_bac[,c(-1)]*
+  #   sim_q[, c(-1)]*10^4
+  date <-bac_cal_output$simulation$bac_out$date
+  flux_sim <-sim_bac[,c(-1)]* sim_q[, c(-1)]*10^4
+  sim_flux<- cbind(date, flux_sim)
   #merge simulated and observed fluxes, calculate nses for all sims
-  nse_flux <- flux_sim %>%
-    map_dbl(., ~NSE(.x, flux_obs[,1]))
+  nse_flux <-  right_join(sim_flux, flux_obs, by = "date") %>%
+ dplyr::select(-date) %>%dplyr::select(-flux) %>%
+    map_dbl(., ~NSE(.x, flux_obs$flux))
   print(paste("range of all overall flux nse is (", round(min(nse_flux),4), ",", round(max(nse_flux),4), ") for generation", iter))
   return(nse_flux)
 }
@@ -176,10 +180,10 @@ load_generation_stats <- function(iter, data_in_dir){
 load_observations <- function(){
   load(file= file.path(data_in_dir,'bac_obs.RData'), .GlobalEnv)
   load(file = file.path(data_in_dir,'flux_obs.RData'), .GlobalEnv)
-  load(file = file.path(data_in_dir,'pcp_obs.RData'), .GlobalEnv)
-  load(file = file.path(data_in_dir,'pcp_obs2.RData'), .GlobalEnv)
+  #load(file = file.path(data_in_dir,'pcp_obs.RData'), .GlobalEnv)
+  #load(file = file.path(data_in_dir,'pcp_obs2.RData'), .GlobalEnv)
   load(file= file.path(data_in_dir, 'q_obs.RData'), .GlobalEnv)
-  load(file= file.path(data_in_dir, 'q_obs2.RData'), .GlobalEnv)
+  #load(file= file.path(data_in_dir, 'q_obs2.RData'), .GlobalEnv)
 }
 
 log_results <- function(iter, this_cutoff_score, n_all_keepers, previous_nsims, nse_mean_keepers,
@@ -224,10 +228,10 @@ run_swat_red_cedar <- function(swat_path, swat_parameters){
                                                      variable = "BACTP_OUT",
                                                      unit = 4)),
                parameter = swat_parameters,
-               start_date = "2011-01-01",
-               end_date = "2013-12-31",
-               years_skip = 2,
-               n_thread = 192)
+               start_date = "2000-01-01",
+               end_date = "2014-07-31",
+               years_skip = 4,
+               n_thread = 32)
 }
 
 sample_truncated_normals <- function(iter, new_nsims, fitted_parameter_list){
