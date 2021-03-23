@@ -27,7 +27,7 @@ calculate_nse_q <- function(iter, bac_cal_output, q_obs){
   return(nse_q)
 }
 
-calculate_nse_flux <- function(iter, bac_cal_output, bac_obs, q_obs){  
+calculate_nse_flux <- function(iter, bac_cal_output, flux_obs){  
   #load the simulated concentrations for last simulations
   sim_bac <- bac_cal_output$simulation$bac_out
   sim_q <- bac_cal_output$simulation$q_out
@@ -469,13 +469,13 @@ save_parameter_input_sims <- function(iter, data_in_dir, parameter_input_sims){
 }
 
 update_generation_stats <- function(iter, generation_stats, next_nsims, 
-                                    max_mean_nse, max_bac_nse, max_q_nse, max_flow_nse, 
+                                    max_mean_nse, max_bac_nse, max_q_nse, max_flux_nse,
                                     proportion_kept, new_cutoff){
   generation_stats$nsims[iter+2] <- next_nsims
   generation_stats$best_mean_nse[iter+1] <- max_mean_nse
   generation_stats$best_bac_nse[iter+1] <- max_bac_nse
   generation_stats$best_q_nse[iter+1] <- max_q_nse
-  generation_stats$best_flow_nse[iter+1] <- max_flow_nse
+  generation_stats$best_flux_nse[iter+1] <- max_flux_nse
   generation_stats$proportion_kept[iter+1] <- proportion_kept
   generation_stats$cutoff_score[iter+2] <- new_cutoff
   return(generation_stats)

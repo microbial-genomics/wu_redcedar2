@@ -38,10 +38,10 @@ library(SWATplusR)
 #setup directory structure
 #set paths for local machine or hpc
 # we are dumping everything in root directory on hpc
-huiyun <- FALSE #Huiyun set to true when you are running this code
+huiyun <- TRUE #Huiyun set to true when you are running this code
 print("load support functions")
 if(huiyun){
-  base_dir <- file.path("/work", "OVERFLOW", "RCR", "stp", "MSU")
+  base_dir <- file.path("/work", "OVERFLOW", "RCR", "simA1","TxtInOut")
   data_in_dir <- base_dir
   graphics_dir <- base_dir
   src_dir <- base_dir
@@ -56,7 +56,7 @@ if(huiyun){
     project_path <- base_dir
     swat_path <- base_dir
   }else{
-    base_dir <- file.path("/work", "OVERFLOW", "stp", "MSU")
+    base_dir <- file.path("/work", "OVERFLOW", "stp")
     data_in_dir <- base_dir
     graphics_dir <- base_dir
     src_dir <- base_dir
@@ -77,8 +77,8 @@ startgen <- 0
 ngens <- 40
 
 # decide what to optimize on
-# opt_nse <- "mean"
-opt_nse <- "conc"
+ opt_nse <- "mean"
+#opt_nse <- "conc"
 # opt_nse <- "flux"
 # opt_nse <- "flow"
 
@@ -119,7 +119,7 @@ for(iter in startgen:ngens){
   # calculate various nses
   nse_bac <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
   nse_q <- calculate_nse_q(iter, bac_cal_output, q_obs)
-  nse_flux <- calculate_nse_flux(iter, bac_cal_output, bac_obs, q_obs)
+  nse_flux <- calculate_nse_flux(iter, bac_cal_output, flux_obs)
   # calculate nse means
   nse_mean <- calculate_nse_mean(iter, nse_bac, nse_q, nse_flux)
   # get cutoff score
