@@ -1,6 +1,6 @@
 
 calculate_next_nsims <- function(n_to_keep, proportion_kept){
-  new_nsims <- max(12000, round(n_to_keep/proportion_kept)*2)
+  new_nsims <- (round(n_to_keep/proportion_kept)*2)+500
   print(paste("next round we will do", new_nsims, "simulations"))
   return(new_nsims)
 }
