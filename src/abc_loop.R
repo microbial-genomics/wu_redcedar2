@@ -91,16 +91,15 @@ for(iter in startgen:ngens){
   print(paste("optimizing based on", opt_nse))
   #
   #number to keep each generation
+  nsims_todo <- 1000
+  n_to_keep <- 200
   if(iter==0){
-    nsims_todo <- 10000
-    n_to_keep <- 2000
     pars_tibble <- create_tibble_initial(nsims_todo)
     # create dataframe to persistently store stats
     generation_stats <- create_generation_stats(startgen, ngens, opt_nse, n_to_keep)
     #will be NA for generation 0 because not needed, this routine will clear out the vector though
     cutoff_score <- get_cutoff_score(iter, generation_stats)      
   }else{
-    n_to_keep <- 2000 
     #load current generation stats
     load_generation_stats(iter, data_in_dir)
     #get nsims for this iteration
