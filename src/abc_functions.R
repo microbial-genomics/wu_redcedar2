@@ -132,8 +132,8 @@ fit_normal_parameters <- function(sim_pars_keepers){
   fitted_ALPHA_BNK <- fitdist(sim_pars_keepers$ALPHA_BNK, "norm")
   fitted_CH_K2 <- fitdist(sim_pars_keepers$CH_K2, "norm")
   fitted_CH_N2 <- fitdist(sim_pars_keepers$CH_N2, "norm")
-  fitted_TRNSRCH <- fitdist(sim_pars_keepers$TRNSRCH, "norm")
-  fitted_CH_N1 <- fitdist(sim_pars_keepers$CH_N1, "norm")
+  fitted_TRNSRCH <- fitdist(sim_pars_keepers$TRNSRCH, "norm")##generation 23 doesn't work because it doesn't fit" norm", but "lnorm"is fine
+  fitted_CH_N1 <- fitdist(sim_pars_keepers$CH_N1, "norm")##generation 23 doesn't work because it doesn't fit" norm", but "lnorm"is fine
   fitted_CH_K1 <- fitdist(sim_pars_keepers$CH_K1, "norm")
   fitted_RCHRG_DP <- fitdist(sim_pars_keepers$RCHRG_DP, "norm")
   fitted_SFTMP <- fitdist(sim_pars_keepers$SFTMP, "norm")
@@ -142,7 +142,7 @@ fit_normal_parameters <- function(sim_pars_keepers){
   fitted_DDRAIN <- fitdist(sim_pars_keepers$DDRAIN, "norm")
   fitted_GDRAIN <- fitdist(sim_pars_keepers$GDRAIN, "norm")
   fitted_BACTKDQ <- fitdist(sim_pars_keepers$BACTKDQ, "norm")
-  fitted_BACT_SWF<- fitdist(sim_pars_keepers$BACT_SWF, "norm")
+  fitted_BACT_SWF<- fitdist(sim_pars_keepers$BACT_SWF, "norm")##generation 23 doesn't work because it doesn't fit" norm", but "lnorm"is fine
   fitted_THBACT <- fitdist(sim_pars_keepers$THBACT, "norm")
   fitted_WDPRCH <- fitdist(sim_pars_keepers$WDPRCH, "norm")
   return(list(fitted_CN2, fitted_GWQMN, fitted_ALPHA_BNK, fitted_CH_K2, fitted_CH_N2,

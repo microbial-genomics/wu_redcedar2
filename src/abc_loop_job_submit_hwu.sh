@@ -8,7 +8,7 @@
 #SBARCH --mail-user=purucker.tom@epa.gov
 #SBATCH --mail-type=BEGIN,END
 
-setenv TMPDIR /work/OVERFLOW/RCR/stp/MSU
+setenv TMPDIR /work/OVERFLOW/RCR/sim52
 
 module load intel/19.0.5
 module load R/3.6.2
