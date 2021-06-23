@@ -1,3 +1,23 @@
+ base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim**")
+  data_in_dir <- base_dir
+  graphics_dir <- base_dir
+  src_dir <- base_dir
+  project_path <- base_dir
+  swat_path <- base_dir
+
+source(file.path(src_dir, "abc_functions.R"))
+
+load_observations()
+
+load ("/work/OVERFLOW/RCR/sim**/bac_cal*.RData")
+iter <- *
+
+nse_bac <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
+nse_q <- calculate_nse_q(iter, bac_cal_output, q_obs)
+nse_flux <- calculate_nse_flux(iter, bac_cal_output, flux_obs)
+
+
+
 #################################################################
 ############precipitation with discharge plot###########################
 ######################################################################
