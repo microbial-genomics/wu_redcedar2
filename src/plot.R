@@ -1,5 +1,5 @@
 #################################################################
-############itation with discharge plot###########################
+############precipitation with discharge plot###########################
 ######################################################################
 
 ###method 1
@@ -60,10 +60,15 @@ ggplot() +
 ######################################################################
 ############### bacteria simulation and observation plot##############
 #####################################################################
+##load bac_obs.RData
+##load bac_cal*.RData(bac_cal_output) this is the file generated from swatplusr package
+##calculate nse_bac, use abc_functions.R
+##identify iter
+nse_bac <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
 sort(nse_bac, decreasing = T) %>% enframe()
-
-bac_plot <-right_join(bac_cal1$simulation$bac_out,bac_obs,by="date")%>%
-  dplyr::select(date, run_10654)%>%
+#get the run_**** number
+bac_plot <-right_join(bac_cal_output$simulation$bac_out,bac_obs,by="date")%>%
+  dplyr::select(date, run_****)%>%
 left_join(., bac_obs, by ="date")%>%
   rename (bac_obs=bacteria)%>%
   gather(., key= "variable", value="bacteria",-date)
@@ -74,7 +79,7 @@ ggplot(data = bac_plot)+
   geom_point(aes(x = date, y = bacteria, col = variable, lty = variable)) +
   scale_color_manual(values = c("black", "tomato3")) +
   theme_bw()
-
+ggsave("bac_sim_obs_gen*.pdf")
 
 
 ######################################################################
