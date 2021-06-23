@@ -88,7 +88,7 @@ ggsave("bac_sim_obs_gen*.pdf")
 
 sort(nse_q, decreasing = T) %>% enframe()
 
-q_plot <-bac_cal1$simulation$q_out%>%dplyr::select(date, run_08892)%>%
+q_plot <-bac_cal_output$simulation$q_out%>%dplyr::select(date, run_08892)%>%
   left_join(., q_obs, by ="date")%>% 
   rename (q_obs=discharge)%>%gather(., key= "variable", value="discharge",-date)
 
@@ -119,10 +119,10 @@ ggplot() +
 #########plot bacteria with discharge (simulation data)####################
 ###########################################################
 ###Method1
-bac <- bac_cal1$simulation$bac_out%>%dplyr::select(date, run_10654)
+bac <- bac_cal_output$simulation$bac_out%>%dplyr::select(date, run_10654)
 names(bac)[2]<- paste("bacteria")
 
-q  <- bac_cal1$simulation$q_out%>%dplyr::select(date, run_10654)
+q  <- bac_cal_output$simulation$q_out%>%dplyr::select(date, run_10654)
 names(q)[2] <- paste("discharge")
 
 
