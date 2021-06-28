@@ -1,4 +1,6 @@
  base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim**")
+  theme_bw()
+  theme_bw()
   data_in_dir <- base_dir
   graphics_dir <- base_dir
   src_dir <- base_dir
@@ -88,7 +90,7 @@ nse_bac <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
 sort(nse_bac, decreasing = T) %>% enframe()
 #get the run_**** number
 bac_plot <-right_join(bac_cal_output$simulation$bac_out,bac_obs,by="date")%>%
-  dplyr::select(date, run_****)%>%
+  dplyr::select(date, run_***)%>%
 left_join(., bac_obs, by ="date")%>%
   rename (bac_obs=bacteria)%>%
   gather(., key= "variable", value="bacteria",-date)
@@ -101,7 +103,38 @@ ggplot(data = bac_plot)+
   theme_bw()
 ggsave("bac_sim_obs_gen*.pdf")
 
+#################################################################
+#######plot log bac simulation and log bac observation ##############
+#################################################################
+bac_sim0 <-bac_cal_output$simulation$bac_out[,c(1,***+1)]
+l_bac_sim<-log10(bac_sim0$run_***+10^-4)
+bac_sim <-cbind(bac_sim0[,1],l_bac_sim)
+l_bac_sim <-bac_sim
 
+
+l_bac_plot <-right_join(l_bac_sim,l_bac_obs,by="date")%>%
+  dplyr::select(date, l_bac_sim)%>%
+left_join(.,l_bac_obs, by ="date")%>%
+  rename (l_bac=l_bacteria)%>%
+  gather(., key= "variable", value="l_bacteria",-date)
+
+
+ggplot(data =l_bac_plot)+
+  geom_line(aes(x = date, y =l_bacteria, col = variable, lty = variable)) +
+  geom_point(aes(x = date, y =l_bacteria, col = variable, lty = variable)) +
+  scale_color_manual(values = c("black", "tomato3")) +
+  theme_bw()
+ggsave("bac_sim_obs_gen*.pdf")
+
+
+sapply(my.data, class)
+str(my.data)
+
+
+
+####count the non zero point in simulation output #####
+bac <- bac_cal_output$simulation$bac_out$run_****
+length(which(bac!=0))
 ######################################################################
 ############### discharge simulation and observation plot##############
 ####################################################################

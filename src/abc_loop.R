@@ -1,3 +1,4 @@
+options("width"=132)
 #check to make sure required packages are installed
 list.of.packages <- c("devtools","dplyr","dygraphs","fast","forcats","ggplot2",
                       "hydroGOF","lhs","lubridate","mapview","plotly",
@@ -41,7 +42,7 @@ library(SWATplusR)
 huiyun <- TRUE #Huiyun set to true when you are running this code
 print("load support functions")
 if(huiyun){
-  base_dir <- file.path("/work", "OVERFLOW", "RCR", "simA1","TxtInOut")
+  base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim**")
   data_in_dir <- base_dir
   graphics_dir <- base_dir
   src_dir <- base_dir
