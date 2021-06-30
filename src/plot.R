@@ -1,6 +1,4 @@
  base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim**")
-  theme_bw()
-  theme_bw()
   data_in_dir <- base_dir
   graphics_dir <- base_dir
   src_dir <- base_dir
@@ -106,14 +104,15 @@ ggsave("bac_sim_obs_gen*.pdf")
 #################################################################
 #######plot log bac simulation and log bac observation ##############
 #################################################################
-bac_sim0 <-bac_cal_output$simulation$bac_out[,c(1,***+1)]
-l_bac_sim<-log10(bac_sim0$run_***+10^-4)
-bac_sim <-cbind(bac_sim0[,1],l_bac_sim)
+bac_sim0 <-bac_cal_output$simulation$bac_out[,c(1,3336+1)]
+l_run_3336<-log10(bac_sim0$run_3336+10^-4)
+bac_sim <-cbind(bac_sim0[,1],l_run_3336)
 l_bac_sim <-bac_sim
-
+###need to refine this code#####
+load(fil="/work/OVERFLOW/RCR/sim52.3/l_bac_obs.RData")
 
 l_bac_plot <-right_join(l_bac_sim,l_bac_obs,by="date")%>%
-  dplyr::select(date, l_bac_sim)%>%
+  dplyr::select(date, l_run_3336)%>%
 left_join(.,l_bac_obs, by ="date")%>%
   rename (l_bac=l_bacteria)%>%
   gather(., key= "variable", value="l_bacteria",-date)
