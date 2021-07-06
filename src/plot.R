@@ -1,4 +1,4 @@
- base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim**")
+ base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim53")
   data_in_dir <- base_dir
   graphics_dir <- base_dir
   src_dir <- base_dir
@@ -9,8 +9,8 @@ source(file.path(src_dir, "abc_functions.R"))
 
 load_observations()
 
-load ("/work/OVERFLOW/RCR/sim**/bac_cal*.RData")
-iter <- *
+load ("/work/OVERFLOW/RCR/sim53/bac_cal10.RData")
+iter <- 10
 
 nse_bac <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
 nse_q <- calculate_nse_q(iter, bac_cal_output, q_obs)
@@ -21,17 +21,23 @@ nse_flux <- calculate_nse_flux(iter, bac_cal_output, flux_obs)
 #################################################################
 ############precipitation with discharge plot###########################
 ######################################################################
+precipitation <- read.table("pcp_obs.txt")[,2]
+ date0414 <- read.table("pcp_obs.txt")[,1]
+ date = as.Date(date0414, format="%m/%d/%Y")
+ pcp_obs <- tibble(date, precipitation)
+ save(pcp_obs, file ='/work/OVERFLOW/RCR/sim53/pcp_obs.RData')
 
 ###method 1
 ggplot() +
-  geom_line(mapping = aes(x = q_obs$date, y = q_obs$discharge), size = 0.5, color = "blue") +
+  geom_line(mapping = aes(x = q_obs$date, y = q_obs$discharge), size = 0.5, 
+            color = "cyan3") +
   geom_bar(mapping = aes(x = pcp_obs$date, y = pcp_obs$precipitation*10),
-           stat = "identity", fill = "black") +
-  scale_x_date(name = "date", ) +
+           stat = "identity", fill = "black",width=4) +
+  scale_x_date(name = "date", date_breaks = "1 year",date_labels = "%y") +
   scale_y_continuous(name = "discharge",
                      sec.axis = sec_axis(~./10, name = "precipitation")) +
   theme(
-    axis.title.y = element_text(color = "blue"),
+    axis.title.y = element_text(color = "cyan3"),
     axis.title.y.right = element_text(color = "black"))
 
 ###method 2
@@ -57,7 +63,7 @@ p
 ggplot() +
   geom_line(mapping = aes(x = q_obs$date, y = q_obs$discharge), size = 0.7, color = "blue") +
   geom_point(mapping = aes(x = bac_obs$date, y = bac_obs$bacteria*0.02), color = "tomato3") +
-  scale_x_date(name = "date", ) +
+  scale_x_date(name = "date",date_breaks = "1 year",date_labels = "%y") +
   scale_y_continuous(name = "discharge (cms)",
                      sec.axis = sec_axis(~./0.02, name = "bacteria(MPN/100ml)")) +
   theme(
@@ -86,9 +92,9 @@ ggplot() +
 ##identify iter
 nse_bac <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
 sort(nse_bac, decreasing = T) %>% enframe()
-#get the run_**** number
+#get the run_*** number
 bac_plot <-right_join(bac_cal_output$simulation$bac_out,bac_obs,by="date")%>%
-  dplyr::select(date, run_***)%>%
+  dplyr::select(date, run_02779)%>%
 left_join(., bac_obs, by ="date")%>%
   rename (bac_obs=bacteria)%>%
   gather(., key= "variable", value="bacteria",-date)
@@ -104,15 +110,15 @@ ggsave("bac_sim_obs_gen*.pdf")
 #################################################################
 #######plot log bac simulation and log bac observation ##############
 #################################################################
-bac_sim0 <-bac_cal_output$simulation$bac_out[,c(1,3336+1)]
-l_run_3336<-log10(bac_sim0$run_3336+10^-4)
-bac_sim <-cbind(bac_sim0[,1],l_run_3336)
+bac_sim0 <-bac_cal_output$simulation$bac_out[,c(1,02779+1)]
+l_run_02779<-log10(bac_sim0$run_02779)
+bac_sim <-cbind(bac_sim0[,1],l_run_02779)
 l_bac_sim <-bac_sim
 ###need to refine this code#####
-load(fil="/work/OVERFLOW/RCR/sim52.3/l_bac_obs.RData")
+load(file="/work/OVERFLOW/RCR/sim52.3/l_bac_obs.RData")
 
 l_bac_plot <-right_join(l_bac_sim,l_bac_obs,by="date")%>%
-  dplyr::select(date, l_run_3336)%>%
+  dplyr::select(date, l_run_02779)%>%
 left_join(.,l_bac_obs, by ="date")%>%
   rename (l_bac=l_bacteria)%>%
   gather(., key= "variable", value="l_bacteria",-date)
@@ -123,7 +129,8 @@ ggplot(data =l_bac_plot)+
   geom_point(aes(x = date, y =l_bacteria, col = variable, lty = variable)) +
   scale_color_manual(values = c("black", "tomato3")) +
   theme_bw()
-ggsave("bac_sim_obs_gen*.pdf")
+ggsave("bac_sim_obs_gen10.pdf")
+ggsave("/home/hwu/wu_redcedar2/graphics/sim53/bac_sim_obs_gen10.pdf")
 
 
 sapply(my.data, class)
@@ -171,7 +178,7 @@ ggplot() +
 #########plot bacteria with discharge (simulation data)####################
 ###########################################################
 ###Method1
-bac <- bac_cal_output$simulation$bac_out%>%dplyr::select(date, run_10654)
+bac <- bac_cal_output$simulation$bac_out%>%dplyr::select(date, run_02779)
 names(bac)[2]<- paste("bacteria")
 
 q  <- bac_cal_output$simulation$q_out%>%dplyr::select(date, run_10654)
@@ -182,13 +189,16 @@ bac_q_plot <- bac %>% left_join(., q, by ="date" )
 
 ggplot(bac_q_plot,aes(date,discharge)) +
   geom_line(aes(y = discharge), size =0.5, color = "blue") +
-  geom_point(aes(y = bacteria/100), size = 0.8, color = "tomato3") +
+  geom_point(aes(y = bacteria/100), size = 0.3, color = "tomato3") +
+  scale_x_date(name="date", date_breaks = "1 year",date_labels = "%y") +
   scale_y_continuous(name = "discharge", limits=c(0,30),
                      sec.axis = sec_axis(~(.*100), name = "bacteria")) +
   theme(
     axis.title.y = element_text(color = "blue"),
     axis.title.y.right = element_text(color = "tomato3"))
 
+ggsave("q_bac_sim_gen10_02779.pdf")
+ggsave("/home/hwu/wu_redcedar2/graphics/sim53/q_bac_sim_gen10_02779.pdf")
 
 #
 
