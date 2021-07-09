@@ -1,0 +1,35 @@
+library(xts)
+library(tibble)
+load(file="/work/OVERFLOW/RCR/sim53/bac_obs.RData")
+data <- as.xts(bac_obs$bacteria,order.by=as.Date(bac_obs$date))
+bac_weekly<- apply.weekly(data,mean)
+bacteria<- coredata(bac_weekly)
+class(bacteria)
+bacteria <-bacteria[,1]
+date <- index(bac_weekly)
+bac_obs_weekly<-tibble(date,bacteria)
+save(bac_obs_weekly, file="/work/OVERFLOW/RCR/sim53/bac_obs_w.RData")
+load(file="/work/OVERFLOW/RCR/sim53/bac_obs_w.RData")
+
+load(file="/work/OVERFLOW/RCR/sim53/q_obs.RData")
+data2 <- as.xts(q_obs$discharge,order.by=as.Date(q_obs$date))
+q_weekly<- apply.weekly(data2,mean)
+flow<- coredata(q_weekly)
+class(flow)
+discharge <-flow[,1]
+date <- index(q_weekly)
+q_obs_weekly<-tibble(date,discharge)
+save(q_obs_weekly, file="/work/OVERFLOW/RCR/sim53/q_obs_w.RData")
+load(file="/work/OVERFLOW/RCR/sim53/q_obs_w.RData")
+
+
+load("/work/OVERFLOW/RCR/sim53/bac_cal11.RData")
+data3 <- as.xts(bac_cal_output$simulation$bac_out,order.by=as.Date(bac_cal_output$simulation$bac_out$date))
+bac_sim_w<- apply.weekly(data3,mean)
+bac_sim<- coredata(bac_sim_w)
+class(bac_sim)
+bacteria <-bac_sim[,1:12363]
+date <- index(bac_sim)
+bac_sim.w<-tibble(date,bacteria)
+save(q_obs_weekly, file="/work/OVERFLOW/RCR/sim53/q_obs_w.RData")
+load(file="/work/OVERFLOW/RCR/sim53/q_obs_w.RData")

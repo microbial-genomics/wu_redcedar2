@@ -1,4 +1,4 @@
- base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim53")
+ base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim53.2")
   data_in_dir <- base_dir
   graphics_dir <- base_dir
   src_dir <- base_dir
@@ -94,7 +94,7 @@ nse_bac <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
 sort(nse_bac, decreasing = T) %>% enframe()
 #get the run_*** number
 bac_plot <-right_join(bac_cal_output$simulation$bac_out,bac_obs,by="date")%>%
-  dplyr::select(date, run_10881)%>%
+  dplyr::select(date, run_0401)%>%
 left_join(., bac_obs, by ="date")%>%
   rename (bac_obs=bacteria)%>%
   gather(., key= "variable", value="bacteria",-date)
@@ -110,15 +110,15 @@ ggsave("bac_sim_obs_gen*.pdf")
 #################################################################
 #######plot log bac simulation and log bac observation ##############
 #################################################################
-bac_sim0 <-bac_cal_output$simulation$bac_out[,c(1,10881+1)]
-l_run_10881<-log10(bac_sim0$run_10881)
-bac_sim <-cbind(bac_sim0[,1],l_run_10881)
+bac_sim0 <-bac_cal_output$simulation$bac_out[,c(1,0401+1)]
+l_run_0401<-log10(bac_sim0$run_0401)
+bac_sim <-cbind(bac_sim0[,1],l_run_0401)
 l_bac_sim <-bac_sim
 ###need to refine this code#####
 load(file="/work/OVERFLOW/RCR/sim52.3/l_bac_obs.RData")
 
 l_bac_plot <-right_join(l_bac_sim,l_bac_obs,by="date")%>%
-  dplyr::select(date, l_run_10881)%>%
+  dplyr::select(date, l_run_0401)%>%
 left_join(.,l_bac_obs, by ="date")%>%
   rename (l_bac=l_bacteria)%>%
   gather(., key= "variable", value="l_bacteria",-date)
@@ -128,9 +128,10 @@ ggplot(data =l_bac_plot)+
   geom_line(aes(x = date, y =l_bacteria, col = variable, lty = variable)) +
   geom_point(aes(x = date, y =l_bacteria, col = variable, lty = variable)) +
   scale_color_manual(values = c("black", "tomato3")) +
+  ggtitle("sim53.2_generation7_bacnse=-0.0167")
   theme_bw()
-ggsave("bac_sim_obs_gen0.pdf")
-ggsave("/home/hwu/wu_redcedar2/graphics/sim53/bac_sim_obs_gen0.pdf")
+ggsave("bac_sim_obs_gen7.pdf")
+ggsave("/home/hwu/wu_redcedar2/graphics/sim53/bac_sim_obs_gen7.pdf")
 
 
 sapply(my.data, class)
@@ -147,16 +148,18 @@ length(which(bac!=0))
 
 sort(nse_q, decreasing = T) %>% enframe()
 
-q_plot <-bac_cal_output$simulation$q_out%>%dplyr::select(date, run_08892)%>%
+q_plot <-bac_cal_output$simulation$q_out%>%dplyr::select(date, run_0841)%>%
   left_join(., q_obs, by ="date")%>% 
   rename (q_obs=discharge)%>%gather(., key= "variable", value="discharge",-date)
 
 ggplot(data = q_plot) +
   geom_line(aes(x = date, y = discharge, col = variable, lty = variable)) +
+  scale_x_date(name = "date", date_breaks = "1 year",date_labels = "%Y") +
   scale_color_manual(values = c("black", "tomato3")) +
+  ggtitle("sim53.2")+
   theme_bw()
-
-
+ggsave("q_obs_sim_gene11.pdf")
+ggsave("/home/hwu/wu_redcedar2/graphics/sim53/q_obs_sim_gene11.pdf")
 ######################################################################
 ############### flux simulation and observation plot##############
 ####################################################################
