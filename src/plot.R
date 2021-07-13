@@ -1,4 +1,24 @@
- base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim53.2")
+library(devtools)
+library(dplyr)
+library(dygraphs)
+#library(fast) #error
+library(forcats)
+library(ggplot2)
+library(hydroGOF)
+library(lhs)
+library(lubridate)
+library(mapview)
+library(plotly)
+library(purrr)
+library(sensitivity)
+library(sf)
+library(tibble)
+library(tidyr)
+library(fitdistrplus)
+library(truncnorm)
+
+
+base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim55")
   data_in_dir <- base_dir
   graphics_dir <- base_dir
   src_dir <- base_dir
@@ -9,8 +29,8 @@ source(file.path(src_dir, "abc_functions.R"))
 
 load_observations()
 
-load ("/work/OVERFLOW/RCR/sim53/bac_cal10.RData")
-iter <- 10
+load ("/work/OVERFLOW/RCR/sim55/bac_cal2.RData")
+iter <- 2
 
 nse_bac <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
 nse_q <- calculate_nse_q(iter, bac_cal_output, q_obs)
