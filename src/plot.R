@@ -29,8 +29,8 @@ source(file.path(src_dir, "abc_functions.R"))
 
 load_observations()
 
-load ("/work/OVERFLOW/RCR/sim55/bac_cal2.RData")
-iter <- 2
+load ("/work/OVERFLOW/RCR/sim55/bac_cal3.RData")
+iter <- 3
 
 nse_bac <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
 nse_q <- calculate_nse_q(iter, bac_cal_output, q_obs)
