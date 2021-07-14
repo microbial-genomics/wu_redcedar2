@@ -52,7 +52,7 @@ load(file="/work/OVERFLOW/RCR/sim53/bac_obs_w.RData")
 ################################
 load("/work/OVERFLOW/RCR/sim55/bac_cal5.RData")
 data3 <- as.xts(bac_cal_output$simulation$bac_out,order.by=as.Date(bac_cal_output$simulation$bac_out$date))
-bac_cal<- apply.weekly(data3,mean)
+bac_cal<- apply.weekly(data3,mean, na.rm=TRUE)
 bac_cal_w<- coredata(bac_cal)
 bac_cal_w <-as_tibble(bac_cal_w)
 bac_cal_w$date<-index(bac_cal)
