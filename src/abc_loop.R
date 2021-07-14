@@ -27,6 +27,8 @@ library(tibble)
 library(tidyr)
 library(fitdistrplus)
 library(truncnorm)
+library(xts)
+
 
 #SWATPlusR needs to be installed via devtools
 # can require manual installation of tidy, etc packages with reboots
@@ -42,7 +44,7 @@ library(SWATplusR)
 huiyun <- TRUE #Huiyun set to true when you are running this code
 print("load support functions")
 if(huiyun){
-  base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim**")
+  base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim55")
   data_in_dir <- base_dir
   graphics_dir <- base_dir
   src_dir <- base_dir
