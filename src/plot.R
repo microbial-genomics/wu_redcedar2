@@ -114,7 +114,7 @@ nse_bac <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
 sort(nse_bac, decreasing = T) %>% enframe()
 #get the run_*** number
 bac_plot <-right_join(bac_cal_output$simulation$bac_out,bac_obs,by="date")%>%
-  dplyr::select(date, run_0401)%>%
+  dplyr::select(date, run_0056)%>%
 left_join(., bac_obs, by ="date")%>%
   rename (bac_obs=bacteria)%>%
   gather(., key= "variable", value="bacteria",-date)
@@ -130,15 +130,15 @@ ggsave("bac_sim_obs_gen*.pdf")
 #################################################################
 #######plot log bac simulation and log bac observation ##############
 #################################################################
-bac_sim0 <-bac_cal_output$simulation$bac_out[,c(1,0401+1)]
-l_run_0401<-log10(bac_sim0$run_0401)
-bac_sim <-cbind(bac_sim0[,1],l_run_0401)
+bac_sim0 <-bac_cal_output$simulation$bac_out[,c(1,0056+1)]
+l_run_0056<-log10(bac_sim0$run_0056)
+bac_sim <-cbind(bac_sim0[,1],l_run_0056)
 l_bac_sim <-bac_sim
 ###need to refine this code#####
 load(file="/work/OVERFLOW/RCR/sim52.3/l_bac_obs.RData")
 
 l_bac_plot <-right_join(l_bac_sim,l_bac_obs,by="date")%>%
-  dplyr::select(date, l_run_0401)%>%
+  dplyr::select(date, l_run_0056)%>%
 left_join(.,l_bac_obs, by ="date")%>%
   rename (l_bac=l_bacteria)%>%
   gather(., key= "variable", value="l_bacteria",-date)
@@ -148,8 +148,10 @@ ggplot(data =l_bac_plot)+
   geom_line(aes(x = date, y =l_bacteria, col = variable, lty = variable)) +
   geom_point(aes(x = date, y =l_bacteria, col = variable, lty = variable)) +
   scale_color_manual(values = c("black", "tomato3")) +
-  ggtitle("sim53.2_generation7_bacnse=-0.0167")
+  #ggtitle("sim53.2_generation7_bacnse=-0.0167")+
   theme_bw()
+
+
 ggsave("bac_sim_obs_gen7.pdf")
 ggsave("/home/hwu/wu_redcedar2/graphics/sim53/bac_sim_obs_gen7.pdf")
 
@@ -178,6 +180,8 @@ ggplot(data = q_plot) +
   scale_color_manual(values = c("black", "tomato3")) +
   ggtitle("sim53.2")+
   theme_bw()
+
+
 ggsave("q_obs_sim_gene11.pdf")
 ggsave("/home/hwu/wu_redcedar2/graphics/sim53/q_obs_sim_gene11.pdf")
 ######################################################################
@@ -201,10 +205,10 @@ ggplot() +
 #########plot bacteria with discharge (simulation data)####################
 ###########################################################
 ###Method1
-bac <- bac_cal_output$simulation$bac_out%>%dplyr::select(date, run_02779)
+bac <- bac_cal_output$simulation$bac_out%>%dplyr::select(date, run_0056 )
 names(bac)[2]<- paste("bacteria")
 
-q  <- bac_cal_output$simulation$q_out%>%dplyr::select(date, run_10654)
+q  <- bac_cal_output$simulation$q_out%>%dplyr::select(date, run_0056)
 names(q)[2] <- paste("discharge")
 
 
@@ -213,9 +217,9 @@ bac_q_plot <- bac %>% left_join(., q, by ="date" )
 ggplot(bac_q_plot,aes(date,discharge)) +
   geom_line(aes(y = discharge), size =0.5, color = "blue") +
   geom_point(aes(y = bacteria/100), size = 0.3, color = "tomato3") +
-  scale_x_date(name="date", date_breaks = "1 year",date_labels = "%y") +
-  scale_y_continuous(name = "discharge", limits=c(0,30),
-                     sec.axis = sec_axis(~(.*100), name = "bacteria")) +
+  scale_x_date(name="date", date_breaks = "1 year",date_labels = "%Y") +
+  scale_y_continuous(name = "discharge (cms)", limits=c(0,30),
+                     sec.axis = sec_axis(~(.*100), name = "bacteria (MPN/100ml)")) +
   theme(
     axis.title.y = element_text(color = "blue"),
     axis.title.y.right = element_text(color = "tomato3"))
