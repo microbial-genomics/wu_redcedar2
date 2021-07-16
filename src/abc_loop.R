@@ -79,8 +79,16 @@ load_observations()
 startgen <- 0
 ngens <- 40
 
-# decide what to optimize on
- opt_nse <- "mean"
+# decide what time frame/interval to optimize on 
+# opt_time_interval <- "daily"
+opt_time_interval <- "weekly"
+
+# should concentrations be logged (modified nash sutcliffe) 
+# opt_conc_transform <- "none"
+opt_conc_transform <- "logged"
+
+# decide what metric to optimize on
+opt_nse <- "mean"
 #opt_nse <- "conc"
 # opt_nse <- "flux"
 # opt_nse <- "flow"
@@ -112,16 +120,26 @@ for(iter in startgen:ngens){
     #assign parameters to input tibble
     pars_tibble <- create_next_sim_tibble(nsims_todo, parameter_input_sims)
   }
-  # run the swat simulations for this iteration
+  # run the swat simulations for this iteration and save daily output
   bac_cal_output <- simulate_generation_next(iter, nsims_todo, swat_path, base_dir, pars_tibble)  
+  # extract only the observed days from the simulated daily output
+  
+  # then create weekly average output for sims
+  
   # save output to disk
   save_bac_cal_output(iter, bac_cal_output)
   #get parameter names and values
   sim_pars <- bac_cal_output$parameter$values
-  # calculate various nses
+  # calculate various nses for daily data
   nse_bac <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
   nse_q <- calculate_nse_q(iter, bac_cal_output, q_obs)
   nse_flux <- calculate_nse_flux(iter, bac_cal_output, flux_obs)
+  # calculate various nses for daily data with logged concentrations
+  
+  # calculate various nses for weekly data
+  
+  # calculate various nses for weekly data with logged concentrations
+  
   # calculate nse means
   nse_mean <- calculate_nse_mean(iter, nse_bac, nse_q, nse_flux)
   # get cutoff score

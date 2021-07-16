@@ -1,6 +1,8 @@
 library(xts)
 library(tibble)
 #glimpse(df)
+
+
 load(file="/work/OVERFLOW/RCR/sim53/bac_obs.RData")
 data <- as.xts(bac_obs$bacteria,order.by=as.Date(bac_obs$date))
 bac_weekly<- apply.weekly(data,mean)
@@ -34,6 +36,8 @@ obs_daily <-df
 save(obs_daily, file="/work/OVERFLOW/RCR/sim53/obs_daily.RData")
 load(file="/work/OVERFLOW/RCR/sim53/obs_daily.RData")
 
+
+
 bac_daily <-subset(obs_daily,select=c(1,3))
 bac_daily
 data <- as.xts(bac_daily$bacteria,order.by=as.Date(bac_daily$date))
@@ -50,10 +54,11 @@ load(file="/work/OVERFLOW/RCR/sim53/bac_obs_w.RData")
 ################################
 #####load simulation data########
 ################################
+#convert daily sims to weekly
 load("/work/OVERFLOW/RCR/sim55/bac_cal5.RData")
 data3 <- as.xts(bac_cal_output$simulation$bac_out,order.by=as.Date(bac_cal_output$simulation$bac_out$date))
 bac_cal<- apply.weekly(data3,mean, na.rm=TRUE)
-bac_cal_w<- coredata(bac_cal)
+bac_cal_w<- coredata(bac_cal) #xts function
 bac_cal_w <-as_tibble(bac_cal_w)
 bac_cal_w$date<-index(bac_cal)
 save(bac_cal_w, file="/work/OVERFLOW/RCR/sim55/bac_cal5_w.RData")
