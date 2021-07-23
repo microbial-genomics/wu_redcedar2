@@ -41,7 +41,7 @@ library(SWATplusR)
 #setup directory structure
 #set paths for local machine or hpc
 # we are dumping everything in root directory on hpc
-huiyun <- TRUE #Huiyun set to true when you are running this code
+huiyun <- FALSE #Huiyun set to true when you are running this code
 print("load support functions")
 if(huiyun){
   base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim55")
@@ -73,6 +73,34 @@ source(file.path(src_dir, "abc_functions.R"))
 
 #load outside data
 load_observations()
+#dim(bac_obs)
+#View(bac_obs)
+#dim(q_obs)
+
+# create weekly average output for concentration observations
+obs_data_xts <- as.xts(bac_obs$bacteria,order.by=as.Date(bac_obs$date))
+bac_obs_weekly_temp <- as.data.frame(apply.weekly(obs_data_xts, mean))
+bac_obs_weekly <- as.data.frame(cbind(rownames(bac_obs_weekly_temp), bac_obs_weekly_temp$V1))
+colnames(bac_obs_weekly) <- c("date","bacteria")
+save(bac_obs_weekly, file = file.path(base_dir, "bac_obs_w.RData"))
+bac_sample_dates <- bac_obs$date
+
+#create weekly average output for flow on days with observed concentrations
+flow_obs <- right_join(q_obs, bac_obs, by="date") #needed to reduce the number fo flow observations
+obs_flow_xts <- as.xts(flow_obs$discharge,order.by=as.Date(flow_obs$date))
+flow_obs_weekly_temp <- as.data.frame(apply.weekly(obs_flow_xts, mean))
+flow_obs_weekly <- as.data.frame(cbind(rownames(flow_obs_weekly_temp), flow_obs_weekly_temp$V1))
+colnames(flow_obs_weekly) <- c("date","discharge")
+save(flow_obs_weekly, file = file.path(base_dir, "q_obs_w.RData"))
+q_sample_dates <- flow_obs$date
+
+#create weekly flux output
+obs_flux_xts <- as.xts(flux_obs$flux,order.by=as.Date(flux_obs$date))
+flux_obs_weekly_temp <- as.data.frame(apply.weekly(obs_flux_xts, mean))
+flux_obs_weekly <- as.data.frame(cbind(rownames(flux_obs_weekly_temp), flux_obs_weekly_temp$V1))
+colnames(flux_obs_weekly) <- c("date","flux")
+save(flux_obs_weekly, file = file.path(base_dir, "flux_obs_w.RData"))
+flux_sample_dates <- flux_obs$date
 
 # preset the generations to be simulated
 # stargen = 0 means starting from scratch
@@ -123,9 +151,21 @@ for(iter in startgen:ngens){
   # run the swat simulations for this iteration and save daily output
   bac_cal_output <- simulate_generation_next(iter, nsims_todo, swat_path, base_dir, pars_tibble)  
   # extract only the observed days from the simulated daily output
-  
+  #which(bac_cal_output$simulation$bac_out$date==sample_dates)
+  #dim(bac_cal_output$simulation$bac_out)
+  #View(bac_cal_output$simulation$bac_out)
+  #bac_obs$date
+  bac_sims_sample_dates <- right_join(bac_cal_output$simulation$bac_out,bac_obs, by="date")
+  #dim(bac_sims_sample_dates)
+  #View(bac_obs)
+  #dim(bac_obs)
   # then create weekly average output for sims
-  
+  bac_sims_data <- as.xts(bac_sims_sample_dates$bacteria,order.by=as.Date(bac_sims_sample_dates$date))
+  #dim(bac_sims_data)
+  bac_sims_weekly <- as.data.frame(apply.weekly(bac_sims_data,mean))
+  colnames(bac_sims_weekly) <- c("date", "bacteria")
+  #class(bac_sims_weekly)
+
   # save output to disk
   save_bac_cal_output(iter, bac_cal_output)
   #get parameter names and values
@@ -135,11 +175,17 @@ for(iter in startgen:ngens){
   nse_q <- calculate_nse_q(iter, bac_cal_output, q_obs)
   nse_flux <- calculate_nse_flux(iter, bac_cal_output, flux_obs)
   # calculate various nses for daily data with logged concentrations
-  
+  mnse_bac <- calculate_modified_nse_bac(iter, bac_cal_output, bac_obs)
+  mnse_q <- calculate_modified_nse_q(iter, bac_cal_output, q_obs)
+  mnse_flux <- calculate_modified_nse_flux(iter, bac_cal_output, flux_obs)
   # calculate various nses for weekly data
-  
+  nse_bac_weekly <- calculate_nse_bac(iter, bac_sims_weekly, bac_obs_weekly)
+  nse_q_weekly <- calculate_nse_q(iter, bac_sim_weekly, flow_obs_weekly)
+  nse_flux_weekly <- calculate_nse_flux(iter, bac_sim_weekly, flux_obs_weekly)
   # calculate various nses for weekly data with logged concentrations
-  
+  mnse_bac_weekly <- calculate_modified_nse_bac(iter, bac_sims_weekly, bac_obs_weekly)
+  mnse_q_weekly <- calculate_modified_nse_q(iter, bac_sim_weekly, flow_obs_weekly)
+  mnse_flux_weekly <- calculate_modified_nse_flux(iter, bac_sim_weekly, flux_obs_weekly)
   # calculate nse means
   nse_mean <- calculate_nse_mean(iter, nse_bac, nse_q, nse_flux)
   # get cutoff score

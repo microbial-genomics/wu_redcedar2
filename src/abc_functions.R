@@ -16,6 +16,17 @@ calculate_nse_bac <- function(iter, bac_cal_output, bac_obs){
   return(nse_bac)
 }
 
+calculate_modified_nse_bac <- function(iter, bac_cal_output, bac_obs){
+  #load the simulated concentrations for last simulations
+  sim_bac <- bac_cal_output$simulation$bac_out
+  # merge simulated and observed bacteria concentrations, calculate nses for all sims
+  nse_bac <- right_join(sim_bac,bac_obs,by="date")%>%
+    dplyr::select(-date) %>% dplyr::select(-bacteria) %>%
+    map_dbl(., ~mNSE(.x, bac_obs$bacteria))
+  print(paste("range of all bacteria modified nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
+  return(nse_bac)
+}
+
 calculate_nse_q <- function(iter, bac_cal_output, q_obs){
   #load the simulated flows, inputs for last simulations
   sim_q <- bac_cal_output$simulation$q_out
@@ -24,6 +35,17 @@ calculate_nse_q <- function(iter, bac_cal_output, q_obs){
     dplyr::select(-date) %>% dplyr::select(-discharge) %>%
     map_dbl(., ~NSE(.x, q_obs$discharge))
   print(paste("range of all overall flow nse is (", round(min(nse_q),4), ",", round(max(nse_q),4), ") for generation", iter))
+  return(nse_q)
+}
+
+calculate_modified_nse_q <- function(iter, bac_cal_output, q_obs){
+  #load the simulated flows, inputs for last simulations
+  sim_q <- bac_cal_output$simulation$q_out
+  # merge simulated and observed flows, calculate nses for all sims
+  nse_q <- right_join(sim_q,q_obs,by="date") %>%
+    dplyr::select(-date) %>% dplyr::select(-discharge) %>%
+    map_dbl(., ~mNSE(.x, q_obs$discharge))
+  print(paste("range of all overall flow modified nse is (", round(min(nse_q),4), ",", round(max(nse_q),4), ") for generation", iter))
   return(nse_q)
 }
 
@@ -42,6 +64,24 @@ calculate_nse_flux <- function(iter, bac_cal_output, flux_obs){
  dplyr::select(-date) %>%dplyr::select(-flux) %>%
     map_dbl(., ~NSE(.x, flux_obs$flux))
   print(paste("range of all overall flux nse is (", round(min(nse_flux),4), ",", round(max(nse_flux),4), ") for generation", iter))
+  return(nse_flux)
+}
+
+calculate_modified_nse_flux <- function(iter, bac_cal_output, flux_obs){  
+  #load the simulated concentrations for last simulations
+  sim_bac <- bac_cal_output$simulation$bac_out
+  sim_q <- bac_cal_output$simulation$q_out
+  # calculate the simulated fluxes from concs and flows for all sims
+  # flux_sim <- sim_bac[,c(-1)]*
+  #   sim_q[, c(-1)]*10^4
+  date <-bac_cal_output$simulation$bac_out$date
+  flux_sim <-sim_bac[,c(-1)]* sim_q[, c(-1)]*10^4
+  sim_flux<- cbind(date, flux_sim)
+  #merge simulated and observed fluxes, calculate nses for all sims
+  nse_flux <-  right_join(sim_flux, flux_obs, by = "date") %>%
+    dplyr::select(-date) %>%dplyr::select(-flux) %>%
+    map_dbl(., ~mNSE(.x, flux_obs$flux))
+  print(paste("range of all overall flux modified nse is (", round(min(nse_flux),4), ",", round(max(nse_flux),4), ") for generation", iter))
   return(nse_flux)
 }
 
