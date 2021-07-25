@@ -171,13 +171,13 @@ for(iter in startgen:ngens){
   #get parameter names and values
   sim_pars <- bac_cal_output$parameter$values
   # calculate various nses for daily data
-  nse_bac <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
-  nse_q <- calculate_nse_q(iter, bac_cal_output, q_obs)
-  nse_flux <- calculate_nse_flux(iter, bac_cal_output, flux_obs)
+  nse_bac_daily <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
+  nse_q_daily <- calculate_nse_q(iter, bac_cal_output, q_obs)
+  nse_flux_daily <- calculate_nse_flux(iter, bac_cal_output, flux_obs)
   # calculate various nses for daily data with logged concentrations
-  mnse_bac <- calculate_modified_nse_bac(iter, bac_cal_output, bac_obs)
-  mnse_q <- calculate_modified_nse_q(iter, bac_cal_output, q_obs)
-  mnse_flux <- calculate_modified_nse_flux(iter, bac_cal_output, flux_obs)
+  mnse_bac_daily <- calculate_modified_nse_bac(iter, bac_cal_output, bac_obs)
+  mnse_q_daily <- calculate_modified_nse_q(iter, bac_cal_output, q_obs)
+  mnse_flux_daily <- calculate_modified_nse_flux(iter, bac_cal_output, flux_obs)
   # calculate various nses for weekly data
   nse_bac_weekly <- calculate_nse_bac(iter, bac_sims_weekly, bac_obs_weekly)
   nse_q_weekly <- calculate_nse_q(iter, bac_sim_weekly, flow_obs_weekly)
@@ -187,32 +187,92 @@ for(iter in startgen:ngens){
   mnse_q_weekly <- calculate_modified_nse_q(iter, bac_sim_weekly, flow_obs_weekly)
   mnse_flux_weekly <- calculate_modified_nse_flux(iter, bac_sim_weekly, flux_obs_weekly)
   # calculate nse means
-  nse_mean <- calculate_nse_mean(iter, nse_bac, nse_q, nse_flux)
+  nse_mean_daily <- calculate_nse_mean(iter, nse_bac, nse_q, nse_flux)
+  nse_mean_weekly <- calculate_nse_mean(iter, nse_bac_weekly, nse_q_weekly, nse_flux_weekly)
+  # calculate modified nse means
+  mnse_mean_daily <- calculate_modified_nse_mean(iter, mnse_bac, mnse_q, mnse_flux) 
+  mnse_mean_weekly <- calculate_modified_nse_mean(iter, mnse_bac_weekly, mnse_q_weekly, mnse_flux_weekly) 
   # get cutoff score
   if(iter==0){
     # find the 80th percentile of target nse, top (2000 of 10000)
-    if(opt_nse=="mean"){
+    # daily, none
+    if(opt_nse=="mean" && opt_time_interval=="daily" && opt_conc_transform=="none"){
       this_cutoff_score <- quantile(nse_mean, probs=0.8)
-    } else if(opt_nse=="conc") {
+    } else if(opt_nse=="conc" && opt_time_interval=="daily" && opt_conc_transform=="none") {
       this_cutoff_score <- quantile(nse_bac, probs=0.8)
-    } else if(opt_nse=="flow") {
+    } else if(opt_nse=="flow" && opt_time_interval=="daily" && opt_conc_transform=="none") {
       this_cutoff_score <- quantile(nse_q, probs=0.8)
-    } else if(opt_nse=="flux") {
+    } else if(opt_nse=="flux" && opt_time_interval=="daily" && opt_conc_transform=="none") {
       this_cutoff_score <- quantile(nse_flux, probs=0.8)
+    # daily, logged
+    } else if(opt_nse=="mean" && opt_time_interval=="daily" && opt_conc_transform=="logged"){
+      this_cutoff_score <- quantile(nse_mean, probs=0.8)
+    } else if(opt_nse=="conc" && opt_time_interval=="daily" && opt_conc_transform=="logged") {
+      this_cutoff_score <- quantile(nse_bac, probs=0.8)
+    } else if(opt_nse=="flow" && opt_time_interval=="daily" && opt_conc_transform=="logged") {
+      this_cutoff_score <- quantile(nse_q, probs=0.8)
+    } else if(opt_nse=="flux" && opt_time_interval=="daily" && opt_conc_transform=="logged") {
+      this_cutoff_score <- quantile(nse_flux, probs=0.8)  
+    # weekly, none
+    } else if(opt_nse=="mean" && opt_time_interval=="weekly" && opt_conc_transform=="none"){
+      this_cutoff_score <- quantile(nse_mean, probs=0.8)
+    } else if(opt_nse=="conc" && opt_time_interval=="weekly" && opt_conc_transform=="none") {
+      this_cutoff_score <- quantile(nse_bac, probs=0.8)
+    } else if(opt_nse=="flow" && opt_time_interval=="weekly" && opt_conc_transform=="none") {
+      this_cutoff_score <- quantile(nse_q, probs=0.8)
+    } else if(opt_nse=="flux" && opt_time_interval=="weekly" && opt_conc_transform=="none") {
+      this_cutoff_score <- quantile(nse_flux, probs=0.8)  
+    # weekly, logged
+    } else if(opt_nse=="mean" && opt_time_interval=="weekly" && opt_conc_transform=="logged"){
+      this_cutoff_score <- quantile(nse_mean, probs=0.8)
+    } else if(opt_nse=="conc" && opt_time_interval=="weekly" && opt_conc_transform=="logged") {
+      this_cutoff_score <- quantile(nse_bac, probs=0.8)
+    } else if(opt_nse=="flow" && opt_time_interval=="weekly" && opt_conc_transform=="logged") {
+      this_cutoff_score <- quantile(nse_q, probs=0.8)
+    } else if(opt_nse=="flux" && opt_time_interval=="weekly" && opt_conc_transform=="logged") {
+      this_cutoff_score <- quantile(nse_flux, probs=0.8)  
     }
   }else{  
     #use the cutoff score from the last generation to sort the keepers
     this_cutoff_score <- get_cutoff_score(iter, generation_stats)
   }
   #determine the first 5k to keep, combine keeper nses w parameters into a df    
-  if(opt_nse=="mean"){
-    all_keepers <- which(nse_mean > this_cutoff_score)
-  } else if(opt_nse=="conc") {
-    all_keepers <- which(nse_bac > this_cutoff_score)
-  } else if(opt_nse=="flow") {
-    all_keepers <- which(nse_q > this_cutoff_score)
-  } else if(opt_nse=="flux") {
-    all_keepers <- which(nse_flux > this_cutoff_score)
+  # daily, none
+  if(opt_nse=="mean" && opt_time_interval=="daily" && opt_conc_transform=="none"){
+    all_keepers <- which(nse_mean_daily > this_cutoff_score)
+  } else if(opt_nse=="conc" && opt_time_interval=="daily" && opt_conc_transform=="none") {
+    all_keepers <- which(nse_bac_daily > this_cutoff_score)
+  } else if(opt_nse=="flow" && opt_time_interval=="daily" && opt_conc_transform=="none") {
+    all_keepers <- which(nse_q_daily > this_cutoff_score)
+  } else if(opt_nse=="flux" && opt_time_interval=="daily" && opt_conc_transform=="none") {
+    all_keepers <- which(nse_flux_daily > this_cutoff_score)
+  # daily, logged
+  } else if(opt_nse=="mean" && opt_time_interval=="daily" && opt_conc_transform=="logged"){
+    all_keepers <- which(mnse_bac_daily > this_cutoff_score)
+  } else if(opt_nse=="conc" && opt_time_interval=="daily" && opt_conc_transform=="logged") {
+    all_keepers <- which(mnse_bac_daily > this_cutoff_score)
+  } else if(opt_nse=="flow" && opt_time_interval=="daily" && opt_conc_transform=="logged") {
+    all_keepers <- which(mnse_q_daily > this_cutoff_score)
+  } else if(opt_nse=="flux" && opt_time_interval=="daily" && opt_conc_transform=="logged") {
+    all_keepers <- which(mnse_flux_daily > this_cutoff_score) 
+  # weekly, none
+  } else if(opt_nse=="mean" && opt_time_interval=="weekly" && opt_conc_transform=="none"){
+    all_keepers <- which(nse_bac_weekly > this_cutoff_score)
+  } else if(opt_nse=="conc" && opt_time_interval=="weekly" && opt_conc_transform=="none") {
+    all_keepers <- which(nse_bac_weekly > this_cutoff_score)
+  } else if(opt_nse=="flow" && opt_time_interval=="weekly" && opt_conc_transform=="none") {
+    all_keepers <- which(nse_q_weekly > this_cutoff_score)
+  } else if(opt_nse=="flux" && opt_time_interval=="weekly" && opt_conc_transform=="none") {
+    all_keepers <- which(nse_flux_weekly > this_cutoff_score)  
+  # weekly, logged
+  } else if(opt_nse=="mean" && opt_time_interval=="weekly" && opt_conc_transform=="logged"){
+    all_keepers <- which(mnse_bac_weekly > this_cutoff_score)
+  } else if(opt_nse=="conc" && opt_time_interval=="weekly" && opt_conc_transform=="logged") {
+    all_keepers <- which(mnse_bac_weekly > this_cutoff_score)
+  } else if(opt_nse=="flow" && opt_time_interval=="weekly" && opt_conc_transform=="logged") {
+    all_keepers <- which(mnse_q_weekly > this_cutoff_score)
+  } else if(opt_nse=="flux" && opt_time_interval=="weekly" && opt_conc_transform=="logged") {
+    all_keepers <- which(mnse_flux_weekly > this_cutoff_score)  
   }
   n_all_keepers <- length(all_keepers)
   proportion_kept <- n_all_keepers/nsims_todo
@@ -222,6 +282,7 @@ for(iter in startgen:ngens){
   keeper[all_keepers] <- "not_kept"
   keeper[valid_keepers] <- "kept"
   keeper <- as.factor(keeper)
+  #create data.frame for the keepers with parameters
   nses_w_parameters_all <- cbind(keeper, nse_bac, nse_flux, nse_q, 
                              nse_mean, sim_pars)
   nse_conc_keepers <- nse_bac[valid_keepers]

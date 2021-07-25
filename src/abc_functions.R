@@ -85,6 +85,13 @@ calculate_modified_nse_flux <- function(iter, bac_cal_output, flux_obs){
   return(nse_flux)
 }
 
+calculate_modified_nse_mean <- function(iter, mnse_mean, mnse_q, mnse_flux){
+  # calculate nse means
+  nse_mean <- rowMeans(cbind(nse_bac, nse_q, nse_flux))
+  print(paste("range of all overall mean nse is (", round(min(nse_mean),4), ",", round(max(nse_mean),4), ") for generation", iter))
+  return(nse_mean)
+}
+
 calculate_nse_mean <- function(iter, nse_mean, nse_q, nse_flux){
   # calculate nse means
   nse_mean <- rowMeans(cbind(nse_bac, nse_q, nse_flux))
