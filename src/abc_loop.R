@@ -236,7 +236,7 @@ for(iter in startgen:ngens){
     #use the cutoff score from the last generation to sort the keepers
     this_cutoff_score <- get_cutoff_score(iter, generation_stats)
   }
-  #determine the first 5k to keep, combine keeper nses w parameters into a df    
+  #determine the first Xk to keep, combine keeper nses w parameters into a df    
   # daily, none
   if(opt_nse=="mean" && opt_time_interval=="daily" && opt_conc_transform=="none"){
     all_keepers <- which(nse_mean_daily > this_cutoff_score)
@@ -283,18 +283,31 @@ for(iter in startgen:ngens){
   keeper[valid_keepers] <- "kept"
   keeper <- as.factor(keeper)
   #create data.frame for the keepers with parameters
-  nses_w_parameters_all <- cbind(keeper, nse_bac, nse_flux, nse_q, 
-                             nse_mean, sim_pars)
-  nse_conc_keepers <- nse_bac[valid_keepers]
-  nse_flow_keepers <- nse_q[valid_keepers]
-  nse_flux_keepers <- nse_flux[valid_keepers]
-  nse_mean_keepers <- nse_mean[valid_keepers]
-  nses_w_parameters <- cbind(nse_conc_keepers, nse_flow_keepers, nse_flux_keepers, 
-                             nse_mean_keepers, sim_pars[valid_keepers,])
-  # plot nses versus each other
-  plot_bac_v_flow_pdf(iter, nses_w_parameters_all)
-  #save nses_parameters
-  save_nses_parameters(iter, data_in_dir, nses_w_parameters)
+  # daily, none
+  if(opt_nse=="mean" && opt_time_interval=="daily" && opt_conc_transform=="none"){
+    # concatenate output into one big dataframe
+    nses_w_parameters_all <- cbind(keeper, nse_bac_daily, nse_flux_daily, nse_q_daily, 
+                               nse_mean_daily, sim_pars)
+    nse_conc_keepers <- nse_bac[valid_keepers]
+    nse_flow_keepers <- nse_q[valid_keepers]
+    nse_flux_keepers <- nse_flux[valid_keepers]
+    nse_mean_keepers <- nse_mean[valid_keepers]
+    nses_w_parameters <- cbind(nse_conc_keepers, nse_flow_keepers, nse_flux_keepers, 
+                               nse_mean_keepers, sim_pars[valid_keepers,])
+    # plot nses versus each other
+    plot_bac_v_flow_pdf(iter, nses_w_parameters_all)
+    #save nses_parameters
+    save_nses_parameters(iter, data_in_dir, nses_w_parameters)
+  # daily, logged
+  } else if(opt_nse=="mean" && opt_time_interval=="daily" && opt_conc_transform=="logged"){
+    
+  # weekly, none
+  } else if(opt_nse=="mean" && opt_time_interval=="weekly" && opt_conc_transform=="none"){
+    
+  # weekly, logged
+  } else if(opt_nse=="mean" && opt_time_interval=="weekly" && opt_conc_transform=="logged"){
+    
+
   # save concentration time series output to an .RData file 
   # for later sensitivity analyses TODO
   # delete the local bac_cal file TODO

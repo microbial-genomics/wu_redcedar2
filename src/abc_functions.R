@@ -250,9 +250,9 @@ log_results <- function(iter, this_cutoff_score, n_all_keepers, previous_nsims, 
   print(paste("cutoff mean nse score to be used for the next generation is:", round(next_cutoff_score,4)))
 }
 
-plot_bac_v_flow_pdf <- function(iter, nses_w_parameters_all){
-  ggplot(nses_w_parameters_all %>% arrange(nse_mean)) +
-    geom_point(aes(x=nse_q, y=nse_bac, color=keeper, alpha=0.5))
+plot_bac_v_flow_pdf <- function(iter, nses_w_parameters_all, nse_mean_daily){
+  ggplot(nses_w_parameters_all %>% arrange(nse_mean_daily)) +
+    geom_point(aes(x=nse_q, y=nse_mean_daily, color=keeper, alpha=0.5))
   nse_plot_filename <- paste("nse_bac_v_flow_gen", iter, ".pdf", sep="")
   ggsave(file.path(graphics_dir, nse_plot_filename))  
 }
