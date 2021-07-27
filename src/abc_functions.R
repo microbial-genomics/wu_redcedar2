@@ -16,6 +16,12 @@ calculate_nse_bac <- function(iter, bac_cal_output, bac_obs){
   return(nse_bac)
 }
 
+calculate_nse_bac_weekly <- function(iter, bac_sims_weekly, bac_obs_weekly){
+  nse_bac <- mapply(NSE, bac_sims_weekly, bac_obs_weekly)
+  print(paste("range of all weekly bacteria nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
+  return(nse_bac)
+}
+
 calculate_modified_nse_bac <- function(iter, bac_cal_output, bac_obs){
   #load the simulated concentrations for last simulations
   sim_bac <- bac_cal_output$simulation$bac_out
@@ -24,6 +30,12 @@ calculate_modified_nse_bac <- function(iter, bac_cal_output, bac_obs){
     dplyr::select(-date) %>% dplyr::select(-bacteria) %>%
     map_dbl(., ~mNSE(.x, bac_obs$bacteria))
   print(paste("range of all bacteria modified nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
+  return(nse_bac)
+}
+
+calculate_modified_nse_bac_weekly <- function(iter, bac_sims_weekly, bac_obs_weekly){
+  nse_bac <- mapply(mNSE, bac_sims_weekly, bac_obs_weekly)
+  print(paste("range of all weekly bacteria modified nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
   return(nse_bac)
 }
 
