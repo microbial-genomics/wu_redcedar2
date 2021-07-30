@@ -22,6 +22,36 @@ calculate_nse_bac_weekly <- function(iter, bac_sims_weekly, bac_obs_weekly){
   return(nse_bac)
 }
 
+calculate_mnse_bac_weekly <- function(iter, bac_sims_weekly, bac_obs_weekly){
+  nse_bac <- mapply(mNSE, bac_sims_weekly, bac_obs_weekly)
+  print(paste("range of all weekly bacteria modified nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
+  return(nse_bac)
+}
+
+calculate_nse_q_weekly <- function(iter, bac_flows_weekly, bac_obs_weekly){
+  nse_bac <- mapply(NSE, bac_flows_weekly, flow_obs_weekly)
+  print(paste("range of all weekly flow nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
+  return(nse_bac)
+}
+
+calculate_modified_nse_q_weekly <- function(iter, bac_flows_weekly, bac_obs_weekly){
+  nse_bac <- mapply(mNSE, bac_flows_weekly, flow_obs_weekly)
+  print(paste("range of all weekly flow modified nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
+  return(nse_bac)
+}
+
+calculate_nse_flux_weekly <- function(iter, bac_fluxes_weekly, flux_obs_weekly){
+  nse_bac <- mapply(NSE, bac_fluxes_weekly, flux_obs_weekly)
+  print(paste("range of all weekly bacteria flux nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
+  return(nse_bac)
+}
+
+calculate_modified_nse_flux_weekly <- function(iter, bac_fluxes_weekly, flux_obs_weekly){
+  nse_bac <- mapply(mNSE, bac_fluxes_weekly, flux_obs_weekly)
+  print(paste("range of all weekly bacteria flux modified nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
+  return(nse_bac)
+}
+
 calculate_modified_nse_bac <- function(iter, bac_cal_output, bac_obs){
   #load the simulated concentrations for last simulations
   sim_bac <- bac_cal_output$simulation$bac_out

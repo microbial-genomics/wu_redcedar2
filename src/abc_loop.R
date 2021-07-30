@@ -163,18 +163,46 @@ for(iter in startgen:ngens){
   ###### subset simulated bacteria data to observed days and average by week
   # extract only the observed days from the simulated daily output
   bac_sims_all_days <- bac_cal_output$simulation$bac_out # [3865,2215]
+  dim(bac_sims_all_days)
   # adds date and bacteria fields also
   bac_sims_daily_temp <- right_join(bac_sims_all_days, bac_obs, by="date") #[336,2216]
-  bac_sims_daily <- bac_sims_daily_temp[,-which(colnames(bac_sims_daily_temp)=="bacteria")]
+  dim(bac_sims_daily_temp)
+  bac_sims_daily <- bac_sims_daily_temp[,-which(colnames(bac_sims_daily_temp)=="bacteria")] #[336,2215]
+  dim(bac_sims_daily)
+  colnames(bac_sims_daily)[1]
   # then reduce daily simulated observations to weekly averages for each of the sims #[336,2215]
   head(colnames(bac_sims_daily)) #  date 
   nsim_cols <- ncol(bac_sims_daily) #2215 date + sims field
   bac_sims_daily_data <- as.xts(bac_sims_daily[2:nsim_cols],order.by=as.Date(bac_sims_daily$date)) #[336,2214]
+  bac_sims_daily <- bac_sims_daily[,-1] #[336,2215]
+  dim(bac_sims_daily) #[336,2214]
   bac_sims_weekly <- as.data.frame(apply.weekly(bac_sims_daily_data,mean)) #[204,2214]
+  
 
   ###### subset simulated flow to observed days and average by week
-  
+  # extract only the observed days from the simulated daily output
+  bac_flows_all_days <- bac_cal_output$simulation$q_out # [3865,2215]
+  dim(bac_flows_all_days)
+  # adds date and flow fields also
+  bac_flows_daily_temp <- right_join(bac_flows_all_days, flow_obs, by="date") #[336,2217]
+  dim(bac_flows_daily_temp)
+  bac_flows_daily <- bac_flows_daily_temp[,-which((colnames(bac_flows_daily_temp)=="bacteria" | 
+                                                     colnames(bac_flows_daily_temp)=="discharge"))] #[336,2215]
+  dim(bac_flows_daily)
+  # then reduce daily simulated observations to weekly averages for each of the sims #[336,2215]
+  head(colnames(bac_flows_daily)) #  date 
+  nsim_cols <- ncol(bac_flows_daily) #2215 date + sims field
+  bac_flows_daily_data <- as.xts(bac_flows_daily[2:nsim_cols],order.by=as.Date(bac_flows_daily$date)) #[336,2214]
+  bac_flows_daily <- bac_flows_daily[,-1] #[336,2215]
+  dim(bac_flows_daily) #[336,2214]
+  bac_flows_weekly <- as.data.frame(apply.weekly(bac_flows_daily_data,mean)) #[204,2214]
+  dim(bac_flows_weekly)
   ###### calculate simulated flux data for observed days and average by week
+  dim(bac_sims_daily)
+  dim(bac_flows_daily)
+  bac_fluxes_weekly <- bac_sims_weekly * bac_flows_weekly
+  dim(bac_fluxes_weekly) #[204,2214]
+  View(bac_fluxes_weekly)
   
   ###### calculate various nses for daily data
   nse_bac_daily <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
@@ -186,12 +214,13 @@ for(iter in startgen:ngens){
   mnse_flux_daily <- calculate_modified_nse_flux(iter, bac_cal_output, flux_obs)
   # calculate various nses for weekly data
   nse_bac_weekly <- calculate_nse_bac_weekly(iter, bac_sims_weekly, bac_obs_weekly)
-  nse_q_weekly <- calculate_nse_q_weekly(iter, bac_sim_weekly, flow_obs_weekly)
-  nse_flux_weekly <- calculate_nse_flux_weekly(iter, bac_sim_weekly, flux_obs_weekly)
+  nse_q_weekly <- calculate_nse_q_weekly(iter, bac_flows_weekly, flow_obs_weekly)
+  nse_flux_weekly <- calculate_nse_flux_weekly(iter, bac_fluxes_weekly, flux_obs_weekly) #?? not working
   # calculate various nses for weekly data with logged concentrations
   mnse_bac_weekly <- calculate_modified_nse_bac_weekly(iter, bac_sims_weekly, bac_obs_weekly)
-  mnse_q_weekly <- calculate_modified_nse_q_weekly(iter, bac_sim_weekly, flow_obs_weekly)
-  mnse_flux_weekly <- calculate_modified_nse_flux_weekly(iter, bac_sim_weekly, flux_obs_weekly)
+  mnse_q_weekly <- calculate_modified_nse_q_weekly(iter, bac_flows_weekly, flow_obs_weekly)
+  mnse_flux_weekly <- calculate_modified_nse_flux_weekly(iter, bac_fluxes_weekly, flux_obs_weekly) #?? not working
+  ######### calculate means of nses
   # calculate nse means
   nse_mean_daily <- calculate_nse_mean(iter, nse_bac, nse_q, nse_flux)
   nse_mean_weekly <- calculate_nse_mean(iter, nse_bac_weekly, nse_q_weekly, nse_flux_weekly)
