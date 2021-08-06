@@ -41,7 +41,7 @@ library(SWATplusR)
 #setup directory structure
 #set paths for local machine or hpc
 # we are dumping everything in root directory on hpc
-huiyun <- FALSE #Huiyun set to true when you are running this code
+huiyun <- TRUE #Huiyun set to true when you are running this code
 print("load support functions")
 if(huiyun){
   base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim55")
@@ -89,7 +89,7 @@ obs_flow_xts <- as.xts(flow_obs$discharge,order.by=as.Date(flow_obs$date))
 flow_obs_weekly <- as.data.frame(apply.weekly(obs_flow_xts, mean)) #204
 
 #create weekly flux output
-flux_obs_daily <- bac_obs_daily * flow_obs_daily #336
+flux_obs_daily <- bac_obs_daily * flow_obs_daily * 10^4 #336
 obs_flux_xts <- as.xts(flux_obs_daily, order.by=as.Date(flux_obs$date))
 flux_obs_weekly <- as.data.frame(apply.weekly(obs_flux_xts, mean)) #204
 
@@ -134,8 +134,8 @@ for(iter in startgen:ngens){
   print(paste("optimizing based on", opt_time_interval, opt_conc_transform, "(transformation)", opt_nse))
   #
   #number to keep each generation
-  nsims_todo <- 1000
-  n_to_keep <- 200
+  nsims_todo <- 100
+  n_to_keep <- 20
   if(iter==0){
     pars_tibble <- create_tibble_initial(nsims_todo)
     # create dataframe to persistently store stats
@@ -200,7 +200,7 @@ for(iter in startgen:ngens){
   ###### calculate simulated flux data for observed days and average by week
   #dim(bac_sims_weekly)
   #dim(bac_flows_weekly)
-  bac_fluxes_weekly <- bac_sims_weekly * bac_flows_weekly
+  bac_fluxes_weekly <- bac_sims_weekly * bac_flows_weekly * 10^4
   #dim(bac_fluxes_weekly) #[204,2214]
   
   # View various data states
@@ -242,7 +242,7 @@ for(iter in startgen:ngens){
     # find the 80th percentile of target nse, top (2000 of 10000)
     # daily, none
     if(opt_nse=="mean" && opt_time_interval=="daily" && opt_conc_transform=="none"){
-      this_cutoff_score <- quantile(nse_mean, probs=0.8)
+      this_cutoff_score <- quantile(nse_mean_daily, probs=0.8)
     } else if(opt_nse=="conc" && opt_time_interval=="daily" && opt_conc_transform=="none") {
       this_cutoff_score <- quantile(nse_bac, probs=0.8)
     } else if(opt_nse=="flow" && opt_time_interval=="daily" && opt_conc_transform=="none") {
@@ -251,7 +251,7 @@ for(iter in startgen:ngens){
       this_cutoff_score <- quantile(nse_flux, probs=0.8)
     # daily, logged
     } else if(opt_nse=="mean" && opt_time_interval=="daily" && opt_conc_transform=="logged"){
-      this_cutoff_score <- quantile(nse_mean, probs=0.8)
+      this_cutoff_score <- quantile(mnse_mean_daily, probs=0.8)
     } else if(opt_nse=="conc" && opt_time_interval=="daily" && opt_conc_transform=="logged") {
       this_cutoff_score <- quantile(nse_bac, probs=0.8)
     } else if(opt_nse=="flow" && opt_time_interval=="daily" && opt_conc_transform=="logged") {
@@ -260,7 +260,7 @@ for(iter in startgen:ngens){
       this_cutoff_score <- quantile(nse_flux, probs=0.8)  
     # weekly, none
     } else if(opt_nse=="mean" && opt_time_interval=="weekly" && opt_conc_transform=="none"){
-      this_cutoff_score <- quantile(nse_mean, probs=0.8)
+      this_cutoff_score <- quantile(nse_mean_weekly, probs=0.8)
     } else if(opt_nse=="conc" && opt_time_interval=="weekly" && opt_conc_transform=="none") {
       this_cutoff_score <- quantile(nse_bac, probs=0.8)
     } else if(opt_nse=="flow" && opt_time_interval=="weekly" && opt_conc_transform=="none") {
@@ -269,7 +269,7 @@ for(iter in startgen:ngens){
       this_cutoff_score <- quantile(nse_flux, probs=0.8)  
     # weekly, logged
     } else if(opt_nse=="mean" && opt_time_interval=="weekly" && opt_conc_transform=="logged"){
-      this_cutoff_score <- quantile(nse_mean, probs=0.8)
+      this_cutoff_score <- quantile(mnse_mean_weekly, probs=0.8)
     } else if(opt_nse=="conc" && opt_time_interval=="weekly" && opt_conc_transform=="logged") {
       this_cutoff_score <- quantile(nse_bac, probs=0.8)
     } else if(opt_nse=="flow" && opt_time_interval=="weekly" && opt_conc_transform=="logged") {
