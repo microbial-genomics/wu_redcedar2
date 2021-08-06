@@ -115,9 +115,9 @@ ngens <- 40
 # opt_time_interval <- "daily"
 opt_time_interval <- "weekly"
 
-# should concentrations be logged (modified nash sutcliffe) 
+# should concentrations be modified (modified nash sutcliffe) 
 # opt_conc_transform <- "none"
-opt_conc_transform <- "logged"
+opt_conc_transform <- "modified"
 
 # decide what metric to optimize on
 opt_nse <- "mean"
@@ -217,7 +217,7 @@ for(iter in startgen:ngens){
   nse_bac_daily <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
   nse_q_daily <- calculate_nse_q(iter, bac_cal_output, q_obs)
   nse_flux_daily <- calculate_nse_flux(iter, bac_cal_output, flux_obs)
-  # calculate various nses for daily data with logged concentrations
+  # calculate various modified nses for daily data with concentrations
   mnse_bac_daily <- calculate_modified_nse_bac(iter, bac_cal_output, bac_obs)
   mnse_q_daily <- calculate_modified_nse_q(iter, bac_cal_output, q_obs)
   mnse_flux_daily <- calculate_modified_nse_flux(iter, bac_cal_output, flux_obs)
@@ -225,21 +225,26 @@ for(iter in startgen:ngens){
   nse_bac_weekly <- calculate_nse_bac_weekly(iter, bac_sims_weekly, bac_obs_weekly)
   nse_q_weekly <- calculate_nse_q_weekly(iter, bac_flows_weekly, flow_obs_weekly)
   nse_flux_weekly <- calculate_nse_flux_weekly(iter, bac_fluxes_weekly, flux_obs_weekly)
-  # calculate various nses for weekly data with logged concentrations
+  # calculate various modified nses for weekly data with concentrations
   mnse_bac_weekly <- calculate_modified_nse_bac_weekly(iter, bac_sims_weekly, bac_obs_weekly)
   mnse_q_weekly <- calculate_modified_nse_q_weekly(iter, bac_flows_weekly, flow_obs_weekly)
   mnse_flux_weekly <- calculate_modified_nse_flux_weekly(iter, bac_fluxes_weekly, flux_obs_weekly) #?? not working
   ######### calculate means of nses
   # calculate nse means
+  print("NSE, daily")
   nse_mean_daily <- calculate_nse_mean(iter, nse_bac_daily, nse_q_daily, nse_flux_daily)
+  print("NSE, weekly")
   nse_mean_weekly <- calculate_nse_mean(iter, nse_bac_weekly, nse_q_weekly, nse_flux_weekly)
   # calculate modified nse means
+  print("mNSE, daily")
   mnse_mean_daily <- calculate_modified_nse_mean(iter, mnse_bac_daily, mnse_q_daily, mnse_flux_daily) 
+  print("mNSE, weekly")
   mnse_mean_weekly <- calculate_modified_nse_mean(iter, mnse_bac_weekly, mnse_q_weekly, mnse_flux_weekly) 
   
   ###### get cutoff score
   if(iter==0){
     # find the 80th percentile of target nse, top (2000 of 10000)
+    print(paste0("generation 0, using the 80th percentile of the scores as the cutoff for the next generation"))
     # daily, none
     if(opt_nse=="mean" && opt_time_interval=="daily" && opt_conc_transform=="none"){
       this_cutoff_score <- quantile(nse_mean_daily, probs=0.8)
@@ -249,14 +254,14 @@ for(iter in startgen:ngens){
       this_cutoff_score <- quantile(nse_q, probs=0.8)
     } else if(opt_nse=="flux" && opt_time_interval=="daily" && opt_conc_transform=="none") {
       this_cutoff_score <- quantile(nse_flux, probs=0.8)
-    # daily, logged
-    } else if(opt_nse=="mean" && opt_time_interval=="daily" && opt_conc_transform=="logged"){
+    # daily, modified
+    } else if(opt_nse=="mean" && opt_time_interval=="daily" && opt_conc_transform=="modified"){
       this_cutoff_score <- quantile(mnse_mean_daily, probs=0.8)
-    } else if(opt_nse=="conc" && opt_time_interval=="daily" && opt_conc_transform=="logged") {
+    } else if(opt_nse=="conc" && opt_time_interval=="daily" && opt_conc_transform=="modified") {
       this_cutoff_score <- quantile(nse_bac, probs=0.8)
-    } else if(opt_nse=="flow" && opt_time_interval=="daily" && opt_conc_transform=="logged") {
+    } else if(opt_nse=="flow" && opt_time_interval=="daily" && opt_conc_transform=="modified") {
       this_cutoff_score <- quantile(nse_q, probs=0.8)
-    } else if(opt_nse=="flux" && opt_time_interval=="daily" && opt_conc_transform=="logged") {
+    } else if(opt_nse=="flux" && opt_time_interval=="daily" && opt_conc_transform=="modified") {
       this_cutoff_score <- quantile(nse_flux, probs=0.8)  
     # weekly, none
     } else if(opt_nse=="mean" && opt_time_interval=="weekly" && opt_conc_transform=="none"){
@@ -267,16 +272,17 @@ for(iter in startgen:ngens){
       this_cutoff_score <- quantile(nse_q, probs=0.8)
     } else if(opt_nse=="flux" && opt_time_interval=="weekly" && opt_conc_transform=="none") {
       this_cutoff_score <- quantile(nse_flux, probs=0.8)  
-    # weekly, logged
-    } else if(opt_nse=="mean" && opt_time_interval=="weekly" && opt_conc_transform=="logged"){
+    # weekly, modified
+    } else if(opt_nse=="mean" && opt_time_interval=="weekly" && opt_conc_transform=="modified"){
       this_cutoff_score <- quantile(mnse_mean_weekly, probs=0.8)
-    } else if(opt_nse=="conc" && opt_time_interval=="weekly" && opt_conc_transform=="logged") {
+    } else if(opt_nse=="conc" && opt_time_interval=="weekly" && opt_conc_transform=="modified") {
       this_cutoff_score <- quantile(nse_bac, probs=0.8)
-    } else if(opt_nse=="flow" && opt_time_interval=="weekly" && opt_conc_transform=="logged") {
+    } else if(opt_nse=="flow" && opt_time_interval=="weekly" && opt_conc_transform=="modified") {
       this_cutoff_score <- quantile(nse_q, probs=0.8)
-    } else if(opt_nse=="flux" && opt_time_interval=="weekly" && opt_conc_transform=="logged") {
+    } else if(opt_nse=="flux" && opt_time_interval=="weekly" && opt_conc_transform=="modified") {
       this_cutoff_score <- quantile(nse_flux, probs=0.8)  
     }
+    print(paste0("generation 0 cutoff score =", this_cutoff_score))
   }else{  
     #use the cutoff score from the last generation to sort the keepers
     this_cutoff_score <- get_cutoff_score(iter, generation_stats)
@@ -291,14 +297,14 @@ for(iter in startgen:ngens){
     all_keepers <- which(nse_q_daily > this_cutoff_score)
   } else if(opt_nse=="flux" && opt_time_interval=="daily" && opt_conc_transform=="none") {
     all_keepers <- which(nse_flux_daily > this_cutoff_score)
-  # daily, logged
-  } else if(opt_nse=="mean" && opt_time_interval=="daily" && opt_conc_transform=="logged"){
+  # daily, modified
+  } else if(opt_nse=="mean" && opt_time_interval=="daily" && opt_conc_transform=="modified"){
     all_keepers <- which(mnse_bac_daily > this_cutoff_score)
-  } else if(opt_nse=="conc" && opt_time_interval=="daily" && opt_conc_transform=="logged") {
+  } else if(opt_nse=="conc" && opt_time_interval=="daily" && opt_conc_transform=="modified") {
     all_keepers <- which(mnse_bac_daily > this_cutoff_score)
-  } else if(opt_nse=="flow" && opt_time_interval=="daily" && opt_conc_transform=="logged") {
+  } else if(opt_nse=="flow" && opt_time_interval=="daily" && opt_conc_transform=="modified") {
     all_keepers <- which(mnse_q_daily > this_cutoff_score)
-  } else if(opt_nse=="flux" && opt_time_interval=="daily" && opt_conc_transform=="logged") {
+  } else if(opt_nse=="flux" && opt_time_interval=="daily" && opt_conc_transform=="modified") {
     all_keepers <- which(mnse_flux_daily > this_cutoff_score) 
   # weekly, none
   } else if(opt_nse=="mean" && opt_time_interval=="weekly" && opt_conc_transform=="none"){
@@ -309,14 +315,14 @@ for(iter in startgen:ngens){
     all_keepers <- which(nse_q_weekly > this_cutoff_score)
   } else if(opt_nse=="flux" && opt_time_interval=="weekly" && opt_conc_transform=="none") {
     all_keepers <- which(nse_flux_weekly > this_cutoff_score)  
-  # weekly, logged
-  } else if(opt_nse=="mean" && opt_time_interval=="weekly" && opt_conc_transform=="logged"){
+  # weekly, modified
+  } else if(opt_nse=="mean" && opt_time_interval=="weekly" && opt_conc_transform=="modified"){
     all_keepers <- which(mnse_bac_weekly > this_cutoff_score)
-  } else if(opt_nse=="conc" && opt_time_interval=="weekly" && opt_conc_transform=="logged") {
+  } else if(opt_nse=="conc" && opt_time_interval=="weekly" && opt_conc_transform=="modified") {
     all_keepers <- which(mnse_bac_weekly > this_cutoff_score)
-  } else if(opt_nse=="flow" && opt_time_interval=="weekly" && opt_conc_transform=="logged") {
+  } else if(opt_nse=="flow" && opt_time_interval=="weekly" && opt_conc_transform=="modified") {
     all_keepers <- which(mnse_q_weekly > this_cutoff_score)
-  } else if(opt_nse=="flux" && opt_time_interval=="weekly" && opt_conc_transform=="logged") {
+  } else if(opt_nse=="flux" && opt_time_interval=="weekly" && opt_conc_transform=="modified") {
     all_keepers <- which(mnse_flux_weekly > this_cutoff_score)  
   }
   n_all_keepers <- length(all_keepers)
@@ -348,8 +354,8 @@ for(iter in startgen:ngens){
     } else if(opt_nse=="flux") {
       next_cutoff_score <- median(nse_flux_keepers)
     }
-  # daily, logged
-  } else if(opt_time_interval=="daily" && opt_conc_transform=="logged"){
+  # daily, modified
+  } else if(opt_time_interval=="daily" && opt_conc_transform=="modified"){
     nses_w_parameters_all <- cbind(keeper, mnse_bac_daily, mnse_flux_daily, mnse_q_daily, 
                                    mnse_mean_daily, sim_pars)
     nse_conc_keepers <- mnse_bac_daily[valid_keepers]
@@ -386,8 +392,8 @@ for(iter in startgen:ngens){
     } else if(opt_nse=="flux") {
       next_cutoff_score <- median(nse_flux_keepers)
     }
-  # weekly, logged
-  } else if(opt_time_interval=="weekly" && opt_conc_transform=="logged"){
+  # weekly, modified
+  } else if(opt_time_interval=="weekly" && opt_conc_transform=="modified"){
     nses_w_parameters_all <- cbind(keeper, mnse_bac_weekly, mnse_flux_weekly, mnse_q_weekly, 
                                    mnse_mean_weekly, sim_pars)
     nse_conc_keepers <- mnse_bac_weekly[valid_keepers]
