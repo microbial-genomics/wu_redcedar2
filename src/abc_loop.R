@@ -38,6 +38,8 @@ library(SWATplusR)
 # the swat executable swat2012_rev670 needs to be copied to the run directory
 # and you must have exe privileges on it
 
+set.seed(42)
+
 #setup directory structure
 #set paths for local machine or hpc
 # we are dumping everything in root directory on hpc
