@@ -289,7 +289,7 @@ log_results <- function(iter, this_cutoff_score, n_all_keepers, previous_nsims, 
   print(paste("median of kept flux scores is (", round(median(nse_flux_keepers),4), ") for generation", iter))
   print(paste("range of kept mean scores is (", round(min(nse_mean_keepers),4), ",", round(max(nse_mean_keepers),4), ") for generation", iter))
   print(paste("median of kept mean scores is (", round(median(nse_mean_keepers),4), ") for generation", iter))
-  print(paste("cutoff meanscore to be used for the next generation is:", round(next_cutoff_score,4)))
+  print(paste("cutoff score to be used for the next generation is:", round(next_cutoff_score,4)))
 }
 
 plot_bac_v_flow_pdf <- function(iter, nses_w_parameters_all, nse_mean_daily){
@@ -572,7 +572,7 @@ update_generation_stats <- function(iter, generation_stats, next_nsims,
 
 update_cutoff_score <- function(iter, generation_stats, cutoff_score){
   generation_stats$cutoff_score[iter + 2] <- cutoff_score # +1 because zero-based and another +1 because stored in next generation slot
-  print(paste("cutoff score from this generation is", iter, "=", round(cutoff_score,6), "and will be used next generation"))
-  print(paste("cutoffs:", round(generation_stats$cutoff_score,6)))
+  print(paste("cutoff score created in this generation ", iter, "=", round(cutoff_score,6), "and will be used in the next generation =", (iter+1)))
+  print(paste("cutoffs so far:", round(generation_stats$cutoff_score,6)))
 }
 
