@@ -1,24 +1,20 @@
 options("width"=132)
+
 calculate_next_nsims <- function(n_to_keep, proportion_kept){
   new_nsims <- (round(n_to_keep/proportion_kept)*2)+500
   print(paste("next round we will do", new_nsims, "simulations"))
   return(new_nsims)
 }
 
-calculate_nse_bac <- function(iter, bac_cal_output, bac_obs){
+### bacteria nash-sutcliffes (4)
+calculate_mnse_bac_daily <- function(iter, bac_cal_output, bac_obs){
   #load the simulated concentrations for last simulations
   sim_bac <- bac_cal_output$simulation$bac_out
   # merge simulated and observed bacteria concentrations, calculate nses for all sims
   nse_bac <- right_join(sim_bac,bac_obs,by="date")%>%
     dplyr::select(-date) %>% dplyr::select(-bacteria) %>%
-    map_dbl(., ~NSE(.x, bac_obs$bacteria))
-  print(paste("range of all bacteria nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
-  return(nse_bac)
-}
-
-calculate_nse_bac_weekly <- function(iter, bac_sims_weekly, bac_obs_weekly){
-  nse_bac <- mapply(NSE, bac_sims_weekly, bac_obs_weekly)
-  print(paste("range of all weekly bacteria nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
+    map_dbl(., ~mNSE(.x, bac_obs$bacteria))
+  print(paste("range of all daily bacteria modified nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
   return(nse_bac)
 }
 
@@ -28,59 +24,25 @@ calculate_mnse_bac_weekly <- function(iter, bac_sims_weekly, bac_obs_weekly){
   return(nse_bac)
 }
 
-calculate_nse_q_weekly <- function(iter, bac_flows_weekly, bac_obs_weekly){
-  nse_bac <- mapply(NSE, bac_flows_weekly, flow_obs_weekly)
-  print(paste("range of all weekly flow nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
-  return(nse_bac)
-}
-
-calculate_modified_nse_q_weekly <- function(iter, bac_flows_weekly, bac_obs_weekly){
-  nse_bac <- mapply(mNSE, bac_flows_weekly, flow_obs_weekly)
-  print(paste("range of all weekly flow modified nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
-  return(nse_bac)
-}
-
-calculate_nse_flux_weekly <- function(iter, bac_fluxes_weekly, flux_obs_weekly){
-  nse_bac <- mapply(NSE, bac_fluxes_weekly, flux_obs_weekly)
-  print(paste("range of all weekly bacteria flux nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
-  return(nse_bac)
-}
-
-calculate_modified_nse_flux_weekly <- function(iter, bac_fluxes_weekly, flux_obs_weekly){
-  nse_bac <- mapply(mNSE, bac_fluxes_weekly, flux_obs_weekly)
-  print(paste("range of all weekly bacteria flux modified nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
-  return(nse_bac)
-}
-
-calculate_modified_nse_bac <- function(iter, bac_cal_output, bac_obs){
+calculate_nse_bac_daily <- function(iter, bac_cal_output, bac_obs){
   #load the simulated concentrations for last simulations
   sim_bac <- bac_cal_output$simulation$bac_out
   # merge simulated and observed bacteria concentrations, calculate nses for all sims
   nse_bac <- right_join(sim_bac,bac_obs,by="date")%>%
     dplyr::select(-date) %>% dplyr::select(-bacteria) %>%
-    map_dbl(., ~mNSE(.x, bac_obs$bacteria))
-  print(paste("range of all bacteria modified nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
+    map_dbl(., ~NSE(.x, bac_obs$bacteria))
+  print(paste("range of daily bacteria nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
   return(nse_bac)
 }
 
-calculate_modified_nse_bac_weekly <- function(iter, bac_sims_weekly, bac_obs_weekly){
-  nse_bac <- mapply(mNSE, bac_sims_weekly, bac_obs_weekly)
-  print(paste("range of all weekly bacteria modified nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
+calculate_nse_bac_weekly <- function(iter, bac_sims_weekly, bac_obs_weekly){
+  nse_bac <- mapply(NSE, bac_sims_weekly, bac_obs_weekly)
+  print(paste("range of all weekly bacteria nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
   return(nse_bac)
 }
 
-calculate_nse_q <- function(iter, bac_cal_output, q_obs){
-  #load the simulated flows, inputs for last simulations
-  sim_q <- bac_cal_output$simulation$q_out
-  # merge simulated and observed flows, calculate nses for all sims
-  nse_q <- right_join(sim_q,q_obs,by="date") %>%
-    dplyr::select(-date) %>% dplyr::select(-discharge) %>%
-    map_dbl(., ~NSE(.x, q_obs$discharge))
-  print(paste("range of all overall flow nse is (", round(min(nse_q),4), ",", round(max(nse_q),4), ") for generation", iter))
-  return(nse_q)
-}
-
-calculate_modified_nse_q <- function(iter, bac_cal_output, q_obs){
+### flow nash-sutcliffes (4)
+calculate_mnse_flow_daily <- function(iter, bac_cal_output, q_obs){
   #load the simulated flows, inputs for last simulations
   sim_q <- bac_cal_output$simulation$q_out
   # merge simulated and observed flows, calculate nses for all sims
@@ -91,25 +53,31 @@ calculate_modified_nse_q <- function(iter, bac_cal_output, q_obs){
   return(nse_q)
 }
 
-calculate_nse_flux <- function(iter, bac_cal_output, flux_obs){  
-  #load the simulated concentrations for last simulations
-  sim_bac <- bac_cal_output$simulation$bac_out
-  sim_q <- bac_cal_output$simulation$q_out
-  # calculate the simulated fluxes from concs and flows for all sims
-  # flux_sim <- sim_bac[,c(-1)]*
-  #   sim_q[, c(-1)]*10^4
-  date <-bac_cal_output$simulation$bac_out$date
-  flux_sim <-sim_bac[,c(-1)]* sim_q[, c(-1)]*10^4
-  sim_flux<- cbind(date, flux_sim)
-  #merge simulated and observed fluxes, calculate nses for all sims
-  nse_flux <-  right_join(sim_flux, flux_obs, by = "date") %>%
- dplyr::select(-date) %>%dplyr::select(-flux) %>%
-    map_dbl(., ~NSE(.x, flux_obs$flux))
-  print(paste("range of all overall flux nse is (", round(min(nse_flux),4), ",", round(max(nse_flux),4), ") for generation", iter))
-  return(nse_flux)
+calculate_mnse_flow_weekly <- function(iter, bac_flows_weekly, bac_obs_weekly){
+  nse_bac <- mapply(mNSE, bac_flows_weekly, flow_obs_weekly)
+  print(paste("range of all weekly flow modified nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
+  return(nse_bac)
 }
 
-calculate_modified_nse_flux <- function(iter, bac_cal_output, flux_obs){  
+calculate_nse_flow_daily <- function(iter, bac_cal_output, q_obs){
+  #load the simulated flows, inputs for last simulations
+  sim_q <- bac_cal_output$simulation$q_out
+  # merge simulated and observed flows, calculate nses for all sims
+  nse_q <- right_join(sim_q,q_obs,by="date") %>%
+    dplyr::select(-date) %>% dplyr::select(-discharge) %>%
+    map_dbl(., ~NSE(.x, q_obs$discharge))
+  print(paste("range of all overall flow nse is (", round(min(nse_q),4), ",", round(max(nse_q),4), ") for generation", iter))
+  return(nse_q)
+}
+
+calculate_nse_flow_weekly <- function(iter, bac_flows_weekly, bac_obs_weekly){
+  nse_bac <- mapply(NSE, bac_flows_weekly, flow_obs_weekly)
+  print(paste("range of all weekly flow nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
+  return(nse_bac)
+}
+
+### flux nash-sutcliffes (4)
+calculate_mnse_flux_daily <- function(iter, bac_cal_output, flux_obs){  
   #load the simulated concentrations for last simulations
   sim_bac <- bac_cal_output$simulation$bac_out
   sim_q <- bac_cal_output$simulation$q_out
@@ -127,7 +95,39 @@ calculate_modified_nse_flux <- function(iter, bac_cal_output, flux_obs){
   return(nse_flux)
 }
 
-calculate_modified_nse_mean <- function(iter, mnse_bac, mnse_q, mnse_flux){
+calculate_mnse_flux_weekly <- function(iter, bac_fluxes_weekly, flux_obs_weekly){
+  nse_bac <- mapply(mNSE, bac_fluxes_weekly, flux_obs_weekly)
+  print(paste("range of all weekly bacteria flux modified nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
+  return(nse_bac)
+}
+
+calculate_nse_flux_daily <- function(iter, bac_cal_output, flux_obs){  
+  #load the simulated concentrations for last simulations
+  sim_bac <- bac_cal_output$simulation$bac_out
+  sim_q <- bac_cal_output$simulation$q_out
+  # calculate the simulated fluxes from concs and flows for all sims
+  # flux_sim <- sim_bac[,c(-1)]*
+  #   sim_q[, c(-1)]*10^4
+  date <-bac_cal_output$simulation$bac_out$date
+  flux_sim <-sim_bac[,c(-1)]* sim_q[, c(-1)]*10^4
+  sim_flux<- cbind(date, flux_sim)
+  #merge simulated and observed fluxes, calculate nses for all sims
+  nse_flux <-  right_join(sim_flux, flux_obs, by = "date") %>%
+    dplyr::select(-date) %>%dplyr::select(-flux) %>%
+    map_dbl(., ~NSE(.x, flux_obs$flux))
+  print(paste("range of all overall flux nse is (", round(min(nse_flux),4), ",", round(max(nse_flux),4), ") for generation", iter))
+  return(nse_flux)
+}
+
+calculate_nse_flux_weekly <- function(iter, bac_fluxes_weekly, flux_obs_weekly){
+  nse_bac <- mapply(NSE, bac_fluxes_weekly, flux_obs_weekly)
+  print(paste("range of all weekly bacteria flux nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
+  return(nse_bac)
+}
+
+### mean of (conc, flow, flux) nash-sutcliffes (2)
+#function does not care if daily or weekly
+calculate_mnse_mean <- function(iter, mnse_bac, mnse_q, mnse_flux){
   # calculate nse means
   mnse_mean <- rowMeans(cbind(mnse_bac, mnse_q, mnse_flux))
   print(paste("range of all overall modified mean nse is (", round(min(mnse_mean),4), ",", round(max(mnse_mean),4), ") for generation", iter))
@@ -141,6 +141,7 @@ calculate_nse_mean <- function(iter, nse_bac, nse_q, nse_flux){
   return(nse_mean)
 }
 
+##
 create_next_sim_tibble <- function(nsims_todo, parameter_input_sims){
   
   if(nsims_todo > nrow(parameter_input_sims)){

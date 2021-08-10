@@ -216,21 +216,21 @@ for(iter in startgen:ngens){
   #View(flux_obs_weekly)  
   
   ###### calculate various nses for daily data
-  nse_bac_daily <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
-  nse_q_daily <- calculate_nse_q(iter, bac_cal_output, q_obs)
-  nse_flux_daily <- calculate_nse_flux(iter, bac_cal_output, flux_obs)
+  nse_bac_daily <- calculate_nse_bac_daily(iter, bac_cal_output, bac_obs)
+  nse_q_daily <- calculate_nse_flow_daily(iter, bac_cal_output, q_obs)
+  nse_flux_daily <- calculate_nse_flux_daily(iter, bac_cal_output, flux_obs)
   # calculate various modified nses for daily data with concentrations
-  mnse_bac_daily <- calculate_modified_nse_bac(iter, bac_cal_output, bac_obs)
-  mnse_q_daily <- calculate_modified_nse_q(iter, bac_cal_output, q_obs)
-  mnse_flux_daily <- calculate_modified_nse_flux(iter, bac_cal_output, flux_obs)
+  mnse_bac_daily <- calculate_mnse_bac_daily(iter, bac_cal_output, bac_obs)
+  mnse_q_daily <- calculate_mnse_flow_daily(iter, bac_cal_output, q_obs)
+  mnse_flux_daily <- calculate_mnse_flux_daily(iter, bac_cal_output, flux_obs)
   # calculate various nses for weekly data
   nse_bac_weekly <- calculate_nse_bac_weekly(iter, bac_sims_weekly, bac_obs_weekly)
-  nse_q_weekly <- calculate_nse_q_weekly(iter, bac_flows_weekly, flow_obs_weekly)
+  nse_q_weekly <- calculate_nse_flow_weekly(iter, bac_flows_weekly, flow_obs_weekly)
   nse_flux_weekly <- calculate_nse_flux_weekly(iter, bac_fluxes_weekly, flux_obs_weekly)
   # calculate various modified nses for weekly data with concentrations
-  mnse_bac_weekly <- calculate_modified_nse_bac_weekly(iter, bac_sims_weekly, bac_obs_weekly)
-  mnse_q_weekly <- calculate_modified_nse_q_weekly(iter, bac_flows_weekly, flow_obs_weekly)
-  mnse_flux_weekly <- calculate_modified_nse_flux_weekly(iter, bac_fluxes_weekly, flux_obs_weekly) #?? not working
+  mnse_bac_weekly <- calculate_mnse_bac_weekly(iter, bac_sims_weekly, bac_obs_weekly)
+  mnse_q_weekly <- calculate_mnse_q_weekly(iter, bac_flows_weekly, flow_obs_weekly)
+  mnse_flux_weekly <- calculate_mnse_flux_weekly(iter, bac_fluxes_weekly, flux_obs_weekly) #?? not working
   ######### calculate means of nses
   # calculate nse means
   print("NSE, daily")
