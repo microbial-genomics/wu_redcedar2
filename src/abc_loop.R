@@ -122,9 +122,9 @@ opt_time_interval <- "weekly"
 opt_conc_transform <- "modified"
 
 # decide what metric to optimize on
-opt_nse <- "mean"
+#opt_nse <- "mean"
 #opt_nse <- "conc"
-# opt_nse <- "flux"
+ opt_nse <- "flux"
 # opt_nse <- "flow"
 
 # every generation will have n_to_keep accepted particles
@@ -229,7 +229,7 @@ for(iter in startgen:ngens){
   nse_flux_weekly <- calculate_nse_flux_weekly(iter, bac_fluxes_weekly, flux_obs_weekly)
   # calculate various modified nses for weekly data with concentrations
   mnse_bac_weekly <- calculate_mnse_bac_weekly(iter, bac_sims_weekly, bac_obs_weekly)
-  mnse_q_weekly <- calculate_mnse_q_weekly(iter, bac_flows_weekly, flow_obs_weekly)
+  mnse_q_weekly <- calculate_mnse_flow_weekly(iter, bac_flows_weekly, flow_obs_weekly)
   mnse_flux_weekly <- calculate_mnse_flux_weekly(iter, bac_fluxes_weekly, flux_obs_weekly) #?? not working
   ######### calculate means of nses
   # calculate nse means
@@ -239,9 +239,9 @@ for(iter in startgen:ngens){
   nse_mean_weekly <- calculate_nse_mean(iter, nse_bac_weekly, nse_q_weekly, nse_flux_weekly)
   # calculate modified nse means
   print("mNSE, daily")
-  mnse_mean_daily <- calculate_modified_nse_mean(iter, mnse_bac_daily, mnse_q_daily, mnse_flux_daily) 
+  mnse_mean_daily <- calculate_mnse_mean(iter, mnse_bac_daily, mnse_q_daily, mnse_flux_daily) 
   print("mNSE, weekly")
-  mnse_mean_weekly <- calculate_modified_nse_mean(iter, mnse_bac_weekly, mnse_q_weekly, mnse_flux_weekly) 
+  mnse_mean_weekly <- calculate_mnse_mean(iter, mnse_bac_weekly, mnse_q_weekly, mnse_flux_weekly) 
   
   ###### get cutoff score
   if(iter==0){
