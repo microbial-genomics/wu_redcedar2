@@ -124,8 +124,8 @@ opt_conc_transform <- "modified"
 # decide what metric to optimize on
 #opt_nse <- "mean"
 #opt_nse <- "conc"
- opt_nse <- "flux"
-# opt_nse <- "flow"
+#opt_nse <- "flux"
+opt_nse <- "flow"
 
 # every generation will have n_to_keep accepted particles
 # the median score of these n_to_keep particles will be used as the cutoff for the next generation
@@ -217,31 +217,32 @@ for(iter in startgen:ngens){
   
   ###### calculate various nses for daily data
   nse_bac_daily <- calculate_nse_bac_daily(iter, bac_cal_output, bac_obs)
-  nse_q_daily <- calculate_nse_flow_daily(iter, bac_cal_output, q_obs)
+  nse_flow_daily <- calculate_nse_flow_daily(iter, bac_cal_output, q_obs)
   nse_flux_daily <- calculate_nse_flux_daily(iter, bac_cal_output, flux_obs)
-  # calculate various modified nses for daily data with concentrations
+  # calculate various modified nses for daily data
   mnse_bac_daily <- calculate_mnse_bac_daily(iter, bac_cal_output, bac_obs)
-  mnse_q_daily <- calculate_mnse_flow_daily(iter, bac_cal_output, q_obs)
+  mnse_flow_daily <- calculate_mnse_flow_daily(iter, bac_cal_output, q_obs)
   mnse_flux_daily <- calculate_mnse_flux_daily(iter, bac_cal_output, flux_obs)
   # calculate various nses for weekly data
   nse_bac_weekly <- calculate_nse_bac_weekly(iter, bac_sims_weekly, bac_obs_weekly)
-  nse_q_weekly <- calculate_nse_flow_weekly(iter, bac_flows_weekly, flow_obs_weekly)
+  nse_flow_weekly <- calculate_nse_flow_weekly(iter, bac_flows_weekly, flow_obs_weekly)
   nse_flux_weekly <- calculate_nse_flux_weekly(iter, bac_fluxes_weekly, flux_obs_weekly)
-  # calculate various modified nses for weekly data with concentrations
+  # calculate various modified nses for weekly data
   mnse_bac_weekly <- calculate_mnse_bac_weekly(iter, bac_sims_weekly, bac_obs_weekly)
-  mnse_q_weekly <- calculate_mnse_flow_weekly(iter, bac_flows_weekly, flow_obs_weekly)
+  mnse_flow_weekly <- calculate_mnse_flow_weekly(iter, bac_flows_weekly, flow_obs_weekly)
   mnse_flux_weekly <- calculate_mnse_flux_weekly(iter, bac_fluxes_weekly, flux_obs_weekly) #?? not working
+  
   ######### calculate means of nses
   # calculate nse means
   print("NSE, daily")
-  nse_mean_daily <- calculate_nse_mean(iter, nse_bac_daily, nse_q_daily, nse_flux_daily)
+  nse_mean_daily <- calculate_nse_mean(iter, nse_bac_daily, nse_flow_daily, nse_flux_daily)
   print("NSE, weekly")
-  nse_mean_weekly <- calculate_nse_mean(iter, nse_bac_weekly, nse_q_weekly, nse_flux_weekly)
+  nse_mean_weekly <- calculate_nse_mean(iter, nse_bac_weekly, nse_flow_weekly, nse_flux_weekly)
   # calculate modified nse means
   print("mNSE, daily")
-  mnse_mean_daily <- calculate_mnse_mean(iter, mnse_bac_daily, mnse_q_daily, mnse_flux_daily) 
+  mnse_mean_daily <- calculate_mnse_mean(iter, mnse_bac_daily, mnse_flow_daily, mnse_flux_daily) 
   print("mNSE, weekly")
-  mnse_mean_weekly <- calculate_mnse_mean(iter, mnse_bac_weekly, mnse_q_weekly, mnse_flux_weekly) 
+  mnse_mean_weekly <- calculate_mnse_mean(iter, mnse_bac_weekly, mnse_flow_weekly, mnse_flux_weekly) 
   
   ###### get cutoff score
   if(iter==0){
@@ -253,7 +254,7 @@ for(iter in startgen:ngens){
     } else if(opt_nse=="conc" && opt_time_interval=="daily" && opt_conc_transform=="none") {
       this_cutoff_score <- quantile(nse_bac_daily, probs=0.8)
     } else if(opt_nse=="flow" && opt_time_interval=="daily" && opt_conc_transform=="none") {
-      this_cutoff_score <- quantile(nse_q_daily, probs=0.8)
+      this_cutoff_score <- quantile(nse_flow_daily, probs=0.8)
     } else if(opt_nse=="flux" && opt_time_interval=="daily" && opt_conc_transform=="none") {
       this_cutoff_score <- quantile(nse_flux_daily, probs=0.8)
     # daily, modified
@@ -262,7 +263,7 @@ for(iter in startgen:ngens){
     } else if(opt_nse=="conc" && opt_time_interval=="daily" && opt_conc_transform=="modified") {
       this_cutoff_score <- quantile(mnse_bac_daily, probs=0.8)
     } else if(opt_nse=="flow" && opt_time_interval=="daily" && opt_conc_transform=="modified") {
-      this_cutoff_score <- quantile(mnse_q_daily, probs=0.8)
+      this_cutoff_score <- quantile(mnse_flow_daily, probs=0.8)
     } else if(opt_nse=="flux" && opt_time_interval=="daily" && opt_conc_transform=="modified") {
       this_cutoff_score <- quantile(mnse_flux_daily, probs=0.8)  
     # weekly, none
@@ -271,7 +272,7 @@ for(iter in startgen:ngens){
     } else if(opt_nse=="conc" && opt_time_interval=="weekly" && opt_conc_transform=="none") {
       this_cutoff_score <- quantile(nse_bac_weekly, probs=0.8)
     } else if(opt_nse=="flow" && opt_time_interval=="weekly" && opt_conc_transform=="none") {
-      this_cutoff_score <- quantile(nse_q_weekly, probs=0.8)
+      this_cutoff_score <- quantile(nse_flow_weekly, probs=0.8)
     } else if(opt_nse=="flux" && opt_time_interval=="weekly" && opt_conc_transform=="none") {
       this_cutoff_score <- quantile(nse_flux_weekly, probs=0.8)  
     # weekly, modified
@@ -280,11 +281,13 @@ for(iter in startgen:ngens){
     } else if(opt_nse=="conc" && opt_time_interval=="weekly" && opt_conc_transform=="modified") {
       this_cutoff_score <- quantile(mnse_bac_weekly, probs=0.8)
     } else if(opt_nse=="flow" && opt_time_interval=="weekly" && opt_conc_transform=="modified") {
-      this_cutoff_score <- quantile(mnse_q_weekly, probs=0.8)
+      this_cutoff_score <- quantile(mnse_flow_weekly, probs=0.8)
     } else if(opt_nse=="flux" && opt_time_interval=="weekly" && opt_conc_transform=="modified") {
       this_cutoff_score <- quantile(mnse_flux_weekly, probs=0.8)  
     }
-    print(paste0("generation 0 cutoff score =", this_cutoff_score))
+    print(paste("generation 0 is based on the", opt_nse, "output;", opt_time_interval, "interval;",
+          opt_conc_transform, "change to nse."))
+    print(paste("Cutoff score to be applied to generation 0 =", this_cutoff_score))
   }else{  
     #use the cutoff score from the last generation to sort the keepers
     this_cutoff_score <- get_cutoff_score(iter, generation_stats)
@@ -296,7 +299,7 @@ for(iter in startgen:ngens){
   } else if(opt_nse=="conc" && opt_time_interval=="daily" && opt_conc_transform=="none") {
     all_keepers <- which(nse_bac_daily > this_cutoff_score)
   } else if(opt_nse=="flow" && opt_time_interval=="daily" && opt_conc_transform=="none") {
-    all_keepers <- which(nse_q_daily > this_cutoff_score)
+    all_keepers <- which(nse_flow_daily > this_cutoff_score)
   } else if(opt_nse=="flux" && opt_time_interval=="daily" && opt_conc_transform=="none") {
     all_keepers <- which(nse_flux_daily > this_cutoff_score)
   # daily, modified
@@ -305,7 +308,7 @@ for(iter in startgen:ngens){
   } else if(opt_nse=="conc" && opt_time_interval=="daily" && opt_conc_transform=="modified") {
     all_keepers <- which(mnse_bac_daily > this_cutoff_score)
   } else if(opt_nse=="flow" && opt_time_interval=="daily" && opt_conc_transform=="modified") {
-    all_keepers <- which(mnse_q_daily > this_cutoff_score)
+    all_keepers <- which(mnse_flow_daily > this_cutoff_score)
   } else if(opt_nse=="flux" && opt_time_interval=="daily" && opt_conc_transform=="modified") {
     all_keepers <- which(mnse_flux_daily > this_cutoff_score) 
   # weekly, none
@@ -314,7 +317,7 @@ for(iter in startgen:ngens){
   } else if(opt_nse=="conc" && opt_time_interval=="weekly" && opt_conc_transform=="none") {
     all_keepers <- which(nse_bac_weekly > this_cutoff_score)
   } else if(opt_nse=="flow" && opt_time_interval=="weekly" && opt_conc_transform=="none") {
-    all_keepers <- which(nse_q_weekly > this_cutoff_score)
+    all_keepers <- which(nse_flow_weekly > this_cutoff_score)
   } else if(opt_nse=="flux" && opt_time_interval=="weekly" && opt_conc_transform=="none") {
     all_keepers <- which(nse_flux_weekly > this_cutoff_score)  
   # weekly, modified
@@ -323,7 +326,7 @@ for(iter in startgen:ngens){
   } else if(opt_nse=="conc" && opt_time_interval=="weekly" && opt_conc_transform=="modified") {
     all_keepers <- which(mnse_bac_weekly > this_cutoff_score)
   } else if(opt_nse=="flow" && opt_time_interval=="weekly" && opt_conc_transform=="modified") {
-    all_keepers <- which(mnse_q_weekly > this_cutoff_score)
+    all_keepers <- which(mnse_flow_weekly > this_cutoff_score)
   } else if(opt_nse=="flux" && opt_time_interval=="weekly" && opt_conc_transform=="modified") {
     all_keepers <- which(mnse_flux_weekly > this_cutoff_score)  
   }
@@ -339,40 +342,40 @@ for(iter in startgen:ngens){
   # concatenate output into one big dataframe
   # daily, none
   if(opt_time_interval=="daily" && opt_conc_transform=="none"){
-    nses_w_parameters_all <- cbind(keeper, nse_bac_daily, nse_flux_daily, nse_q_daily, 
+    nses_w_parameters_all <- cbind(keeper, nse_bac_daily, nse_flux_daily, nse_flow_daily, 
                                nse_mean_daily, sim_pars)
     nse_conc_keepers <- nse_bac_daily[valid_keepers]
-    nse_flow_keepers <- nse_q_daily[valid_keepers]
+    nse_flow_keepers <- nse_flow_daily[valid_keepers]
     nse_flux_keepers <- nse_flux_daily[valid_keepers]
     nse_mean_keepers <- nse_mean_daily[valid_keepers]
     nses_w_parameters <- cbind(nse_conc_keepers, nse_flow_keepers, nse_flux_keepers, 
                                nse_mean_keepers, sim_pars[valid_keepers,])
   # daily, modified
   } else if(opt_time_interval=="daily" && opt_conc_transform=="modified"){
-    nses_w_parameters_all <- cbind(keeper, mnse_bac_daily, mnse_flux_daily, mnse_q_daily, 
+    nses_w_parameters_all <- cbind(keeper, mnse_bac_daily, mnse_flux_daily, mnse_flow_daily, 
                                    mnse_mean_daily, sim_pars)
     nse_conc_keepers <- mnse_bac_daily[valid_keepers]
-    nse_flow_keepers <- mnse_q_daily[valid_keepers]
+    nse_flow_keepers <- mnse_flow_daily[valid_keepers]
     nse_flux_keepers <- mnse_flux_daily[valid_keepers]
     nse_mean_keepers <- mnse_mean_daily[valid_keepers]
     nses_w_parameters <- cbind(nse_conc_keepers, nse_flow_keepers, nse_flux_keepers, 
                                nse_mean_keepers, sim_pars[valid_keepers,])
   # weekly, none
   } else if(opt_time_interval=="weekly" && opt_conc_transform=="none"){
-    nses_w_parameters_all <- cbind(keeper, nse_bac_weekly, nse_flux_weekly, nse_q_weekly, 
+    nses_w_parameters_all <- cbind(keeper, nse_bac_weekly, nse_flux_weekly, nse_flow_weekly, 
                                    nse_mean_weekly, sim_pars)
     nse_conc_keepers <- nse_bac_weekly[valid_keepers]
-    nse_flow_keepers <- nse_q_weekly[valid_keepers]
+    nse_flow_keepers <- nse_flow_weekly[valid_keepers]
     nse_flux_keepers <- nse_flux_weekly[valid_keepers]
     nse_mean_keepers <- nse_mean_weekly[valid_keepers]
     nses_w_parameters <- cbind(nse_conc_keepers, nse_flow_keepers, nse_flux_keepers, 
                                nse_mean_keepers, sim_pars[valid_keepers,])
   # weekly, modified
   } else if(opt_time_interval=="weekly" && opt_conc_transform=="modified"){
-    nses_w_parameters_all <- cbind(keeper, mnse_bac_weekly, mnse_flux_weekly, mnse_q_weekly, 
+    nses_w_parameters_all <- cbind(keeper, mnse_bac_weekly, mnse_flux_weekly, mnse_flow_weekly, 
                                    mnse_mean_weekly, sim_pars)
     nse_conc_keepers <- mnse_bac_weekly[valid_keepers]
-    nse_flow_keepers <- mnse_q_weekly[valid_keepers]
+    nse_flow_keepers <- mnse_flow_weekly[valid_keepers]
     nse_flux_keepers <- mnse_flux_weekly[valid_keepers]
     nse_mean_keepers <- mnse_mean_weekly[valid_keepers]
     nses_w_parameters <- cbind(nse_conc_keepers, nse_flow_keepers, nse_flux_keepers, 

@@ -53,10 +53,10 @@ calculate_mnse_flow_daily <- function(iter, bac_cal_output, q_obs){
   return(nse_q)
 }
 
-calculate_mnse_flow_weekly <- function(iter, bac_flows_weekly, bac_obs_weekly){
-  nse_bac <- mapply(mNSE, bac_flows_weekly, flow_obs_weekly)
-  print(paste("range of all weekly flow modified nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
-  return(nse_bac)
+calculate_mnse_flow_weekly <- function(iter, bac_flows_weekly, flow_obs_weekly){
+  mnse_flow <- mapply(mNSE, bac_flows_weekly, flow_obs_weekly)
+  print(paste("range of all weekly flow modified nse is (", round(min(mnse_flow),4), ",", round(max(mnse_flow),4), ") for generation", iter))
+  return(mnse_flow)
 }
 
 calculate_nse_flow_daily <- function(iter, bac_cal_output, q_obs){
@@ -70,10 +70,10 @@ calculate_nse_flow_daily <- function(iter, bac_cal_output, q_obs){
   return(nse_q)
 }
 
-calculate_nse_flow_weekly <- function(iter, bac_flows_weekly, bac_obs_weekly){
-  nse_bac <- mapply(NSE, bac_flows_weekly, flow_obs_weekly)
-  print(paste("range of all weekly flow nse is (", round(min(nse_bac),4), ",", round(max(nse_bac),4), ") for generation", iter))
-  return(nse_bac)
+calculate_nse_flow_weekly <- function(iter, bac_flows_weekly, flow_obs_weekly){
+  nse_flow <- mapply(NSE, bac_flows_weekly, flow_obs_weekly)
+  print(paste("range of all weekly flow nse is (", round(min(nse_flow),4), ",", round(max(nse_flow),4), ") for generation", iter))
+  return(nse_flow)
 }
 
 ### flux nash-sutcliffes (4)
@@ -187,6 +187,7 @@ create_generation_stats <- function(startgen, ngens, opt_nse, nsims){
   df$proportion_kept[1] <- 1.0
   df$opt_variable[1] <- opt_nse
   df$cutoff_score[1] <- -1e+12 #accept everything first time through
+  print(paste("The cutoff score for generation -1 will be -1e+12 so that we accept everything in generation 0."))
   return(df)
 }
 
