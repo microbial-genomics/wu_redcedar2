@@ -148,24 +148,24 @@ create_next_sim_tibble <- function(nsims_todo, parameter_input_sims){
     print(paste("major problem, more sims requested than parameter inputs"))
   }else{
     next_tibble <- tibble(
-      "CN2.mgt|change = relchg"= parameter_input_sims[1:nsims_todo,1], #$CN2,
-      "GWQMN.gw|change = relchg" = parameter_input_sims[1:nsims_todo,2], #$GWQMN,
-      "ALPHA_BNK.rte|change = absval" = parameter_input_sims[1:nsims_todo,3], #$ALPHA_BNK,
-      "CH_K2.rte|change = absval" = parameter_input_sims[1:nsims_todo,4], #$CH_K2,
-      "CH_N2.rte|change = absval" = parameter_input_sims[1:nsims_todo,5], #$CH_N2,
-      "TRNSRCH.bsn|change = absval" = parameter_input_sims[1:nsims_todo,6], #$TRNSRCH,
-      "CH_N1.sub|change = absval" = parameter_input_sims[1:nsims_todo,7], #$CH_N1,
-      "CH_K1.sub|change = absval" = parameter_input_sims[1:nsims_todo,8], #$CH_K1,
-      "RCHRG_DP.gw|change = absval" = parameter_input_sims[1:nsims_todo,9], #RCHRG_DP,
-      "SFTMP.bsn|change = absval"= parameter_input_sims[1:nsims_todo,10], #SFTMP,
-      "SMTMP.bsn|change = absval"= parameter_input_sims[1:nsims_todo,11], #SMTMP,
-      "DEP_IMP.hru|change = absval"= parameter_input_sims[1:nsims_todo,12], #DEP_IMP,
-      "DDRAIN.mgt|change = absval"= parameter_input_sims[1:nsims_todo,13], #DDRAIN,
-      "GDRAIN.mgt|change = absval"= parameter_input_sims[1:nsims_todo,14], #GDRAIN,
-      "BACTKDQ.bsn|change = absval" = parameter_input_sims[1:nsims_todo,15], #BACTKDQ,
-      "BACT_SWF.bsn|change = absval" = parameter_input_sims[1:nsims_todo,16], #BACT_SWF,
-      "THBACT.bsn|change = absval"= parameter_input_sims[1:nsims_todo,17], #THBACT,
-      "WDPRCH.bsn|change = absval"= parameter_input_sims[1:nsims_todo,18]) #WDPRCH)
+      "CN2.mgt|change = relchg"= parameter_input_sims[1:nsims_todo,1], #$CN2,initial SCS runoff curve number for mosture condition II
+      "GWQMN.gw|change = relchg" = parameter_input_sims[1:nsims_todo,2], #$GWQMN, Threshold depth of water in the shallow aquifer required for return flow to occruemm (H2O)
+      "ALPHA_BNK.rte|change = absval" = parameter_input_sims[1:nsims_todo,3], #$ALPHA_BNK, baseflow apha factor for bank storage (days)
+      "CH_K2.rte|change = absval" = parameter_input_sims[1:nsims_todo,4], #$CH_K2,Effective hydraulic conductivity in main channel alluvium (mm/hr)
+      "CH_N2.rte|change = absval" = parameter_input_sims[1:nsims_todo,5], #$CH_N2,Manning's n value for the main channels
+      "TRNSRCH.bsn|change = absval" = parameter_input_sims[1:nsims_todo,6], #$TRNSRCH,Fraction of trasmission losses from main channel that enter deep aquifer
+      "CH_N1.sub|change = absval" = parameter_input_sims[1:nsims_todo,7], #$CH_N1, Manning's n value for the tributary channels
+      "CH_K1.sub|change = absval" = parameter_input_sims[1:nsims_todo,8], #$CH_K1, Effective hydraulic conductivity in tributary channel alluvium (mm/hr)
+      "RCHRG_DP.gw|change = absval" = parameter_input_sims[1:nsims_todo,9], #RCHRG_DP, Deep aquifer percolation fraction 
+      "SFTMP.bsn|change = absval"= parameter_input_sims[1:nsims_todo,10], #SFTMP, snowfall temperature C
+      "SMTMP.bsn|change = absval"= parameter_input_sims[1:nsims_todo,11], #SMTMP, snowmelt temperature C
+      "DEP_IMP.hru|change = absval"= parameter_input_sims[1:nsims_todo,12], #DEP_IMP, Depth to impervious layer in soil profile (mm)
+      "DDRAIN.mgt|change = absval"= parameter_input_sims[1:nsims_todo,13], #DDRAIN, Depth to subsurface drian (mm)
+      "GDRAIN.mgt|change = absval"= parameter_input_sims[1:nsims_todo,14], #GDRAIN, Drain tile lab time (hours)
+      "BACTKDQ.bsn|change = absval" = parameter_input_sims[1:nsims_todo,15], #BACTKDQ, Bacteria soil partitioning coefficient (m3/Mg)
+      "BACT_SWF.bsn|change = absval" = parameter_input_sims[1:nsims_todo,16], #BACT_SWF, Fraction of manure applied to land areas that has active CFUs
+      "THBACT.bsn|change = absval"= parameter_input_sims[1:nsims_todo,17], #THBACT, Temperature adjsument factor for bacteria die-off/growth
+      "WDPRCH.bsn|change = absval"= parameter_input_sims[1:nsims_todo,18]) #WDPRCH, Die-off factor for persistent bacteria in streas  at 20C (1/day) 
     return(next_tibble)
   }
 }
@@ -193,26 +193,26 @@ create_generation_stats <- function(startgen, ngens, opt_nse, nsims){
 
 create_tibble_initial <- function(nsims){
   pars_tibble <- tibble(#hydrology parameters (11)
-    "CN2.mgt|change = relchg"= runif(nsims, -0.25, 0.1), #"generation 21 CN2 -0.116 0.02"
-    "GWQMN.gw|change = relchg" = runif(nsims, -0.5, 0.5), # "generation 21 GWQMN -0.021 0.106"
-    "ALPHA_BNK.rte|change = absval" =runif(nsims, 0.5, 1), # "generation 21 ALPHA_BNK 0.811 0.053"
-    "CH_K2.rte|change = absval" = runif(nsims, 0, 250), # "generation 21 CH_K2 138.073 7.122"
-    "CH_N2.rte|change = absval" = runif(nsims, 0, 0.1), # "generation 21 CH_N2 0.034 0.007"
-    "TRNSRCH.bsn|change = absval" = runif(nsims, 0, 0.5), # "generation 21 TRNSRCH 0.172 0.005"
-    "CH_N1.sub|change = absval" = runif(nsims, 0.01, 30), # "generation 21 CH_N1 14.44 4.473"
-    "CH_K1.sub|change = absval" = runif(nsims, 0, 150), # "generation 21 CH_K1 73.601 20.81"
-    "RCHRG_DP.gw|change = absval" = runif(nsims, 0, 0.5), # "generation 21 RCHRG_DP 0.224 0.08"
-    "SFTMP.bsn|change = absval"= runif(nsims, -2.5, 2.5), # "generation 21 SFTMP 1.29 0.831"
-    "SMTMP.bsn|change = absval"= runif(nsims, -2.5, 2.5), # "generation 21 SMTMP 1.066 0.477"
+    "CN2.mgt|change = relchg"= runif(nsims, -0.25, 0.1), #
+    "GWQMN.gw|change = relchg" = runif(nsims, -0.5, 0.5), #
+    "ALPHA_BNK.rte|change = absval" =runif(nsims, 0.5, 1), #large for flat recessions, and small for steep recessions
+    "CH_K2.rte|change = absval" = runif(nsims, 0, 120), # changed from(0,250) 
+    "CH_N2.rte|change = absval" = runif(nsims, 0, 0.2), # changed from (0,0.1) 
+    "TRNSRCH.bsn|change = absval" = runif(nsims, 0, 0.5), # default is 0.00
+    "CH_N1.sub|change = absval" = runif(nsims, 0,0.2), #ranged from (0.01,30) 
+    "CH_K1.sub|change = absval" = runif(nsims, 0, 120), #For prennial streams with continuous groundwater contribution, the effective conductivity will be zero. 
+    "RCHRG_DP.gw|change = absval" = runif(nsims, 0, 0.5), # default range is (0,1)
+    "SFTMP.bsn|change = absval"= runif(nsims, -5, 5), # changed from (-2,2),default is 1.0
+    "SMTMP.bsn|change = absval"= runif(nsims, -5, 5), # change from (-2,2), default is 0.5
     #tile drainage and sediments (3)
     "DEP_IMP.hru|change = absval"= runif(nsims, 2000, 6000), # "generation 21 DEP_IMP 4010.712 31.167"
     "DDRAIN.mgt|change = absval"= runif(nsims, 500, 1500), # "generation 21 DDRAIN 1105.285 107.537"
     "GDRAIN.mgt|change = absval"= runif(nsims, 0, 50), # "generation 21 GDRAIN 24.686 11.354"
     #bacteria submodel (4)
-    "BACTKDQ.bsn|change = absval" = runif(nsims, 100, 500), # "generation 21 BACTKDQ 393.222 35.305"
-    "BACT_SWF.bsn|change = absval" = runif(nsims, 0, 0.2), # "generation 21 BACT_SWF 0.085 0.018"
-    "THBACT.bsn|change = absval"= runif(nsims, 0, 2), # "generation 21 THBACT 1.343 0.078"
-    "WDPRCH.bsn|change = absval"= runif(nsims, 0, 1) # "generation 21 WDPRCH 0.564 0.109"
+    "BACTKDQ.bsn|change = absval" = runif(nsims, 100, 500), # default value 175
+    "BACT_SWF.bsn|change = absval" = runif(nsims, 0, 0.2), # default value 0.15
+    "THBACT.bsn|change = absval"= runif(nsims, 0, 2), # default value 1.07
+    "WDPRCH.bsn|change = absval"= runif(nsims, 0, 1) # 
   )
 }
 
@@ -223,8 +223,8 @@ fit_normal_parameters <- function(sim_pars_keepers){
   fitted_ALPHA_BNK <- fitdist(sim_pars_keepers$ALPHA_BNK, "norm")
   fitted_CH_K2 <- fitdist(sim_pars_keepers$CH_K2, "norm")
   fitted_CH_N2 <- fitdist(sim_pars_keepers$CH_N2, "norm")
-  fitted_TRNSRCH <- fitdist(sim_pars_keepers$TRNSRCH, "norm")##generation 23 doesn't work because it doesn't fit" norm", but "lnorm"is fine
-  fitted_CH_N1 <- fitdist(sim_pars_keepers$CH_N1, "norm")##generation 23 doesn't work because it doesn't fit" norm", but "lnorm"is fine
+  fitted_TRNSRCH <- fitdist(sim_pars_keepers$TRNSRCH, "norm")
+  fitted_CH_N1 <- fitdist(sim_pars_keepers$CH_N1, "norm")
   fitted_CH_K1 <- fitdist(sim_pars_keepers$CH_K1, "norm")
   fitted_RCHRG_DP <- fitdist(sim_pars_keepers$RCHRG_DP, "norm")
   fitted_SFTMP <- fitdist(sim_pars_keepers$SFTMP, "norm")
@@ -233,7 +233,7 @@ fit_normal_parameters <- function(sim_pars_keepers){
   fitted_DDRAIN <- fitdist(sim_pars_keepers$DDRAIN, "norm")
   fitted_GDRAIN <- fitdist(sim_pars_keepers$GDRAIN, "norm")
   fitted_BACTKDQ <- fitdist(sim_pars_keepers$BACTKDQ, "norm")
-  fitted_BACT_SWF<- fitdist(sim_pars_keepers$BACT_SWF, "norm")##generation 23 doesn't work because it doesn't fit" norm", but "lnorm"is fine
+  fitted_BACT_SWF<- fitdist(sim_pars_keepers$BACT_SWF, "norm")
   fitted_THBACT <- fitdist(sim_pars_keepers$THBACT, "norm")
   fitted_WDPRCH <- fitdist(sim_pars_keepers$WDPRCH, "norm")
   return(list(fitted_CN2, fitted_GWQMN, fitted_ALPHA_BNK, fitted_CH_K2, fitted_CH_N2,
