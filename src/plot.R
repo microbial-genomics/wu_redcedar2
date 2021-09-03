@@ -30,7 +30,7 @@ library(truncnorm)
 library(xts)
 
 
-base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim55")
+base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim55-weekly","sim55-nse-flow")
   data_in_dir <- base_dir
   graphics_dir <- base_dir
   src_dir <- base_dir
