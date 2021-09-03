@@ -274,9 +274,9 @@ load_observations <- function(){
   #load(file = file.path(data_in_dir,'pcp_obs.RData'), .GlobalEnv)
   #load(file = file.path(data_in_dir,'pcp_obs2.RData'), .GlobalEnv)
   load(file= file.path(data_in_dir, 'q_obs.RData'), .GlobalEnv)
-  load(file= file.path(data_in_dir, 'flow_obs_weekly.RData'), .GlobalEnv)
-  load(file= file.path(data_in_dir, 'flux_obs_weekly.RData'), .GlobalEnv)
-  load(file= file.path(data_in_dir, 'bac_obs_weekly.RData'), .GlobalEnv)
+  load(file= file.path(data_in_dir, 'q_obs_w.RData'), .GlobalEnv)
+  load(file= file.path(data_in_dir, 'bac_obs_w.RData'), .GlobalEnv)
+  load(file= file.path(data_in_dir, 'flux_obs_w.RData'), .GlobalEnv)
 }
 
 log_results <- function(iter, this_cutoff_score, n_all_keepers, previous_nsims, nse_mean_keepers,

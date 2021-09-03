@@ -41,12 +41,53 @@ source(file.path(src_dir, "abc_functions.R"))
 
 load_observations()
 
-load ("/work/OVERFLOW/RCR/sim55/bac_cal7.RData")
-iter <- 7
+load ("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-flow/bac_cal14.RData")
+iter <- 14
 
-nse_bac <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
-nse_q <- calculate_nse_q(iter, bac_cal_output, q_obs)
-nse_flux <- calculate_nse_flux(iter, bac_cal_output, flux_obs)
+
+bac_sims_all_days <- bac_cal_output$simulation$bac_out # [3865,2215]
+bac_sims_daily_temp <- right_join(bac_sims_all_days, bac_obs, by="date") #[336,2216]
+bac_sims_daily <- bac_sims_daily_temp[,-which(colnames(bac_sims_daily_temp)=="bacteria")] #[336,2215]
+nsim_cols <- ncol(bac_sims_daily) #2215 date + sims field
+bac_sims_daily_data <- as.xts(bac_sims_daily[2:nsim_cols],order.by=as.Date(bac_sims_daily$date)) #[336,2214]
+bac_sims_daily <- bac_sims_daily[,-1] #[336,2215]
+bac_sims_weekly <- as.data.frame(apply.weekly(bac_sims_daily_data,mean)) #[204,2214]
+
+
+###### subset simulated flow to observed days and average by week
+# extract only the observed days from the simulated daily output
+bac_flows_all_days <- bac_cal_output$simulation$q_out # [3865,2215]
+#dim(bac_flows_all_days)
+# adds date and flow fields also
+bac_flows_daily_temp <- right_join(bac_flows_all_days, flow_obs, by="date") #[336,2217]
+#dim(bac_flows_daily_temp)
+bac_flows_daily <- bac_flows_daily_temp[,-which((colnames(bac_flows_daily_temp)=="bacteria" | 
+                                                   colnames(bac_flows_daily_temp)=="discharge"))] #[336,2215]
+#dim(bac_flows_daily)
+# then reduce daily simulated observations to weekly averages for each of the sims #[336,2215]
+#head(colnames(bac_flows_daily)) #  date 
+nsim_cols <- ncol(bac_flows_daily) #2215 date + sims field
+bac_flows_daily_data <- as.xts(bac_flows_daily[2:nsim_cols],order.by=as.Date(bac_flows_daily$date)) #[336,2214]
+bac_flows_daily <- bac_flows_daily[,-1] #[336,2215]
+#dim(bac_flows_daily) #[336,2214]
+bac_flows_weekly <- as.data.frame(apply.weekly(bac_flows_daily_data,mean)) #[204,2214]
+#dim(bac_flows_weekly)
+###### calculate simulated flux data for observed days and average by week
+#dim(bac_sims_weekly)
+#dim(bac_flows_weekly)
+bac_fluxes_weekly <- bac_sims_weekly * bac_flows_weekly * 10^4
+#dim(bac_fluxes_weekly) #[204,2214]
+
+
+###Flow
+###### calculate various nses for daily data 
+nse_flow_daily <- calculate_nse_flow_daily(iter, bac_cal_output, q_obs)
+# calculate various modified nses for daily data
+mnse_flow_daily <- calculate_mnse_flow_daily(iter, bac_cal_output, q_obs)
+# calculate various nses for weekly data
+nse_flow_weekly <- calculate_nse_flow_weekly(iter, bac_flows_weekly, flow_obs_weekly)
+# calculate various modified nses for weekly data
+mnse_flow_weekly <- calculate_mnse_flow_weekly(iter, bac_flows_weekly, flow_obs_weekly)
 
 
 ######################################################################
@@ -57,16 +98,18 @@ nse_flux <- calculate_nse_flux(iter, bac_cal_output, flux_obs)
 ##calculate nse_bac, use abc_functions.R
 ##identify iter
 nse_bac <- calculate_nse_bac(iter, bac_cal_output, bac_obs)
-sort(nse_bac, decreasing = T) %>% enframe()
+sort(nse_flow_weekly, decreasing = T) %>% enframe()
+
+
 #get the run_*** number
-bac_plot <-right_join(bac_cal_output$simulation$bac_out,bac_obs,by="date")%>%
-  dplyr::select(date, run_1065)%>%
+plot <-right_join(bac_flows_weekly,bac_obs,by="date")%>%
+  dplyr::select(date, run_0878)%>%
 left_join(., bac_obs, by ="date")%>%
   rename (bac_obs=bacteria)%>%
   gather(., key= "variable", value="bacteria",-date)
 
 
-ggplot(data = bac_plot)+
+ggplot(data = plot)+
   geom_line(aes(x = date, y = bacteria, col = variable, lty = variable)) +
   geom_point(aes(x = date, y = bacteria, col = variable, lty = variable)) +
   scale_x_date(name = "date",date_breaks = "1 year",date_labels = "%Y") +
