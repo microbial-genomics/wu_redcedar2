@@ -73,7 +73,7 @@ calculate_nse_flow_daily <- function(iter, bac_cal_output, q_obs){
 
 calculate_nse_flow_weekly <- function(iter, bac_flows_weekly, flow_obs_weekly){
   nse_q <- mapply(NSE, bac_flows_weekly, flow_obs_weekly)
-  print(paste("range of all weekly flow nse is (", round(min(nse_flow),4), ",", round(max(nse_q),4), ") for generation", iter))
+  print(paste("range of all weekly flow nse is (", round(min(nse_q),4), ",", round(max(nse_q),4), ") for generation", iter))
   return(nse_q)
 }
 
