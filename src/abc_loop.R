@@ -46,7 +46,7 @@ set.seed(42)
 huiyun <- TRUE #Huiyun set to true when you are running this code
 print("load support functions")
 if(huiyun){
-  base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim55")
+  base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim56")
   data_in_dir <- base_dir
   graphics_dir <- base_dir
   src_dir <- base_dir
@@ -73,14 +73,18 @@ if(huiyun){
 # source support functions
 source(file.path(src_dir, "abc_functions.R"))
 
+
 #load outside data
 load_observations()
 #dim(bac_obs)
 #View(bac_obs)
 #dim(q_obs)
 
+#remove highest point on 2006/9/18 for bac_obs and flux_obs 
+#bac_obs<-bac_obs[-85,]
+#flux_obs <-flux_obs[-85,]
 # create weekly average output for concentration observations
-bac_obs_daily <- bac_obs$bacteria #336
+bac_obs_daily <- bac_obs$bacteria #335#removed the highest number on 2006/9/18
 obs_data_xts <- as.xts(bac_obs$bacteria,order.by=as.Date(bac_obs$date))
 bac_obs_weekly <- as.data.frame(apply.weekly(obs_data_xts, mean)) #204
 
@@ -114,18 +118,18 @@ startgen <- 0
 ngens <- 40
 
 # decide what time frame/interval to optimize on 
-# opt_time_interval <- "daily"
-opt_time_interval <- "weekly"
+ opt_time_interval <- "daily"
+#opt_time_interval <- "weekly"
 
 # should concentrations be modified (modified nash sutcliffe) 
 # opt_conc_transform <- "none"
 opt_conc_transform <- "modified"
 
 # decide what metric to optimize on
-#opt_nse <- "mean"
+opt_nse <- "mean"
 #opt_nse <- "conc"
 #opt_nse <- "flux"
-opt_nse <- "flow"
+#opt_nse <- "flow"
 
 # every generation will have n_to_keep accepted particles
 # the median score of these n_to_keep particles will be used as the cutoff for the next generation
@@ -136,8 +140,8 @@ for(iter in startgen:ngens){
   print(paste("optimizing based on", opt_time_interval, opt_conc_transform, "(transformation)", opt_nse))
   #
   #number to keep each generation
-  nsims_todo <- 1000
-  n_to_keep <- 200
+  nsims_todo <- 100
+  n_to_keep <- 20
   if(iter==0){
     pars_tibble <- create_tibble_initial(nsims_todo)
     # create dataframe to persistently store stats
