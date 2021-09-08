@@ -200,9 +200,9 @@ ggplot() +
 ggplot() +
   geom_line(mapping = aes(x = q_obs$date, y = q_obs$discharge, colour="discharge"), size = 0.7) +
   geom_point(mapping = aes(x = bac_obs$date, y = bac_obs$bacteria*0.02, colour= "bacteria")) +
-  scale_y_continuous(sec.axis = sec_axis(~./0.02, name = "bacteria(MPN/100ml)")) +
+  scale_y_continuous(sec.axis = sec_axis(~./0.02, name = "Bacteria(MPN/100ml)")) +
   scale_color_manual(values = c("tomato3","blue"))+
-  labs(y = "discharge (cms)",
+  labs(y = "Discharge (cms)",
        x= "Date",
        colour="Parameter") +
   theme(legend.position = c(0.8,0.9))
@@ -210,8 +210,10 @@ ggplot() +
 
 ######################################################################
 ############### discharge simulation and observation plot##############
+##############################Daily Data##############################
 ####################################################################
-###daily data###
+
+
 sort(nse_q, decreasing = T) %>% enframe()
 #run_1261 nse=0.537
 #run_0763 nse=0.464
@@ -232,7 +234,45 @@ ggplot(data = q_plot) +
 
 
 ggsave("q_obs_sim_gene11.pdf")
-###weekly data
+######################################################################
+############### discharge simulation and observation plot##############
+##############################Weekly Data##############################
+####################################################################
+#run_1261 nse=0.537
+#run_0763 nse=0.464
+load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-flow/bac_cal15.RData")
+load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-flow/q_obs.RData")
+load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-flow/q_obs_w.RData")
+load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-flow/bac_obs.RData")
+
+
+flow_obs <- right_join(q_obs, bac_obs, by="date") #needed to reduce the number of flow observations
+bac_flows_all_days <- bac_cal_output$simulation$q_out # [3865,2215]
+bac_flows_daily_temp <- right_join(bac_flows_all_days, flow_obs, by="date") #[336,2217]
+bac_flows_daily <- bac_flows_daily_temp[,-which((colnames(bac_flows_daily_temp)=="bacteria" |colnames(bac_flows_daily_temp)=="discharge"))] #[336,2215]
+nsim_cols <- ncol(bac_flows_daily) #2215 date + sims field
+bac_flows_daily_data <- as.xts(bac_flows_daily[2:nsim_cols],order.by=as.Date(bac_flows_daily$date)) #[336,2214]
+bac_flows_w <- apply.weekly(bac_flows_daily_data,mean) #[204,2214]
+bac_flow_weekly<-as.tibble(coredata(bac_flows_w))
+bac_flows_weekly$date<-as.Date(index(bac_flows_w))
+
+flow_obs_weekly$date<-as.Date(rownames(flow_obs_weekly))
+colnames(flow_obs_weekly)[1]<-"discharge"
+
+
+q_plot <-bac_flows_weekly%>%dplyr::select(date, run_0763)%>%
+  left_join(., flow_obs_weekly, by ="date")%>% 
+  rename (flow_obs_weekly=discharge)%>%gather(., key= "variable", value="discharge",-date)
+
+ggplot(data = q_plot) +
+  geom_line(aes(x = date, y = discharge, col = variable, lty = variable)) +
+  scale_x_date(name = "date", date_breaks = "1 year",date_labels = "%Y") +
+  scale_color_manual(values = c("black", "tomato3")) +
+  labs(y = "discharge (cms)",
+       x= "Date")+
+  ggtitle("opt(weekly,flow);weekly data, mnse=0.464")+
+  ylim(0,100)+
+  theme_bw()
 ######################################################################
 ############### flux simulation and observation plot##############
 ####################################################################
@@ -416,6 +456,7 @@ bac_sims_daily <- bac_sims_daily[,-1] #[336,2215]
 #dim(bac_sims_daily) #[336,2214]
 bac_sims_weekly <- as.data.frame(apply.weekly(bac_sims_daily_data,mean)) #[204,2214]
 #flow
+flow_obs <- right_join(q_obs, bac_obs, by="date") #needed to reduce the number of flow observations
 bac_flows_all_days <- bac_cal_output$simulation$q_out # [3865,2215]
 bac_flows_daily_temp <- right_join(bac_flows_all_days, flow_obs, by="date") #[336,2217]
 bac_flows_daily <- bac_flows_daily_temp[,-which((colnames(bac_flows_daily_temp)=="bacteria" |colnames(bac_flows_daily_temp)=="discharge"))] #[336,2215]
@@ -423,10 +464,12 @@ nsim_cols <- ncol(bac_flows_daily) #2215 date + sims field
 bac_flows_daily_data <- as.xts(bac_flows_daily[2:nsim_cols],order.by=as.Date(bac_flows_daily$date)) #[336,2214]
 bac_flows_daily <- bac_flows_daily[,-1] #[336,2215]
 bac_flows_weekly <- as.data.frame(apply.weekly(bac_flows_daily_data,mean)) #[204,2214]
+#flux
 bac_fluxes_weekly <- bac_sims_weekly * bac_flows_weekly * 10^4
 nse_flux <- mapply(mNSE, bac_fluxes_weekly, flux_obs_weekly)
 nse_q <- mapply(mNSE, bac_flows_weekly, flow_obs_weekly)
 nse_bac <- mapply(mNSE, bac_sims_weekly, bac_obs_weekly)
+#mean
 nse_mean <- rowMeans(cbind(nse_bac, nse_q, nse_flux))
 nse_mean<-nse_mean[1:1500]
 
