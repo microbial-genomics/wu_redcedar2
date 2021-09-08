@@ -88,6 +88,7 @@ bac_obs_daily <- bac_obs$bacteria #335#removed the highest number on 2006/9/18
 obs_data_xts <- as.xts(bac_obs$bacteria,order.by=as.Date(bac_obs$date))
 bac_obs_weekly <- as.data.frame(apply.weekly(obs_data_xts, mean)) #204
 
+
 #create weekly average output for flow on days with observed concentrations
 flow_obs <- right_join(q_obs, bac_obs, by="date") #needed to reduce the number of flow observations
 flow_obs_daily <- flow_obs$discharge #336

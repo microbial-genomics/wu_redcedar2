@@ -1,10 +1,12 @@
-
+######load modules in HPC terminal Bash
+###############################
 module load intel/19.0.5
 module load R/3.6.2
 module load geos/3.8.0
 module load gdal-2.4.3/intel-19.0
 module load proj-5.2.0/intel-19.0
 module load udunits-2.2.26/intel-19.0
+module load rstudio
 
 
 
@@ -93,6 +95,7 @@ mnse_flow_weekly <- calculate_mnse_flow_weekly(iter, bac_flows_weekly, flow_obs_
 
 ######################################################################
 ############### bacteria simulation and observation plot##############
+#########################daily data###################################
 #####################################################################
 ##load bac_obs.RData
 ##load bac_cal*.RData(bac_cal_output) this is the file generated from swatplusr package
@@ -114,20 +117,14 @@ ggplot(data = plot)+
   scale_color_manual(values = c("black", "tomato3")) +
   scale_y_log10()+
   theme_bw()+
-  ggtitle("mnse=0.305,opt(conc. weekly)")
+  ggtitle("mnse=0.305,opt(conc. weekly),daily data")
 #ggsave("**********.pdf")
-
-
 sapply(my.data, class)
 str(my.data)
-
-
 
 ####count the non zero point in simulation output #####
 bac <- bac_cal_output$simulation$bac_out$run_0001
 length(which(bac!=0))
-
-
 ######################################################################
 ###############WEEKLY bacteria simulation and observation plot##############
 #####################################################################
@@ -135,22 +132,37 @@ length(which(bac!=0))
 ##load bac_cal*.RData(bac_cal_output) this is the file generated from swatplusr package
 ##calculate nse_bac, use abc_functions.R
 ##identify iter
-load("/work/OVERFLOW/RCR/sim55/bac_cal13.RData")
-data3 <- as.xts(bac_cal_output$simulation$bac_out,order.by=as.Date(bac_cal_output$simulation$bac_out$date))
-bac_cal<- apply.weekly(data3,mean, na.rm=TRUE)
-bac_cal_w<- coredata(bac_cal)
-bac_cal_w <-as_tibble(bac_cal_w)
-bac_cal_w$date<-index(bac_cal)
-save(bac_cal_w, file="/work/OVERFLOW/RCR/sim55/bac_cal13_w.RData")
-load(file="/work/OVERFLOW/RCR/sim55/bac_cal13_w.RData")
-load(file="/work/OVERFLOW/RCR/sim53/bac_obs_w.RData")
+load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-conc/bac_cal19.RData")
+# extract only the observed days from the simulated daily output
+bac_sims_all_days <- bac_cal_output$simulation$bac_out # [3865,2215]
+#dim(bac_sims_all_days)
+# adds date and bacteria fields also
+bac_sims_daily_temp <- right_join(bac_sims_all_days, bac_obs, by="date") #[336,2216]
+#dim(bac_sims_daily_temp)
+bac_sims_daily <- bac_sims_daily_temp[,-which(colnames(bac_sims_daily_temp)=="bacteria")] #[336,2215]
+#dim(bac_sims_daily)
+#colnames(bac_sims_daily)[1]
+# then reduce daily simulated observations to weekly averages for each of the sims #[336,2215]
+#head(colnames(bac_sims_daily)) #  date 
+nsim_cols <- ncol(bac_sims_daily) #2215 date + sims field
+bac_sims_daily_data <- as.xts(bac_sims_daily[2:nsim_cols],order.by=as.Date(bac_sims_daily$date)) #[336,2214]
+#bac_sims_daily <- bac_sims_daily[,-1] #[336,2215]
+#dim(bac_sims_daily) #[336,2214]
+bac_sims_w<-apply.weekly(bac_sims_daily_data,mean) #[204,2214]
+bac_sims_weekly<-as.tibble(coredata(bac_sims_w))
+bac_sims_weekly$date<-index(bac_sims_w)
 
-sort(nse_bac, decreasing = T) %>% enframe()
+load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-conc/bac_obs.RData")
+bac_obs_temp <- as.xts(bac_obs$bacteria, order.by=as.Date(bac_obs$date))
+bac_obs_w<- apply.weekly(bac_obs_temp,mean, na.rm=TRUE)
+date<-index(bac_obs_w)
+bacteria<-as.tibble(bac_obs_w)
+bac_obs_weekly <-tibble(date, bacteria)
+colnames(bac_obs_weekly)[2]<-"bacteria"
 
-#get the run_*** number
+#sort(nse_bac, decreasing = T) %>% enframe() #get the run_*** number
 #run_0808
-bac_sim <- bac_cal_output$simulation$bac_out
-bac_plot <-right_join(bac_sim,bac_obs,by="date")%>%
+bac_plot <-right_join(bac_sims_weekly,bac_obs_weekly,by="date")%>%
   dplyr::select(date, run_0808)%>%
   left_join(.,bac_obs, by ="date")%>%
   rename (bac=bacteria)%>%
@@ -162,41 +174,12 @@ ggplot(data = bac_plot)+
   geom_point(aes(x = date, y = bacteria, col = variable, lty = variable)) +
   scale_x_date(name = "date",date_breaks = "1 year",date_labels = "%Y") +
   scale_color_manual(values = c("black", "tomato3")) +
+  scale_y_log10()+
+  ggtitle("mnse=0.305, opt(conc, weekly),weekly data")
   theme_bw()
 ggsave("bac_sim_obs_gen*.pdf")
 
 #################################################################
-#######WEEKLY plot log bac simulation and log bac observation ##############
-#################################################################
-sort(nse_bac_w, decreasing = T) %>% enframe()
-
-bac_sim0 <-bac_cal_w[,c(1,1065+1)]
-l_run_1065<-log10(bac_sim0$run_1065)
-l_bac_sim_w <-tibble(bac_sim0[,1],l_run_1065)
-###need to refine this code#####
-load(file="/work/OVERFLOW/RCR/sim52.3/l_bac_obs.RData")
-####generate log bacteria observation RData
-date<-bac_obs_weekly$date
-bacteria<-log10(bac_obs_weekly$bacteria)
-l_bac_obs_w <-tibble(date, bacteria)
-save(l_bac_obs_w,file="/work/OVERFLOW/RCR/sim53/l_bac_obs_w.RData")
-load(file="/work/OVERFLOW/RCR/sim53/l_bac_obs_w.RData")
-
-l_bac_plot <-right_join(l_bac_sim_w,l_bac_obs_w,by="date")%>%
-  dplyr::select(date, l_run_1065)%>%
-  left_join(.,l_bac_obs_w, by ="date")%>%
-  rename (l_bac_obs=bacteria)%>%
-  gather(., key= "variable", value="bacteria",-date)
-
-
-ggplot(data =l_bac_plot)+
-  geom_line(aes(x = date, y =bacteria, col = variable, lty = variable)) +
-  geom_point(aes(x = date, y =bacteria, col = variable, lty = variable)) +
-  scale_color_manual(values = c("black", "tomato3")) +
-  scale_x_date(name = "date",date_breaks = "1 year",date_labels = "%Y") +
- # ggtitle("weekly_gene5_nse=0.015")+
-  theme_bw()
-
 ########################################################
 #########Observation bacteria with discharge plot##################
 #######################################################
@@ -205,10 +188,10 @@ ggplot() +
   geom_line(mapping = aes(x = q_obs$date, y = q_obs$discharge), size = 0.7, color = "grey50") +
   geom_point(mapping = aes(x = bac_obs$date, y = bac_obs$bacteria*0.01), color = "tomato3") +
   scale_x_date(name = "date",date_breaks = "1 year",date_labels = "%Y") +
-  scale_y_continuous(name = "discharge (cms)",
-                     sec.axis = sec_axis(~./0.01, name = "bacteria(MPN/100ml)")) +
+  scale_y_continuous(name = "Discharge (cms)",
+                     sec.axis = sec_axis(~./0.01, name = "Bacteria(MPN/100ml)")) +
   theme(
-    axis.title.y = element_text(color = "grey70"),
+    axis.title.y = element_text(color = "grey10"),
     axis.title.y.right = element_text(color = "tomato3"))+
   ggtitle("observation bac vs. flow")
 
@@ -228,7 +211,7 @@ ggplot() +
 ######################################################################
 ############### discharge simulation and observation plot##############
 ####################################################################
-
+###daily data###
 sort(nse_q, decreasing = T) %>% enframe()
 #run_1261 nse=0.537
 #run_0763 nse=0.464
@@ -249,7 +232,7 @@ ggplot(data = q_plot) +
 
 
 ggsave("q_obs_sim_gene11.pdf")
-ggsave("/home/hwu/wu_redcedar2/graphics/sim53/q_obs_sim_gene11.pdf")
+###weekly data
 ######################################################################
 ############### flux simulation and observation plot##############
 ####################################################################
@@ -293,9 +276,7 @@ ggplot(bac_q_plot,aes(date,discharge)) +
 ggsave("q_bac_sim_gen10_02779.pdf")
 ggsave("/home/hwu/wu_redcedar2/graphics/sim53/q_bac_sim_gen10_02779.pdf")
 
-#
 
-  
 #################################################################
 ############precipitation with discharge plot###########################
 ######################################################################
@@ -337,87 +318,84 @@ p
 ##############################################
 ####################Boxplot nse###############
 ##############################################
+# ####opt(weekly,mean)-daily data###############################
+# load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-mean/bac_cal14.RData")
+# load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-mean/bac_obs.RData")
+# load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-mean/q_obs.RData")
+# load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-mean/flux_obs.RData")
+# 
+# sim_bac <- bac_cal_output$simulation$bac_out
+# nse_bac <- right_join(sim_bac,bac_obs,by="date")%>%
+#   dplyr::select(-date) %>% dplyr::select(-bacteria) %>%
+#   map_dbl(., ~mNSE(.x, bac_obs$bacteria))
+# 
+# sim_q <- bac_cal_output$simulation$q_out
+# nse_q <- right_join(sim_q,q_obs,by="date") %>%
+#   dplyr::select(-date) %>% dplyr::select(-discharge) %>%
+#   map_dbl(., ~mNSE(.x, q_obs$discharge))
+# 
+# date <-bac_cal_output$simulation$bac_out$date
+# flux_sim <-sim_bac[,c(-1)]* sim_q[, c(-1)]*10^4
+# sim_flux<- cbind(date, flux_sim)
+# nse_flux <-  right_join(sim_flux, flux_obs, by = "date") %>%
+#   dplyr::select(-date) %>%dplyr::select(-flux) %>%
+#   map_dbl(., ~mNSE(.x, flux_obs$flux))
+# 
+# nse_mean <- rowMeans(cbind(nse_bac, nse_q, nse_flux))##select first 2000
+# nse_mean<-nse_mean[c(1:1500)]
+# sort(nse_mean, decreasing = T) %>% enframe()
+# 
+# ####opt(conc,weekly)-daily_data###############################
+# load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-conc/bac_cal24.RData")
+# load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-conc/bac_obs.RData")
+# sim_bac <- bac_cal_output$simulation$bac_out
+# # merge simulated and observed bacteria concentrations, calculate nses for all sims
+# nse_bac <- right_join(sim_bac,bac_obs,by="date")%>%
+#   dplyr::select(-date) %>% dplyr::select(-bacteria) %>%
+#   map_dbl(., ~mNSE(.x, bac_obs$bacteria))##select first 2000 #the same with log??
+# nse_bac<-nse_bac[c(1:1500)]
+# sort(nse_bac, decreasing = T) %>% enframe() 
+# ######opt(flow,weekly)-daily-data################
+# load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-flow/bac_cal15.RData")
+# load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-flow/q_obs.RData")
+# sim_q <- bac_cal_output$simulation$q_out
+# # merge simulated and observed flows, calculate nses for all sims
+# nse_q <- right_join(sim_q,q_obs,by="date") %>%
+#   dplyr::select(-date) %>% dplyr::select(-discharge) %>%
+#   map_dbl(., ~mNSE(.x, q_obs$discharge))##select first 2000
+# nse_q<-nse_q[c(1:1500)]
+# sort(nse_q, decreasing = T) %>% enframe()
+# ####opt(flux,weekly)-daily-data###############################
+# load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-flux/bac_cal12.RData")
+# load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-flux/flux_obs.RData")
+# sim_bac <- bac_cal_output$simulation$bac_out
+# sim_q <- bac_cal_output$simulation$q_out
+# # calculate the simulated fluxes from concs and flows for all sims
+# # flux_sim <- sim_bac[,c(-1)]*
+# #   sim_q[, c(-1)]*10^4
+# date <-bac_cal_output$simulation$bac_out$date
+# flux_sim <-sim_bac[,c(-1)]* sim_q[, c(-1)]*10^4
+# sim_flux<- cbind(date, flux_sim)
+# #merge simulated and observed fluxes, calculate nses for all sims
+# nse_flux <-  right_join(sim_flux, flux_obs, by = "date") %>%
+#   dplyr::select(-date) %>%dplyr::select(-flux) %>%
+#   map_dbl(., ~mNSE(.x, flux_obs$flux))##select first 2000
+# nse_flux<-nse_flux[c(1:1500)]
+# sort(nse_flux, decreasing = T) %>% enframe() 
+# #####Boxplot###
+# nse_comp <- tibble(flow = nse_q,
+#                    bacteria = nse_bac,
+#                    flux =nse_flux,
+#                    mean= nse_mean)
+# nse_comp%>% 
+#   gather(key = "weekly", value = "mnse" ) %>% 
+#     ggplot(data = .) +
+#   geom_boxplot(aes(x = weekly, y = mnse), fill = "grey") +
+#   theme_bw()+
+#   ylim(0,0.5)+
+#   ggtitle("opt (weekly) first 1500 simulation daily data") 
 
-####opt(weekly,mean)-daily data###############################
-load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-mean/bac_cal14.RData")
-load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-mean/bac_obs.RData")
-load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-mean/q_obs.RData")
-load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-mean/flux_obs.RData")
 
-sim_bac <- bac_cal_output$simulation$bac_out
-nse_bac <- right_join(sim_bac,bac_obs,by="date")%>%
-  dplyr::select(-date) %>% dplyr::select(-bacteria) %>%
-  map_dbl(., ~mNSE(.x, bac_obs$bacteria))
-
-sim_q <- bac_cal_output$simulation$q_out
-nse_q <- right_join(sim_q,q_obs,by="date") %>%
-  dplyr::select(-date) %>% dplyr::select(-discharge) %>%
-  map_dbl(., ~mNSE(.x, q_obs$discharge))
-
-date <-bac_cal_output$simulation$bac_out$date
-flux_sim <-sim_bac[,c(-1)]* sim_q[, c(-1)]*10^4
-sim_flux<- cbind(date, flux_sim)
-nse_flux <-  right_join(sim_flux, flux_obs, by = "date") %>%
-  dplyr::select(-date) %>%dplyr::select(-flux) %>%
-  map_dbl(., ~mNSE(.x, flux_obs$flux))
-
-nse_mean <- rowMeans(cbind(nse_bac, nse_q, nse_flux))##select first 2000
-nse_mean<-nse_mean[c(1:1500)]
-sort(nse_mean, decreasing = T) %>% enframe()
-
-####opt(conc,weekly)-daily_data###############################
-load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-conc/bac_cal24.RData")
-load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-conc/bac_obs.RData")
-sim_bac <- bac_cal_output$simulation$bac_out
-# merge simulated and observed bacteria concentrations, calculate nses for all sims
-nse_bac <- right_join(sim_bac,bac_obs,by="date")%>%
-  dplyr::select(-date) %>% dplyr::select(-bacteria) %>%
-  map_dbl(., ~mNSE(.x, bac_obs$bacteria))##select first 2000 #the same with log??
-nse_bac<-nse_bac[c(1:1500)]
-sort(nse_bac, decreasing = T) %>% enframe() 
-
-
-######opt(flow,weekly)-daily-data################
-load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-flow/bac_cal15.RData")
-load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-flow/q_obs.RData")
-sim_q <- bac_cal_output$simulation$q_out
-# merge simulated and observed flows, calculate nses for all sims
-nse_q <- right_join(sim_q,q_obs,by="date") %>%
-  dplyr::select(-date) %>% dplyr::select(-discharge) %>%
-  map_dbl(., ~mNSE(.x, q_obs$discharge))##select first 2000
-nse_q<-nse_q[c(1:1500)]
-sort(nse_q, decreasing = T) %>% enframe()
-
-####opt(flux,weekly)-daily-data###############################
-load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-flux/bac_cal12.RData")
-load("/work/OVERFLOW/RCR/sim55-weekly/sim55-nse-flux/flux_obs.RData")
-sim_bac <- bac_cal_output$simulation$bac_out
-sim_q <- bac_cal_output$simulation$q_out
-# calculate the simulated fluxes from concs and flows for all sims
-# flux_sim <- sim_bac[,c(-1)]*
-#   sim_q[, c(-1)]*10^4
-date <-bac_cal_output$simulation$bac_out$date
-flux_sim <-sim_bac[,c(-1)]* sim_q[, c(-1)]*10^4
-sim_flux<- cbind(date, flux_sim)
-#merge simulated and observed fluxes, calculate nses for all sims
-nse_flux <-  right_join(sim_flux, flux_obs, by = "date") %>%
-  dplyr::select(-date) %>%dplyr::select(-flux) %>%
-  map_dbl(., ~mNSE(.x, flux_obs$flux))##select first 2000
-nse_flux<-nse_flux[c(1:1500)]
-sort(nse_flux, decreasing = T) %>% enframe() 
-
-#####Boxplot###
-nse_comp <- tibble(flow = nse_q,
-                   bacteria = nse_bac,
-                   flux =nse_flux,
-                   mean= nse_mean)
-nse_comp%>% 
-  gather(key = "weekly", value = "mnse" ) %>% 
-    ggplot(data = .) +
-  geom_boxplot(aes(x = weekly, y = mnse), fill = "grey") +
-  theme_bw()+
-  ylim(0,0.5)+
-  ggtitle("opt (weekly) first 1500 simulation daily data") 
 
 
 ###########################################
