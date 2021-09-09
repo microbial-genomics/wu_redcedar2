@@ -30,7 +30,7 @@ library(truncnorm)
 library(xts)
 
 
-#SWATPlusR needs to be installed via devtools
+i#SWATPlusR needs to be installed via devtools
 # can require manual installation of tidy, etc packages with reboots
 # devtools::install_github("chrisschuerz/SWATplusR")
 library(SWATplusR)
@@ -67,6 +67,14 @@ if(huiyun){
     src_dir <- base_dir
     project_path <- base_dir
     swat_path <- base_dir
+  }###Huiyun's local machine
+  else{
+    base_dir <- file.path("/PRIV", "SSO", "wu_redcedar2")
+    data_in_dir <- base_dir
+    graphics_dir <- base_dir
+    src_dir <- file.path(base_dir, "src")
+    project_path <- base_dir
+    swat_path <- base_dir
   }
 }
 
@@ -87,18 +95,24 @@ load_observations()
 bac_obs_daily <- bac_obs$bacteria #335#removed the highest number on 2006/9/18
 obs_data_xts <- as.xts(bac_obs$bacteria,order.by=as.Date(bac_obs$date))
 bac_obs_weekly <- as.data.frame(apply.weekly(obs_data_xts, mean)) #204
+# create monthly average output for concentration observations
+bac_obs_monthly <- as.data.frame(apply.monthly(obs_data_xts, mean))#51
 
 
 #create weekly average output for flow on days with observed concentrations
 flow_obs <- right_join(q_obs, bac_obs, by="date") #needed to reduce the number of flow observations
-flow_obs_daily <- flow_obs$discharge #336
+flow_obs_daily <- flow_obs$discharge #335
 obs_flow_xts <- as.xts(flow_obs$discharge,order.by=as.Date(flow_obs$date))
 flow_obs_weekly <- as.data.frame(apply.weekly(obs_flow_xts, mean)) #204
+flow_obs_monthly <- as.data.frame(apply.monthly(obs_flow_xts, mean)) #51
 
 #create weekly flux output
-flux_obs_daily <- bac_obs_daily * flow_obs_daily * 10^4 #336
+flux_obs_daily <- bac_obs_daily * flow_obs_daily * 10^4 #335
 obs_flux_xts <- as.xts(flux_obs_daily, order.by=as.Date(flux_obs$date))
 flux_obs_weekly <- as.data.frame(apply.weekly(obs_flux_xts, mean)) #204
+
+#create monthly flux output
+flux_obs_monthly <- as.data.frame(apply.monthly(obs_flux_xts, mean)) #51
 
 #check dates
 # daily
@@ -107,11 +121,16 @@ bac_daily_dates <- bac_obs$date; flow_daily_dates <- flow_obs$date; flux_daily_d
 #weekly
 bac_weekly_dates <- rownames(bac_obs_weekly); flow_weekly_dates <- rownames(flow_obs_weekly); flux_weekly_dates <- rownames(flux_obs_weekly)
 # bac_weekly_dates == flow_weekly_dates; flow_weekly_dates == flux_weekly_dates
+#monthly
+bac_monthly_dates <- rownames(bac_obs_monthly); flow_monthly_dates <- rownames(flow_obs_monthly); flux_mothly_dates <- rownames(flux_obs_monthly)
 
 #save the weekly observation outputs
 save(bac_obs_weekly, file = file.path(base_dir, "bac_obs_w.RData"))
 save(flow_obs_weekly, file = file.path(base_dir, "q_obs_w.RData"))
 save(flux_obs_weekly, file = file.path(base_dir, "flux_obs_w.RData"))
+save(bac_obs_monthly, file = file.path(base_dir, "bac_obs_m.RData"))
+save(flow_obs_monthly, file = file.path(base_dir, "q_obs_m.RData"))
+save(flux_obs_monthly, file = file.path(base_dir, "flux_obs_m.RData"))
 
 # preset the generations to be simulated
 # stargen = 0 means starting from scratch
@@ -119,8 +138,9 @@ startgen <- 0
 ngens <- 40
 
 # decide what time frame/interval to optimize on 
- opt_time_interval <- "daily"
+# opt_time_interval <- "daily"
 #opt_time_interval <- "weekly"
+opt_time_interval <- "monthly"
 
 # should concentrations be modified (modified nash sutcliffe) 
 # opt_conc_transform <- "none"
@@ -184,6 +204,7 @@ for(iter in startgen:ngens){
   bac_sims_daily <- bac_sims_daily[,-1] #[336,2215]
   #dim(bac_sims_daily) #[336,2214]
   bac_sims_weekly <- as.data.frame(apply.weekly(bac_sims_daily_data,mean)) #[204,2214]
+  bac_sims_monthly <- as.data.frame(apply.monthly(bac_sims_daily_data,mean)) #51
   
 
   ###### subset simulated flow to observed days and average by week
@@ -202,22 +223,26 @@ for(iter in startgen:ngens){
   bac_flows_daily_data <- as.xts(bac_flows_daily[2:nsim_cols],order.by=as.Date(bac_flows_daily$date)) #[336,2214]
   bac_flows_daily <- bac_flows_daily[,-1] #[336,2215]
   #dim(bac_flows_daily) #[336,2214]
-  bac_flows_weekly <- as.data.frame(apply.weekly(bac_flows_daily_data,mean)) #[204,2214]
+  bac_flows_weekly <- as.data.frame(apply.weekly(bac_flows_daily_data,mean)) #[203,2214]
   #dim(bac_flows_weekly)
+  bac_flows_monthly <- as.data.frame(apply.monthly(bac_flows_daily_data,mean)) #51
   ###### calculate simulated flux data for observed days and average by week
   #dim(bac_sims_weekly)
   #dim(bac_flows_weekly)
   bac_fluxes_weekly <- bac_sims_weekly * bac_flows_weekly * 10^4
   #dim(bac_fluxes_weekly) #[204,2214]
-  
+  bac_fluxes_monthly <- bac_sims_monthly * bac_flows_monthly * 10^4
   # View various data states
   #View(bac_sims_weekly)
   #View(bac_obs_weekly)
+  #View(bac_obs_monthly)
   
   #View(bac_flows_weekly)
+  #View(bac_flows_monthly)
   #View(flux_obs_weekly) 
   
   #View(bac_fluxes_weekly)
+  #View(bac_fluxes_monthly)
   #View(flux_obs_weekly)  
   
   ###### calculate various nses for daily data
@@ -236,20 +261,32 @@ for(iter in startgen:ngens){
   mnse_bac_weekly <- calculate_mnse_bac_weekly(iter, bac_sims_weekly, bac_obs_weekly)
   mnse_flow_weekly <- calculate_mnse_flow_weekly(iter, bac_flows_weekly, flow_obs_weekly)
   mnse_flux_weekly <- calculate_mnse_flux_weekly(iter, bac_fluxes_weekly, flux_obs_weekly) #?? not working
-  
+  # calculate various nses for monthly data
+  nse_bac_monthly <- calculate_nse_bac_monthly(iter, bac_sims_monthly, bac_obs_monthly)
+  nse_flow_monthly <- calculate_nse_flow_monthly(iter, bac_flows_monthly, flow_obs_monthly)
+  nse_flux_monthly <- calculate_nse_flux_monthly(iter, bac_fluxes_monthly, flux_obs_monthly)
+  # calculate various modified nses for monthly data
+  mnse_bac_monthly <- calculate_mnse_bac_monthly(iter, bac_sims_monthly, bac_obs_monthly)
+  mnse_flow_monthly <- calculate_mnse_flow_monthly(iter, bac_flows_monthly, flow_obs_monthly)
+  mnse_flux_monthly <- calculate_mnse_flux_monthly(iter, bac_fluxes_monthly, flux_obs_monthly) #?? not working
   ######### calculate means of nses
   # calculate nse means
-  print("NSE, daily")
+  print("NSE mean, daily")
   nse_mean_daily <- calculate_nse_mean(iter, nse_bac_daily, nse_flow_daily, nse_flux_daily)
-  print("NSE, weekly")
+  print("NSE mean, weekly")
   nse_mean_weekly <- calculate_nse_mean(iter, nse_bac_weekly, nse_flow_weekly, nse_flux_weekly)
+  print("NSE mean, monthly")
+  nse_mean_monthly <- calculate_nse_mean(iter, nse_bac_monthly, nse_flow_monthly, nse_flux_monthly)
   # calculate modified nse means
   print("mNSE, daily")
   mnse_mean_daily <- calculate_mnse_mean(iter, mnse_bac_daily, mnse_flow_daily, mnse_flux_daily) 
   print("mNSE, weekly")
-  mnse_mean_weekly <- calculate_mnse_mean(iter, mnse_bac_weekly, mnse_flow_weekly, mnse_flux_weekly) 
+  mnse_mean_weekly <- calculate_mnse_mean(iter, mnse_bac_weekly, mnse_flow_weekly, mnse_flux_weekly)
+  print("mNSE, monthly")
+  mnse_mean_monthly <- calculate_mnse_mean(iter, mnse_bac_monthly, mnse_flow_monthly, mnse_flux_monthly)
   
   ###### get cutoff score
+  #####need to double check, this function seems not be used (iter==0)...
   if(iter==0){
     # find the 80th percentile of target nse, top (2000 of 10000)
     print(paste0("generation 0, using the 80th percentile of the scores as the cutoff for the next generation"))
@@ -290,6 +327,25 @@ for(iter in startgen:ngens){
     } else if(opt_nse=="flux" && opt_time_interval=="weekly" && opt_conc_transform=="modified") {
       this_cutoff_score <- quantile(mnse_flux_weekly, probs=0.8)  
     }
+    # monthly, none
+  } else if(opt_nse=="mean" && opt_time_interval=="monthly" && opt_conc_transform=="none"){
+    this_cutoff_score <- quantile(nse_mean_monthly, probs=0.8)
+  } else if(opt_nse=="conc" && opt_time_interval=="monthly" && opt_conc_transform=="none") {
+    this_cutoff_score <- quantile(nse_bac_monthly, probs=0.8)
+  } else if(opt_nse=="flow" && opt_time_interval=="monthly" && opt_conc_transform=="none") {
+    this_cutoff_score <- quantile(nse_flow_monthly, probs=0.8)
+  } else if(opt_nse=="flux" && opt_time_interval=="monthly" && opt_conc_transform=="none") {
+    this_cutoff_score <- quantile(nse_flux_monthly, probs=0.8)  
+    # monthly, modified
+  } else if(opt_nse=="mean" && opt_time_interval=="monthly" && opt_conc_transform=="modified"){
+    this_cutoff_score <- quantile(mnse_mean_monthly, probs=0.8)
+  } else if(opt_nse=="conc" && opt_time_interval=="monthly" && opt_conc_transform=="modified") {
+    this_cutoff_score <- quantile(mnse_bac_monthly, probs=0.8)
+  } else if(opt_nse=="flow" && opt_time_interval=="monthly" && opt_conc_transform=="modified") {
+    this_cutoff_score <- quantile(mnse_flow_monthly, probs=0.8)
+  } else if(opt_nse=="flux" && opt_time_interval=="monthly" && opt_conc_transform=="modified") {
+    this_cutoff_score <- quantile(mnse_flux_monthly, probs=0.8)  
+  }
     print(paste("generation 0 is based on the", opt_nse, "output;", opt_time_interval, "interval;",
           opt_conc_transform, "change to nse."))
     print(paste("Cutoff score to be applied to generation 0 =", this_cutoff_score))
@@ -334,7 +390,27 @@ for(iter in startgen:ngens){
     all_keepers <- which(mnse_flow_weekly > this_cutoff_score)
   } else if(opt_nse=="flux" && opt_time_interval=="weekly" && opt_conc_transform=="modified") {
     all_keepers <- which(mnse_flux_weekly > this_cutoff_score)  
+#monthly, none 
+  }else if(opt_nse=="mean" && opt_time_interval=="monthly" && opt_conc_transform=="none"){
+    all_keepers <- which(nse_mean_monthly > this_cutoff_score)
+  } else if(opt_nse=="conc" && opt_time_interval=="monthly" && opt_conc_transform=="none") {
+    all_keepers <- which(nse_bac_monthly > this_cutoff_score)
+  } else if(opt_nse=="flow" && opt_time_interval=="monthly" && opt_conc_transform=="none") {
+    all_keepers <- which(nse_flow_monthly > this_cutoff_score)
+  } else if(opt_nse=="flux" && opt_time_interval=="monthly" && opt_conc_transform=="none") {
+    all_keepers <- which(nse_flux_monthly > this_cutoff_score)  
+    # monthly, modified
+  } else if(opt_nse=="mean" && opt_time_interval=="monthly" && opt_conc_transform=="modified"){
+    all_keepers <- which(mnse_mean_monthly > this_cutoff_score)
+  } else if(opt_nse=="conc" && opt_time_interval=="monthly" && opt_conc_transform=="modified") {
+    all_keepers <- which(mnse_bac_monthly > this_cutoff_score)
+  } else if(opt_nse=="flow" && opt_time_interval=="monthly" && opt_conc_transform=="modified") {
+    all_keepers <- which(mnse_flow_monthly > this_cutoff_score)
+  } else if(opt_nse=="flux" && opt_time_interval=="monthly" && opt_conc_transform=="modified") {
+    all_keepers <- which(mnse_flux_monthly > this_cutoff_score)  
   }
+
+  
   n_all_keepers <- length(all_keepers)
   proportion_kept <- n_all_keepers/nsims_todo
   print(paste("we had", n_all_keepers, "of", nsims_todo, "simulations that had a better cutoff score of", this_cutoff_score))
@@ -383,6 +459,26 @@ for(iter in startgen:ngens){
     nse_flow_keepers <- mnse_flow_weekly[valid_keepers]
     nse_flux_keepers <- mnse_flux_weekly[valid_keepers]
     nse_mean_keepers <- mnse_mean_weekly[valid_keepers]
+    nses_w_parameters <- cbind(nse_conc_keepers, nse_flow_keepers, nse_flux_keepers, 
+                               nse_mean_keepers, sim_pars[valid_keepers,])
+    # monthly, none
+  } else if(opt_time_interval=="monthly" && opt_conc_transform=="none"){
+    nses_w_parameters_all <- cbind(keeper, nse_bac_monthly, nse_flux_monthly, nse_flow_monthly, 
+                                   nse_mean_monthly, sim_pars)
+    nse_conc_keepers <- nse_bac_monthly[valid_keepers]
+    nse_flow_keepers <- nse_flow_monthly[valid_keepers]
+    nse_flux_keepers <- nse_flux_monthly[valid_keepers]
+    nse_mean_keepers <- nse_mean_monthly[valid_keepers]
+    nses_w_parameters <- cbind(nse_conc_keepers, nse_flow_keepers, nse_flux_keepers, 
+                               nse_mean_keepers, sim_pars[valid_keepers,])
+    # monthly, modified
+  } else if(opt_time_interval=="monthly" && opt_conc_transform=="modified"){
+    nses_w_parameters_all <- cbind(keeper, mnse_bac_monthly, mnse_flux_monthly, mnse_flow_monthly, 
+                                   mnse_mean_monthly, sim_pars)
+    nse_conc_keepers <- mnse_bac_monthly[valid_keepers]
+    nse_flow_keepers <- mnse_flow_monthly[valid_keepers]
+    nse_flux_keepers <- mnse_flux_monthly[valid_keepers]
+    nse_mean_keepers <- mnse_mean_monthly[valid_keepers]
     nses_w_parameters <- cbind(nse_conc_keepers, nse_flow_keepers, nse_flux_keepers, 
                                nse_mean_keepers, sim_pars[valid_keepers,])
   }
