@@ -30,7 +30,7 @@ library(truncnorm)
 library(xts)
 
 
-i#SWATPlusR needs to be installed via devtools
+#SWATPlusR needs to be installed via devtools
 # can require manual installation of tidy, etc packages with reboots
 # devtools::install_github("chrisschuerz/SWATplusR")
 library(SWATplusR)
@@ -68,14 +68,14 @@ if(huiyun){
     project_path <- base_dir
     swat_path <- base_dir
   }###Huiyun's local machine
-  else{
-    base_dir <- file.path("/PRIV", "SSO", "wu_redcedar2")
-    data_in_dir <- base_dir
-    graphics_dir <- base_dir
-    src_dir <- file.path(base_dir, "src")
-    project_path <- base_dir
-    swat_path <- base_dir
-  }
+#  else{
+ #   base_dir <- file.path("/PRIV", "SSO", "wu_redcedar2")
+  #  data_in_dir <- base_dir
+   # graphics_dir <- base_dir
+    #src_dir <- file.path(base_dir, "src")
+   # project_path <- base_dir
+   # swat_path <- base_dir
+  #}
 }
 
 # source support functions
@@ -161,8 +161,8 @@ for(iter in startgen:ngens){
   print(paste("optimizing based on", opt_time_interval, opt_conc_transform, "(transformation)", opt_nse))
   #
   #number to keep each generation
-  nsims_todo <- 100
-  n_to_keep <- 20
+  nsims_todo <- 1000
+  n_to_keep <- 200
   if(iter==0){
     pars_tibble <- create_tibble_initial(nsims_todo)
     # create dataframe to persistently store stats
@@ -326,13 +326,12 @@ for(iter in startgen:ngens){
       this_cutoff_score <- quantile(mnse_flow_weekly, probs=0.8)
     } else if(opt_nse=="flux" && opt_time_interval=="weekly" && opt_conc_transform=="modified") {
       this_cutoff_score <- quantile(mnse_flux_weekly, probs=0.8)  
-    }
     # monthly, none
-  } else if(opt_nse=="mean" && opt_time_interval=="monthly" && opt_conc_transform=="none"){
+    } else if(opt_nse=="mean" && opt_time_interval=="monthly" && opt_conc_transform=="none"){
     this_cutoff_score <- quantile(nse_mean_monthly, probs=0.8)
-  } else if(opt_nse=="conc" && opt_time_interval=="monthly" && opt_conc_transform=="none") {
+    } else if(opt_nse=="conc" && opt_time_interval=="monthly" && opt_conc_transform=="none") {
     this_cutoff_score <- quantile(nse_bac_monthly, probs=0.8)
-  } else if(opt_nse=="flow" && opt_time_interval=="monthly" && opt_conc_transform=="none") {
+    } else if(opt_nse=="flow" && opt_time_interval=="monthly" && opt_conc_transform=="none") {
     this_cutoff_score <- quantile(nse_flow_monthly, probs=0.8)
   } else if(opt_nse=="flux" && opt_time_interval=="monthly" && opt_conc_transform=="none") {
     this_cutoff_score <- quantile(nse_flux_monthly, probs=0.8)  
