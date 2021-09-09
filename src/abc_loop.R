@@ -365,7 +365,7 @@ for(iter in startgen:ngens){
     all_keepers <- which(nse_flux_daily > this_cutoff_score)
   # daily, modified
   } else if(opt_nse=="mean" && opt_time_interval=="daily" && opt_conc_transform=="modified"){
-    all_keepers <- which(mnse_bac_daily > this_cutoff_score)
+    all_keepers <- which(mnse_mean_daily > this_cutoff_score)
   } else if(opt_nse=="conc" && opt_time_interval=="daily" && opt_conc_transform=="modified") {
     all_keepers <- which(mnse_bac_daily > this_cutoff_score)
   } else if(opt_nse=="flow" && opt_time_interval=="daily" && opt_conc_transform=="modified") {
