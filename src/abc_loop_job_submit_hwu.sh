@@ -4,7 +4,7 @@
 #SBATCH --partition=compute
 #SBATCH --time=99:99:99
 #SBATCH --constraint=cascadelake
-#SBACTH --ntasks=48
+#SBATCH --ntasks=48
 #SBATCH --mail-user=wu.huiyun@epa.gov
 #SBATCH --mail-type=BEGIN,END
 #SBATCH --exclusive
