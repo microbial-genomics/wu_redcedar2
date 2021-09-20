@@ -1,10 +1,10 @@
 #!/bin/csh
 
 #SBATCH --job-name=MSU_MCABC
-#SBATCH --partition=COMPUTE
+#SBATCH --partition=compute
 #SBATCH --time=99:99:99
 #SBATCH --constraint=cascadelake
-#SBACTH --ntasks=48
+#SBATCH --ntasks=48
 #SBATCH --mail-user=purucker.tom@epa.gov
 #SBATCH --mail-type=BEGIN,END
 #SBATCH --exclusive
