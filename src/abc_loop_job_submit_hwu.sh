@@ -1,14 +1,15 @@
 #!/bin/csh
 
 #SBATCH --job-name=MSU_MCABC
-#SBATCH --partition=ord
-#SBATCH --time=60:00:00
-#SBACTH --ntasks=64
-#SBATCH --mem=16g
-#SBARCH --mail-user=purucker.tom@epa.gov
+#SBATCH --partition=COMPUTE
+#SBATCH --time=99:99:99
+#SBATCH --constraint=cascadelake
+#SBACTH --ntasks=48
+#SBATCH --mail-user=wu.huiyun@epa.gov
 #SBATCH --mail-type=BEGIN,END
+#SBATCH --exclusive
 
-setenv TMPDIR /work/OVERFLOW/RCR/sim52
+setenv TMPDIR /work/OVERFLOW/RCR/sim56
 
 module load intel/19.0.5
 module load R/3.6.2
