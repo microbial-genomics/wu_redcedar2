@@ -1,7 +1,7 @@
 #!/bin/csh
 
 #SBATCH --job-name=MSU_MCABC
-#SBATCH --partition=COMPUTE
+#SBATCH --partition=compute
 #SBATCH --time=99:99:99
 #SBATCH --constraint=cascadelake
 #SBACTH --ntasks=48
