@@ -36,7 +36,7 @@ require(data.table) # load it
 ####################################
 #### daily bacteria concentration #### 
 ## load bac_cal_output data
-load("E:/boxplot/daily_conc.RData")
+load("E:/boxplot-5-gen/daily_conc.RData")
 load("E:/boxplot/bac_obs.RData")
 
 conc<-bac_cal_output$simulation$bac_out
@@ -146,7 +146,7 @@ ggplot() +
 
 
 #### daily flow  #### 
-load("E:/boxplot/daily_flow.RData")
+load("E:/boxplot-5-gen//daily_flow.RData")
 flow<-bac_cal_output$simulation$q_out
 date<-flow$date
 flow2<-flow[,c(2:1001)]
@@ -224,12 +224,12 @@ ggplot() +
 
 
 #### weekly flow ####
-load("E:/boxplot/weekly_flow.RData")
-load(file="E:/boxplot/q_obs.RData")
+load("E:/boxplot-5-gen/weekly_flow.RData")
+load(file="E:/boxplot-5-gen/q_obs.RData")
 flow_obs <- q_obs # [4018,2]
 flow_obs_daily <- flow_obs$discharge 
 obs_flow_xts <- as.xts(flow_obs$discharge,order.by=as.Date(flow_obs$date))
-flow_obs_weekly <- as.data.frame(apply.weekly(obs_flow_xts, mean)) #575
+flow_obs_weekly1 <- as.data.frame(apply.weekly(obs_flow_xts, mean)) #575
 
 flow_all_days <- bac_cal_output$simulation$q_out # [3865,1451]
 # dim(flow_all_days)
@@ -278,32 +278,32 @@ head(result)
 summary(result)
 
 result2<-cbind(date,result[,c(2:8)])
-head(result2)
-dim(result2)
+# head(result2)
+# dim(result2)
 
 
-result2[result2<1] <-1
+# result2[result2<1] <-1
 result2
 
-class(result2$first_q)
 range(result2$first_q)
 date2<-row.names(flow_obs_weekly)
 date2<-as.Date(date2)
 
-flow_obs_weekly<-cbind(date2, flow_obs_weekly)
-flow_obs_weekly
-colnames(flow_obs_weekly)<-c("date","discharge")
-dim(flow_obs_weekly)
+flow_obs_weekly2<-cbind(date2, flow_obs_weekly1)
+flow_obs_weekly2
+colnames(flow_obs_weekly2)<-c("date","discharge")
+dim(flow_obs_weekly2)
+flow_obs_weekly<-flow_obs_weekly2
 
 ggplot() +
-  geom_line(data = result2[c(250:500),], aes(x = date, y = log10(first_q), colour = "first_q")) +
+  geom_line(data = result2[c(1:250),], aes(x = date, y = log10(first_q), colour = "first_q")) +
   # geom_line(data = result2[c(2193:2793),], aes(x = date, y = sec_q, colour = "sec_q")) +
   # geom_line(data = result2, aes(x = date, y = third_q, colour = "third_q")) +
-  geom_line(data = result2[c(250:500),], aes(x = date, y = log10(four_q), colour = "four_q")) +
+  geom_line(data = result2[c(1:250),], aes(x = date, y = log10(four_q), colour = "four_q")) +
   #geom_line(data = result2, aes(x = date,y = fif_q, colour = "fif_q")) +
   # geom_line(data = result2[c(2193:2793),], aes(x = date,y = six_q, colour = "six_q")) +
-  geom_line(data = result2[c(250:500),], aes(x = date,y = log10(sev_q), colour = "sev_q")) +
-  geom_point(data =flow_obs_weekly[c(250:500),], aes(x=date, y=log10(discharge), colour = "discharge"))+
+  geom_line(data = result2[c(1:250),], aes(x = date,y = log10(sev_q), colour = "sev_q")) +
+  geom_point(data =flow_obs_weekly[c(1:250),], aes(x=date, y=log10(discharge), colour = "discharge"))+
   scale_colour_manual("", 
                       breaks = c("first_q",   "four_q",  "sev_q",  "discharge"),
                       values =c("grey70", "#CC79A7", "grey30",  "darkblue")) +
@@ -315,7 +315,9 @@ ggplot() +
 
 
 #### weekly bacteria concentration #### 
-load("E:/boxplot/weekly_conc.RData")
+load("E:/boxplot-5-gen/bac_obs.RData")
+load("E:/boxplot-5-gen/weekly_conc.RData")
+
 bac_obs_daily <- bac_obs$bacteria #335#removed the highest number on 2006/9/18
 obs_data_xts <- as.xts(bac_obs$bacteria,order.by=as.Date(bac_obs$date))
 bac_obs_weekly <- as.data.frame(apply.weekly(obs_data_xts, mean)) #204
@@ -395,20 +397,20 @@ colnames(bac_obs_weekly)<-c("date","bacteria")
 head(bac_obs_weekly)
 
 ggplot() +
-  geom_line(data = result2, aes(x = date, y = log10(first_q), colour = "first_q")) +
+  geom_line(data = result2[c(100:203),], aes(x = date, y = log10(first_q), colour = "first_q")) +
   # geom_line(data = result2[c(2193:2793),], aes(x = date, y = sec_q, colour = "sec_q")) +
   # geom_line(data = result2, aes(x = date, y = third_q, colour = "third_q")) +
-  geom_line(data = result2, aes(x = date, y = log10(four_q), colour = "four_q")) +
+  geom_line(data = result2[c(100:203),], aes(x = date, y = log10(four_q), colour = "four_q")) +
   #geom_line(data = result2, aes(x = date,y = fif_q, colour = "fif_q")) +
   # geom_line(data = result2[c(2193:2793),], aes(x = date,y = six_q, colour = "six_q")) +
-  geom_line(data = result2, aes(x = date,y = log10(sev_q), colour = "sev_q")) +
-  geom_point(data =bac_obs_weekly, aes(x=date, y=log10(bacteria), colour = "bacteria"))+
+  geom_line(data = result2[c(100:203),], aes(x = date,y = log10(sev_q), colour = "sev_q")) +
+  geom_point(data =bac_obs_weekly[c(100:203),], aes(x=date, y=log10(bacteria), colour = "bacteria"))+
   scale_colour_manual("", 
                       breaks = c("first_q",   "four_q",  "sev_q",  "bacteria"),
                       values =c("grey70", "#CC79A7", "grey30",  "red")) +
   xlab(" ") +
   scale_y_continuous("log10(E. coli) (MPN/100ml)") + 
-  labs(title="Weekly_concentration")+
+  labs(title="Weekly_concentration-5th generation")+
   theme_bw()
 
 

@@ -1,9 +1,30 @@
 
-load(file='/work/OVERFLOW/RCR/MSU/q_obs.RData')
-load(file='/work/OVERFLOW/RCR/MSU/bac_obs.RData')
+library(SWATplusR)
+library(dplyr)
+library(dygraphs)
+library(ggplot2)
+library(lubridate)
+library(mapview)
+library(plotly)
+library(sf)
+library(tibble)
+library(tidyr)
+library(purrr)
+library(lhs)
+library(hydroGOF)
+library(forcats)
+library(lubridate)
+library(sensitivity)
 
 
-path <- "/work/OVERFLOW/RCR/calibration/MSU"
+
+
+
+load(file='/work/OVERFLOW/RCR/sim56-sensitivity/q_obs.RData')
+load(file='/work/OVERFLOW/RCR/sim56-sensitivity/bac_obs.RData')
+
+
+path <- "/work/OVERFLOW/RCR/sim56-sensitivity"
 
 
 par_bound <- tibble(
@@ -62,27 +83,27 @@ par_bound <- tibble(
                "WOF_P.bsn|change = absval"= c(0, 1),
                "WDPRES.bsn|change = absval"= c(0, 1))
 
-#46 parameters
+#45 parameters
 
 
-n_sample <- 50000
-par_runif <- map_df(par_bound, ~ runif(n_sample, .x[1], .x[2]))
-par_runif
-
-bac_cal1 <- run_swat2012(project_path = path,
-                       output = list(q_out = define_output(file = "rch",
-                                     variable = "FLOW_OUT",
-                                     unit = 4),
-                                     bac_out = define_output(file = "rch",
-                                     variable = "BACTP_OUT",
-                                     unit = 4)),
-                       parameter = par_runif,
-                       start_date = "2011-01-01",
-                        end_date = "2013-12-31",
-                       years_skip = 2,
-                       n_thread = 32)
-
-save(bac_cal1, file = "/work/OVERFLOW/RCR/MSU/wu_redcedar/data_out/bac_cal7.RData")
+n_sample <- 5000
+# par_runif <- map_df(par_bound, ~ runif(n_sample, .x[1], .x[2]))
+# par_runif
+# 
+# bac_cal1 <- run_swat2012(project_path = path,
+#                        output = list(q_out = define_output(file = "rch",
+#                                      variable = "FLOW_OUT",
+#                                      unit = 4),
+#                                      bac_out = define_output(file = "rch",
+#                                      variable = "BACTP_OUT",
+#                                      unit = 4)),
+#                        parameter = par_runif,
+#                        start_date = "2000-01-01",
+#                         end_date = "2014-07-31",
+#                        years_skip = 4,
+#                        n_thread = 32)
+# 
+# save(bac_cal1, file = "/work/OVERFLOW/RCR/sim56-sensitivity/bac_sensitivity.RData")
 
 
 
@@ -97,19 +118,19 @@ library(xts)
 
 
 # huiyun laptop
-  rcdir <- path.expand("/work/OVERFLOW/RCR/MSU/wu_redcedar/")
+  rcdir <- path.expand("/work/OVERFLOW/RCR/sim56-sensitivity/")
 
 
-
-# Variable names for data
-rcdir_data_in <- paste(rcdir,'data_in/',sep='')
-rcdir_data_out <- paste(rcdir,'data_out/',sep='')
-rcdir_graphics <- paste(rcdir,'graphics/',sep='')
-rcdir_src <- paste(rcdir,'src/',sep='')
+# 
+# # Variable names for data
+# rcdir_data_in <- paste(rcdir,'data_in/',sep='')
+# rcdir_data_out <- paste(rcdir,'data_out/',sep='')
+# rcdir_graphics <- paste(rcdir,'graphics/',sep='')
+# rcdir_src <- paste(rcdir,'src/',sep='')
 
 # load data_out files
 
-load(file = '/work/OVERFLOW/RCR/MSU/wu_redcedar/data_out/bac_cal7.RData')
+load(file = '/work/OVERFLOW/RCR/sim56-sensitivity/bac_sensitivity.RData')
 
 sim_parameters <- bac_cal1$parameter$value
 
@@ -177,10 +198,10 @@ pcc(sim_parameters, sim_flux_maxs)
 
 
 # daily pcc for bacteria and flow
-bac_pcc <- matrix(data=NA, nrow=365, ncol=46)
-flows_pcc <- matrix(data=NA, nrow=365, ncol=46)
-flux_pcc <- matrix(data=NA, nrow=365, ncol=46)
-for(i in 1:365){
+bac_pcc <- matrix(data=NA, nrow=3865, ncol=45)
+flows_pcc <- matrix(data=NA, nrow=3865, ncol=45)
+flux_pcc <- matrix(data=NA, nrow=3865, ncol=45)
+for(i in 1:3865){
   print(i)
   daily_bac_pcc <- pcc(sim_parameters, sim_bac_concs3[,i])
   daily_flows_pcc <- pcc(sim_parameters, sim_flows3[,i])
@@ -204,7 +225,7 @@ dim(bac_pcc)
 colnames(bac_pcc) <- colnames(sim_parameters)
 colnames(flows_pcc) <- colnames(sim_parameters)
 colnames(flux_pcc) <- colnames(sim_parameters)
-pdf(paste(rcdir_graphics,"pcc_violin_50000_46.pdf",sep=""),width=55,height=30,onefile=TRUE)
+pdf(paste("pcc_violin_50000_45.pdf",sep=""),width=55,height=30,onefile=TRUE)
   vioplot(bac_pcc)
   vioplot(flows_pcc)
   vioplot(flux_pcc)
@@ -212,15 +233,15 @@ dev.off()
 
 
 #create time series
-bac_dates <- ts(sim_dates, start=c(2013, 1), end=c(2013, 365), frequency=365)
+bac_dates <- ts(sim_dates, start=c(2004, 1), end=c(2014, 3865), frequency=3865)
 
 
 #simple ggplot
 dim(bac_pcc)
-pdf(paste(rcdir_graphics,"pcc_ts_50000_46.pdf",sep=""),width=11,height=8, onefile=TRUE)
-  for(i in 1:46){
+pdf(paste(rcdir_graphics,"pcc_ts_50000_45.pdf",sep=""),width=11,height=8, onefile=TRUE)
+  for(i in 1:45){
     data <- data.frame(
-      day = as.Date("2014-01-01") - 0:364,
+      day = as.Date("2014-01-01") - 0:3864,
       bac_value = bac_pcc[,i],
       flows_value = flows_pcc[,i],
       flux_value = flux_pcc[,i]

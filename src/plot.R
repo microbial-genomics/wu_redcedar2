@@ -218,18 +218,19 @@ sort(nse_q, decreasing = T) %>% enframe()
 #run_1261 nse=0.537
 #run_0763 nse=0.464
 
-q_plot <-bac_cal_output$simulation$q_out%>%dplyr::select(date, run_0763)%>%
+q_plot <-bac_cal_output$simulation$q_out%>%dplyr::select(date, run_0295)%>%
   left_join(., q_obs, by ="date")%>% 
   rename (q_obs=discharge)%>%gather(., key= "variable", value="discharge",-date)
 
 ggplot(data = q_plot) +
   geom_line(aes(x = date, y = discharge, col = variable, lty = variable)) +
-  scale_x_date(name = "date", date_breaks = "1 year",date_labels = "%Y") +
+  # scale_x_date(name = "date", date_breaks = "1 month",date_labels = "%Y") +
   scale_color_manual(values = c("black", "tomato3")) +
   labs(y = "discharge (cms)",
        x= "Date")+
-  ggtitle("opt(weekly,flow); mnse=0.464")+
+  # ggtitle("opt(weekly,flow); mnse=0.464")+
   ylim(0,100)+
+  # xlim(as.Date(c('2014-01-01', '2014-12-31'), format="%Y-%m-%d"))+ 
   theme_bw()
 
 
