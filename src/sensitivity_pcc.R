@@ -213,6 +213,13 @@ for(i in 1:3865){
   flux_pcc[i,] <- t(daily_flux_pcc$PCC)
 }
 
+
+save(bac_pcc, file = "/work/OVERFLOW/RCR/sim56-sensitivity/bac_pcc.RData")
+
+save(flows_pcc, file = "/work/OVERFLOW/RCR/sim56-sensitivity/flows_pcc.RData")
+
+save(flux_pcc, file = "/work/OVERFLOW/RCR/sim56-sensitivity/flux_pcc.RData")
+
 #print violin plot
 mklab <- function(y_var){
   if(y_var){
