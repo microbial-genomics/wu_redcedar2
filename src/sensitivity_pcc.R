@@ -232,10 +232,16 @@ dim(bac_pcc)
 colnames(bac_pcc) <- colnames(sim_parameters)
 colnames(flows_pcc) <- colnames(sim_parameters)
 colnames(flux_pcc) <- colnames(sim_parameters)
-pdf(paste("pcc_violin_50000_45.pdf",sep=""),width=55,height=30,onefile=TRUE)
-  vioplot(bac_pcc)
-  vioplot(flows_pcc)
-  vioplot(flux_pcc)
+# pdf(paste("pcc_violin_50000_45.pdf",sep=""),width=55,height=30,onefile=TRUE)
+#   vioplot(bac_pcc)
+#   vioplot(flows_pcc)
+#   vioplot(flux_pcc)
+# dev.off()
+
+pdf("pcc_violin_5000_45.pdf",width=55,height=30,onefile=TRUE)
+vioplot(bac_pcc)
+vioplot(flows_pcc)
+vioplot(flux_pcc)
 dev.off()
 
 
@@ -245,7 +251,7 @@ bac_dates <- ts(sim_dates, start=c(2004, 1), end=c(2014, 3865), frequency=3865)
 
 #simple ggplot
 dim(bac_pcc)
-pdf(paste(rcdir_graphics,"pcc_ts_50000_45.pdf",sep=""),width=11,height=8, onefile=TRUE)
+pdf("pcc_ts_5000_45.pdf",width=11,height=8, onefile=TRUE)
   for(i in 1:45){
     data <- data.frame(
       day = as.Date("2014-01-01") - 0:3864,
