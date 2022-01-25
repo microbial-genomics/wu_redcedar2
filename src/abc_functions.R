@@ -185,23 +185,25 @@ create_next_sim_tibble <- function(nsims_todo, parameter_input_sims){
   }else{
     next_tibble <- tibble(
       "CN2.mgt|change = relchg"= parameter_input_sims[1:nsims_todo,1], #$CN2,initial SCS runoff curve number for mosture condition II
-      "GWQMN.gw|change = relchg" = parameter_input_sims[1:nsims_todo,2], #$GWQMN, Threshold depth of water in the shallow aquifer required for return flow to occruemm (H2O)
-      "ALPHA_BNK.rte|change = absval" = parameter_input_sims[1:nsims_todo,3], #$ALPHA_BNK, baseflow apha factor for bank storage (days)
-      "CH_K2.rte|change = absval" = parameter_input_sims[1:nsims_todo,4], #$CH_K2,Effective hydraulic conductivity in main channel alluvium (mm/hr)
-      "CH_N2.rte|change = absval" = parameter_input_sims[1:nsims_todo,5], #$CH_N2,Manning's n value for the main channels
-      "TRNSRCH.bsn|change = absval" = parameter_input_sims[1:nsims_todo,6], #$TRNSRCH,Fraction of trasmission losses from main channel that enter deep aquifer
-      "CH_N1.sub|change = absval" = parameter_input_sims[1:nsims_todo,7], #$CH_N1, Manning's n value for the tributary channels
-      "CH_K1.sub|change = absval" = parameter_input_sims[1:nsims_todo,8], #$CH_K1, Effective hydraulic conductivity in tributary channel alluvium (mm/hr)
-      "RCHRG_DP.gw|change = absval" = parameter_input_sims[1:nsims_todo,9], #RCHRG_DP, Deep aquifer percolation fraction 
-      "SFTMP.bsn|change = absval"= parameter_input_sims[1:nsims_todo,10], #SFTMP, snowfall temperature C
-      "SMTMP.bsn|change = absval"= parameter_input_sims[1:nsims_todo,11], #SMTMP, snowmelt temperature C
-      "DEP_IMP.hru|change = absval"= parameter_input_sims[1:nsims_todo,12], #DEP_IMP, Depth to impervious layer in soil profile (mm)
-      "DDRAIN.mgt|change = absval"= parameter_input_sims[1:nsims_todo,13], #DDRAIN, Depth to subsurface drian (mm)
-      "GDRAIN.mgt|change = absval"= parameter_input_sims[1:nsims_todo,14], #GDRAIN, Drain tile lab time (hours)
-      "BACTKDQ.bsn|change = absval" = parameter_input_sims[1:nsims_todo,15], #BACTKDQ, Bacteria soil partitioning coefficient (m3/Mg)
-      "BACT_SWF.bsn|change = absval" = parameter_input_sims[1:nsims_todo,16], #BACT_SWF, Fraction of manure applied to land areas that has active CFUs
-      "THBACT.bsn|change = absval"= parameter_input_sims[1:nsims_todo,17], #THBACT, Temperature adjsument factor for bacteria die-off/growth
-      "WDPRCH.bsn|change = absval"= parameter_input_sims[1:nsims_todo,18]) #WDPRCH, Die-off factor for persistent bacteria in streas  at 20C (1/day) 
+      "OV_N.hru|change = relchg" = parameter_input_sims[1:nsims_todo,2],
+      "GW_DELAY.gw|change = relchg" = parameter_input_sims[1:nsims_todo, 3],
+      "GWQMN.gw|change = relchg" = parameter_input_sims[1:nsims_todo,4], #$GWQMN, Threshold depth of water in the shallow aquifer required for return flow to occruemm (H2O)
+      "SLSUBBSN.hru|change = relchg" = parameter_input_sims[1:nsims_todo,5],
+      "ALPHA_BNK.rte|change = absval" = parameter_input_sims[1:nsims_todo,6], #$ALPHA_BNK, baseflow apha factor for bank storage (days)
+      "CH_K2.rte|change = absval" = parameter_input_sims[1:nsims_todo,7], #$CH_K2,Effective hydraulic conductivity in main channel alluvium (mm/hr)
+      "CH_N2.rte|change = absval" = parameter_input_sims[1:nsims_todo,8], #$CH_N2,Manning's n value for the main channels
+      "TRNSRCH.bsn|change = absval" = parameter_input_sims[1:nsims_todo,9], #$TRNSRCH,Fraction of trasmission losses from main channel that enter deep aquifer
+      "CH_K1.sub|change = absval" = parameter_input_sims[1:nsims_todo, 10], #$CH_K1, Effective hydraulic conductivity in tributary channel alluvium (mm/hr)
+      "GW_REVAP.gw|change = absval" = parameter_input_sims[1:nsims_todo, 11],
+      "RCHRG_DP.gw|change = absval" = parameter_input_sims[1:nsims_todo,12], #RCHRG_DP, Deep aquifer percolation fraction 
+      "SFTMP.bsn|change = absval"= parameter_input_sims[1:nsims_todo,13], #SFTMP, snowfall temperature C
+      "SMTMP.bsn|change = absval"= parameter_input_sims[1:nsims_todo,14], #SMTMP, snowmelt temperature C
+      "TIMP.bsn|change = absval"= parameter_input_sims[1:nsims_todo,15],
+      "DEP_IMP.hru|change = absval"= parameter_input_sims[1:nsims_todo,16], #DEP_IMP, Depth to impervious layer in soil profile (mm)
+      "DDRAIN.mgt|change = absval"= parameter_input_sims[1:nsims_todo,17], #DDRAIN, Depth to subsurface drian (mm)
+      "GDRAIN.mgt|change = absval"= parameter_input_sims[1:nsims_todo,18], #GDRAIN, Drain tile lab time (hours)
+      "THBACT.bsn|change = absval"= parameter_input_sims[1:nsims_todo,19], #THBACT, Temperature adjsument factor for bacteria die-off/growth
+      "WDPRCH.bsn|change = absval"= parameter_input_sims[1:nsims_todo,20]) #WDPRCH, Die-off factor for persistent bacteria in streas  at 20C (1/day) 
     return(next_tibble)
   }
 }
@@ -380,98 +382,103 @@ sample_truncated_normals <- function(iter, new_nsims, fitted_parameter_list){
   OV_N_mean <- fitted_OV_N$estimate[1]
   OV_N_sd <- fitted_OV_N$estimate[2]
   print(paste("generation", iter, "OV_N", round(OV_N_mean,3), round(OV_N_sd,3)))
-  OV_N <- rtruncnorm(new_nsims, -0.5, 2, mean =OV_N_mean, sd = OV_N_sd)
+  OV_N <- rtruncnorm(new_nsims, 0.01, 0.4, mean =OV_N_mean, sd = OV_N_sd)
   
   fitted_GW_DELAY <- fitted_parameter_list[[3]]
   GW_DELAY_mean <- fitted_GW_DELAY$estimate[1]
   GW_DELAY_sd <- fitted_GW_DELAY$estimate[2]
   print(paste("generation", iter, "GW_DELAY", round(GW_DELAY_mean,3), round(GW_DELAY_sd,3)))
-  GW_DELAY <- rtruncnorm(new_nsims, -0.5, 2, mean =GW_DELAY_mean, sd = GW_DELAY_sd)
+  GW_DELAY <- rtruncnorm(new_nsims, -0.75, 4, mean =GW_DELAY_mean, sd = GW_DELAY_sd)
   
   
-  fitted_GWQMN <- fitted_parameter_list[[2]]
+  fitted_GWQMN <- fitted_parameter_list[[4]]
   GWQMN_mean <- fitted_GWQMN$estimate[1]
   GWQMN_sd <- fitted_GWQMN$estimate[2]
   print(paste("generation", iter, "GWQMN", round(GWQMN_mean,3), round(GWQMN_sd,3)))
-  GWQMN <- rtruncnorm(new_nsims, -0.5, 2, mean =GWQMN_mean, sd = GWQMN_sd)
+  GWQMN <- rtruncnorm(new_nsims, -0.5, 0.5, mean =GWQMN_mean, sd = GWQMN_sd)
+  
+  
+  fitted_SLSUBBSN <- fitted_parameter_list[[5]]
+  SLSUBBSN_mean <- fitted_SLSUBBSN$estimate[1]
+  SLSUBBSN_sd <- fitted_SLSUBBSN$estimate[2]
+  print(paste("generation", iter, "SLSUBBSN", round(SLSUBBSN_mean,3), round(SLSUBBSN_sd,3)))
+  SLSUBBSN <- rtruncnorm(new_nsims, -0.5, 1, mean =SLSUBBSN_mean, sd = SLSUBBSN_sd)
   
   # fitted_ALPHA_BNK
   # Baseflow alpha factor for bank storage
   # estimate  Std. Error
   # mean 0.4911617 0.003369632
   # sd   0.2382690 0.002382501
-  fitted_ALPHA_BNK <- fitted_parameter_list[[3]]
+  fitted_ALPHA_BNK <- fitted_parameter_list[[6]]
   ALPHA_BNK_mean <- fitted_ALPHA_BNK$estimate[1]
   ALPHA_BNK_sd <- fitted_ALPHA_BNK$estimate[2]
   print(paste("generation", iter, "ALPHA_BNK", round(ALPHA_BNK_mean,3), round(ALPHA_BNK_sd,3)))
-  ALPHA_BNK <- rtruncnorm(new_nsims, 0, 1, mean = ALPHA_BNK_mean, sd = ALPHA_BNK_sd)
+  ALPHA_BNK <- rtruncnorm(new_nsims, 0.5, 1, mean = ALPHA_BNK_mean, sd = ALPHA_BNK_sd)
   
   # fitted_CH_K2
   # Effective hydraulic conductivity in main channel alluvium
   # estimate Std. Error
   # mean 27.90991  0.1635768
   # sd   11.56662  0.1156662
-  fitted_CH_K2 <- fitted_parameter_list[[4]]
+  fitted_CH_K2 <- fitted_parameter_list[[7]]
   CH_K2_mean <- fitted_CH_K2$estimate[1]
   CH_K2_sd <- fitted_CH_K2$estimate[2]
   print(paste("generation", iter, "CH_K2", round(CH_K2_mean,3), round(CH_K2_sd,3)))
-  CH_K2 <- rtruncnorm(new_nsims, 0, 500, mean = CH_K2_mean, sd = CH_K2_sd)
+  CH_K2 <- rtruncnorm(new_nsims, 0, 50, mean = CH_K2_mean, sd = CH_K2_sd)
   
   # fitted_CH_N2
   # estimate   Std. Error
   # mean 0.10415042 0.0003312391
   # sd   0.02342214 0.0002323030
-  fitted_CH_N2 <- fitted_parameter_list[[5]]
+  fitted_CH_N2 <- fitted_parameter_list[[8]]
   CH_N2_mean <- fitted_CH_N2$estimate[1]
   CH_N2_sd <- fitted_CH_N2$estimate[2]
   print(paste("generation", iter, "CH_N2", round(CH_N2_mean,3), round(CH_N2_sd,3)))
-  CH_N2 <- rtruncnorm(new_nsims, 0, 0.3, mean = CH_N2_mean, sd = CH_N2_sd)
+  CH_N2 <- rtruncnorm(new_nsims, 0.05,0.15, mean = CH_N2_mean, sd = CH_N2_sd)
   
   # fitted_TRNSRCH
   # estimate   Std. Error
   # mean 0.17602745 0.0009794462
   # sd   0.06925731 0.0006919234
-  fitted_TRNSRCH <- fitted_parameter_list[[6]]
+  fitted_TRNSRCH <- fitted_parameter_list[[9]]
   TRNSRCH_mean <- fitted_TRNSRCH$estimate[1]
   TRNSRCH_sd <- fitted_TRNSRCH$estimate[2]
   print(paste("generation", iter, "TRNSRCH", round(TRNSRCH_mean,3), round(TRNSRCH_sd,3)))
-  TRNSRCH <- rtruncnorm(new_nsims, 0, 1, mean = TRNSRCH_mean, sd = TRNSRCH_sd)
+  TRNSRCH <- rtruncnorm(new_nsims, 0, 0.3, mean = TRNSRCH_mean, sd = TRNSRCH_sd)
   
-  # fitted_CH_N1 
-  # estimate   Std. Error
-  # mean 0.09991472 0.0003314811
-  # sd   0.02343925 0.0002324755
-  fitted_CH_N1 <- fitted_parameter_list[[7]]
-  CH_N1_mean <- fitted_CH_N1$estimate[1]
-  CH_N1_sd <- fitted_CH_N1$estimate[2]
-  print(paste("generation", iter, "CH_N1", round(CH_N1_mean,3), round(CH_N1_sd,3)))
-  CH_N1 <- rtruncnorm(new_nsims, 0.01, 30, mean = CH_N1_mean, sd = CH_N1_sd)
   
   # fitted_CH_K1
   # estimate Std. Error
   # mean 158.93894  0.9599238
   # sd    67.87685  0.6787685
-  fitted_CH_K1 <- fitted_parameter_list[[8]]
+  fitted_CH_K1 <- fitted_parameter_list[[10]]
   CH_K1_mean <- fitted_CH_K1$estimate[1]
   CH_K1_sd <- fitted_CH_K1$estimate[2]
   print(paste("generation", iter, "CH_K1", round(CH_K1_mean,3), round(CH_K1_sd,3)))
-  CH_K1 <- rtruncnorm(new_nsims, 0, 300, mean = CH_K1_mean, sd = CH_K1_sd)
+  CH_K1 <- rtruncnorm(new_nsims, 0, 120, mean = CH_K1_mean, sd = CH_K1_sd)
+  
+  
+  fitted_GW_REVAP <- fitted_parameter_list[[11]]
+  GW_REVAP_mean <- fitted_GW_REVAP$estimate[1]
+  GW_REVAP_sd <- fitted_GW_REVAP$estimate[2]
+  print(paste("generation", iter, "GW_REVAP", round(GW_REVAP_mean,3), round(GW_REVAP_sd,3)))
+  GW_REVAP <- rtruncnorm(new_nsims, 0.02,0.2, mean =GW_REVAP_mean, sd = GW_REVAP_sd)
   
   # fitted_RCHRG_DP
   # estimate  Std. Error
   # mean 0.4808134 0.003439768
   # sd   0.2432284 0.002432099
-  fitted_RCHRG_DP <- fitted_parameter_list[[9]]
+  fitted_RCHRG_DP <- fitted_parameter_list[[12]]
   RCHRG_DP_mean <- fitted_RCHRG_DP$estimate[1]
   RCHRG_DP_sd <- fitted_RCHRG_DP$estimate[2]
   print(paste("generation", iter, "RCHRG_DP", round(RCHRG_DP_mean,3), round(RCHRG_DP_sd,3)))
-  RCHRG_DP <- rtruncnorm(new_nsims, 0, 1, mean = RCHRG_DP_mean, sd = RCHRG_DP_sd)
+  RCHRG_DP <- rtruncnorm(new_nsims, 0, 0.5, mean = RCHRG_DP_mean, sd = RCHRG_DP_sd)
   
   # fitted_SFTMP
   # estimate Std. Error
   # mean 0.1230878 0.03301559
   # sd   2.3345547 0.02334553
-  fitted_SFTMP <- fitted_parameter_list[[10]]
+  fitted_SFTMP <- fitted_parameter_list[[13]]
   SFTMP_mean <- fitted_SFTMP$estimate[1]
   SFTMP_sd <- fitted_SFTMP$estimate[2]
   print(paste("generation", iter, "SFTMP", round(SFTMP_mean,3), round(SFTMP_sd,3)))
@@ -481,84 +488,71 @@ sample_truncated_normals <- function(iter, new_nsims, fitted_parameter_list){
   # estimate Std. Error
   # mean 0.1653056 0.03339191
   # sd   2.3611645 0.02361163
-  fitted_SMTMP <- fitted_parameter_list[[11]]
+  fitted_SMTMP <- fitted_parameter_list[[14]]
   SMTMP_mean <- fitted_SMTMP$estimate[1]
   SMTMP_sd <- fitted_SMTMP$estimate[2]
   print(paste("generation", iter, "SMTMP", round(SMTMP_mean,3), round(SMTMP_sd,3)))
   SMTMP <- rtruncnorm(new_nsims, -5, 5, mean = SMTMP_mean, sd = SMTMP_sd)
   
+  
+  fitted_TIMP <- fitted_parameter_list[[15]]
+  TIMP_mean <- fitted_TIMP$estimate[1]
+  TIMP_sd <- fitted_TIMP$estimate[2]
+  print(paste("generation", iter, "TIMP", round(TIMP_mean,3), round(TIMP_sd,3)))
+  TIMP <- rtruncnorm(new_nsims, 0.01, 1, mean =TIMP_mean, sd = TIMP_sd)
+  
   # fitted_DEP_IMP
   # estimate Std. Error
   # mean 3667.422   18.83298
   # sd   1331.808   13.31908
-  fitted_DEP_IMP <- fitted_parameter_list[[12]]
+  fitted_DEP_IMP <- fitted_parameter_list[[16]]
   DEP_IMP_mean <- fitted_DEP_IMP$estimate[1]
   DEP_IMP_sd <- fitted_DEP_IMP$estimate[2]
   print(paste("generation", iter, "DEP_IMP", round(DEP_IMP_mean,3), round(DEP_IMP_sd,3)))
-  DEP_IMP <- rtruncnorm(new_nsims, 0, 6000, mean = DEP_IMP_mean, sd = DEP_IMP_sd)
+  DEP_IMP <- rtruncnorm(new_nsims, 2000, 6000, mean = DEP_IMP_mean, sd = DEP_IMP_sd)
   
   # fitted_DDRAIN
   # estimate Std. Error
   # mean 902.7242   6.710620
   # sd   474.4889   4.744931
-  fitted_DDRAIN <- fitted_parameter_list[[13]]
+  fitted_DDRAIN <- fitted_parameter_list[[17]]
   DDRAIN_mean <- fitted_DDRAIN$estimate[1]
   DDRAIN_sd <- fitted_DDRAIN$estimate[2]
   print(paste("generation", iter, "DDRAIN", round(DDRAIN_mean,3), round(DDRAIN_sd,3)))
-  DDRAIN <- rtruncnorm(new_nsims, 0, 2000, mean = DDRAIN_mean, sd = DDRAIN_sd)
+  DDRAIN <- rtruncnorm(new_nsims, 500, 1500, mean = DDRAIN_mean, sd = DDRAIN_sd)
   
   # fitted_GDRAIN
   # estimate Std. Error
   # mean 53.36850  0.3311553
   # sd   23.41622  0.2341622
-  fitted_GDRAIN <- fitted_parameter_list[[14]]
+  fitted_GDRAIN <- fitted_parameter_list[[18]]
   GDRAIN_mean <- fitted_GDRAIN$estimate[1]
   GDRAIN_sd <- fitted_GDRAIN$estimate[2]
   print(paste("generation", iter, "GDRAIN", round(GDRAIN_mean,3), round(GDRAIN_sd,3)))
-  GDRAIN <- rtruncnorm(new_nsims, 0, 100, mean = GDRAIN_mean, sd = GDRAIN_sd)
+  GDRAIN <- rtruncnorm(new_nsims, 0, 50, mean = GDRAIN_mean, sd = GDRAIN_sd)
   
-  # fitted_BACTKDQ
-  # estimate Std. Error
-  # mean 284.6590   1.550853
-  # sd   109.6619   1.096619
-  fitted_BACTKDQ <- fitted_parameter_list[[15]]
-  BACTKDQ_mean <- fitted_BACTKDQ$estimate[1]
-  BACTKDQ_sd <- fitted_BACTKDQ$estimate[2]
-  print(paste("generation", iter, "BACTKDQ", round(BACTKDQ_mean,3), round(BACTKDQ_sd,3)))
-  BACTKDQ <- rtruncnorm(new_nsims, 0, 500, mean = BACTKDQ_mean, sd = BACTKDQ_sd)
-  
-  # fitted_BACT_SWF
-  # estimate  Std. Error
-  # mean 0.4287223 0.003284534
-  # sd   0.2322516 0.002322323
-  fitted_BACT_SWF <- fitted_parameter_list[[16]]
-  BACT_SWF_mean <- fitted_BACT_SWF$estimate[1]
-  BACT_SWF_sd <- fitted_BACT_SWF$estimate[2]
-  print(paste("generation", iter, "BACT_SWF", round(BACT_SWF_mean,3), round(BACT_SWF_sd,3)))
-  BACT_SWF <- rtruncnorm(new_nsims, 0, 1, mean = BACT_SWF_mean, sd = BACT_SWF_sd)
   
   # fitted_THBACT
   # estimate Std. Error
   # mean 1.384695 0.02367388
   # sd   1.673996 0.01673994
-  fitted_THBACT <- fitted_parameter_list[[17]]
+  fitted_THBACT <- fitted_parameter_list[[19]]
   THBACT_mean <- fitted_THBACT$estimate[1]
   THBACT_sd <- fitted_THBACT$estimate[2]
   print(paste("generation", iter, "THBACT", round(THBACT_mean,3), round(THBACT_sd,3)))
-  THBACT <- rtruncnorm(new_nsims, 0, 10, mean = THBACT_mean, sd = THBACT_sd)
+  THBACT <- rtruncnorm(new_nsims, 0, 2, mean = THBACT_mean, sd = THBACT_sd)
   
   # fitted_WDPRCH
   # estimate  Std. Error
   # mean 0.5643253 0.003093901
   # sd   0.2187718 0.002187513
-  fitted_WDPRCH <- fitted_parameter_list[[18]]
+  fitted_WDPRCH <- fitted_parameter_list[[20]]
   WDPRCH_mean <- fitted_WDPRCH$estimate[1]
   WDPRCH_sd <- fitted_WDPRCH$estimate[2]
   print(paste("generation", iter, "WDPRCH", round(WDPRCH_mean,3), round(WDPRCH_sd,3)))
   WDPRCH <- rtruncnorm(new_nsims, 0, 1, mean = WDPRCH_mean, sd = WDPRCH_sd)
   
-  inputs_df <- as.matrix(cbind(CN2, GWQMN, ALPHA_BNK, CH_K2, CH_N2, TRNSRCH, CH_N1, CH_K1, RCHRG_DP,
-                     SFTMP, SMTMP, DEP_IMP, DDRAIN, GDRAIN, BACTKDQ, BACT_SWF, THBACT, WDPRCH))
+  inputs_df <- as.matrix(cbind(CN2, OV_N,GW_DELAY, GWQMN,SLSUBBSN, ALPHA_BNK, CH_K2, CH_N2, TRNSRCH, CH_K1, GW_REVAP, RCHRG_DP, SFTMP, SMTMP, TIMP, DEP_IMP, DDRAIN, GDRAIN, THBACT, WDPRCH))
   colnames(inputs_df)
   return(inputs_df)
 }
