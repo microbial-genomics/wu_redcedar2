@@ -9,7 +9,7 @@
 #SBATCH --mail-type=BEGIN,END
 #SBATCH --exclusive
 
-setenv TMPDIR /work/OVERFLOW/RCR/sim56
+setenv TMPDIR /work/OVERFLOW/RCR/sim57-montly/mean
 
 module load intel/19.0.5
 module load R/3.6.2

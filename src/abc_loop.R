@@ -46,7 +46,7 @@ set.seed(42)
 huiyun <- TRUE #Huiyun set to true when you are running this code
 print("load support functions")
 if(huiyun){
-  base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim56")
+  base_dir <- file.path("/work", "OVERFLOW", "RCR", "sim57-monthly","mean")
   data_in_dir <- base_dir
   graphics_dir <- base_dir
   src_dir <- base_dir
@@ -138,7 +138,7 @@ startgen <- 0
 ngens <- 40
 
 # decide what time frame/interval to optimize on 
-# opt_time_interval <- "daily"
+#opt_time_interval <- "daily"
 #opt_time_interval <- "weekly"
 opt_time_interval <- "monthly"
 
