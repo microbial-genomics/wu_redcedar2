@@ -228,28 +228,25 @@ create_generation_stats <- function(startgen, ngens, opt_nse, nsims){
 }
 
 create_tibble_initial <- function(nsims){
-  pars_tibble <- tibble(#hydrology parameters (15)
+  pars_tibble <- tibble(#hydrology parameters (11)
     "CN2.mgt|change = relchg"= runif(nsims, -0.25, 0.1), #
-    "OV_N.hru|change = relchg" = runif(nsims, 0.01, 0.4),
-    "GW_DELAY.gw|change = relchg" = runif(nsims, -0.75,4),
     "GWQMN.gw|change = relchg" = runif(nsims, -0.5, 0.5), #
-    "SLSUBBSN.hru|change = relchg" = runif(nsims, -0.5, 1),
     "ALPHA_BNK.rte|change = absval" =runif(nsims, 0.5, 1), #large for flat recessions, and small for steep recessions
-    "CH_K2.rte|change = absval" = runif(nsims, 0, 50), # changed from(0,250) 
-    "CH_N2.rte|change = absval" = runif(nsims, 0.05, 0.15), # changed from (0,0.1) 
-    "TRNSRCH.bsn|change = absval" = runif(nsims, 0, 0.3), # default is 0.00
-    "CH_K1.sub|change = absval" = runif(nsims, 0, 120), #For prennial streams with continuous groundwater contribution, the effective conductivity will be zero.
-    "GW_REVAP.gw|change = absval" = runif(nsims, 0.02, 0.2),
+    "CH_K2.rte|change = absval" = runif(nsims, 0, 120), # changed from(0,250) 
+    "CH_N2.rte|change = absval" = runif(nsims, 0, 0.2), # changed from (0,0.1) 
+    "TRNSRCH.bsn|change = absval" = runif(nsims, 0, 0.5), # default is 0.00
+    "CH_N1.sub|change = absval" = runif(nsims, 0,0.2), #ranged from (0.01,30) 
+    "CH_K1.sub|change = absval" = runif(nsims, 0, 120), #For prennial streams with continuous groundwater contribution, the effective conductivity will be zero. 
     "RCHRG_DP.gw|change = absval" = runif(nsims, 0, 0.5), # default range is (0,1)
     "SFTMP.bsn|change = absval"= runif(nsims, -5, 5), # changed from (-2,2),default is 1.0
     "SMTMP.bsn|change = absval"= runif(nsims, -5, 5), # change from (-2,2), default is 0.5
-    "TIMP.bsn|change = absval"= runif(nsims, 0.01, 1),
-    
     #tile drainage and sediments (3)
     "DEP_IMP.hru|change = absval"= runif(nsims, 2000, 6000), # "generation 21 DEP_IMP 4010.712 31.167"
     "DDRAIN.mgt|change = absval"= runif(nsims, 500, 1500), # "generation 21 DDRAIN 1105.285 107.537"
     "GDRAIN.mgt|change = absval"= runif(nsims, 0, 50), # "generation 21 GDRAIN 24.686 11.354"
-    #bacteria submodel (2)
+    #bacteria submodel (4)
+    "BACTKDQ.bsn|change = absval" = runif(nsims, 100, 500), # default value 175
+    "BACT_SWF.bsn|change = absval" = runif(nsims, 0, 0.2), # default value 0.15
     "THBACT.bsn|change = absval"= runif(nsims, 0, 2), # default value 1.07
     "WDPRCH.bsn|change = absval"= runif(nsims, 0, 1) # 
   )
@@ -258,27 +255,27 @@ create_tibble_initial <- function(nsims){
 
 fit_normal_parameters <- function(sim_pars_keepers){
   fitted_CN2 <- fitdist(sim_pars_keepers$CN2, "norm")
-  fitted_OV_N <- fitdist(sim_pars_keepers$OV_N, "norm")
-  fitted_GW_DELAY <- fitdist(sim_pars_keepers$GW_DELAY, "norm")
   fitted_GWQMN <- fitdist(sim_pars_keepers$GWQMN, "norm")
-  fitted_SLSUBBSN <- fitdist(sim_pars_keepers$SLSUBBSN, "norm")
   fitted_ALPHA_BNK <- fitdist(sim_pars_keepers$ALPHA_BNK, "norm")
   fitted_CH_K2 <- fitdist(sim_pars_keepers$CH_K2, "norm")
   fitted_CH_N2 <- fitdist(sim_pars_keepers$CH_N2, "norm")
   fitted_TRNSRCH <- fitdist(sim_pars_keepers$TRNSRCH, "norm")
+  fitted_CH_N1 <- fitdist(sim_pars_keepers$CH_N1, "norm")
   fitted_CH_K1 <- fitdist(sim_pars_keepers$CH_K1, "norm")
-  fitted_GW_REVAP <- fitdist(sim_pars_keepers$GW_REVAP, "norm")
   fitted_RCHRG_DP <- fitdist(sim_pars_keepers$RCHRG_DP, "norm")
   fitted_SFTMP <- fitdist(sim_pars_keepers$SFTMP, "norm")
   fitted_SMTMP <- fitdist(sim_pars_keepers$SMTMP, "norm")
-  fitted_TIMP <- fitdist(sim_pars_keepers$TIMP, "norm")
   fitted_DEP_IMP <- fitdist(sim_pars_keepers$DEP_IMP, "norm")
   fitted_DDRAIN <- fitdist(sim_pars_keepers$DDRAIN, "norm")
   fitted_GDRAIN <- fitdist(sim_pars_keepers$GDRAIN, "norm")
+  fitted_BACTKDQ <- fitdist(sim_pars_keepers$BACTKDQ, "norm")
+  fitted_BACT_SWF<- fitdist(sim_pars_keepers$BACT_SWF, "norm")
   fitted_THBACT <- fitdist(sim_pars_keepers$THBACT, "norm")
   fitted_WDPRCH <- fitdist(sim_pars_keepers$WDPRCH, "norm")
-  return(list(fitted_CN2, fitted_OV_N, fitted_GW_DELAY, fitted_GWQMN, fitted_SLSUBBSN, fitted_ALPHA_BNK, fitted_CH_K2, fitted_CH_N2,
-              fitted_TRNSRCH, fitted_CH_K1, fitted_GW_REVAP, fitted_RCHRG_DP, fitted_SFTMP, fitted_SMTMP, fitted_TIMP, fitted_DEP_IMP, fitted_DDRAIN, fitted_GDRAIN, fitted_THBACT, fitted_WDPRCH))
+  return(list(fitted_CN2, fitted_GWQMN, fitted_ALPHA_BNK, fitted_CH_K2, fitted_CH_N2,
+              fitted_TRNSRCH, fitted_CH_N1, fitted_CH_K1, fitted_RCHRG_DP, fitted_SFTMP,
+              fitted_SMTMP, fitted_DEP_IMP, fitted_DDRAIN, fitted_GDRAIN, fitted_BACTKDQ,
+              fitted_BACT_SWF, fitted_THBACT, fitted_WDPRCH))
 }
 
 get_cutoff_score <- function(iter, generation_stats){
@@ -376,19 +373,10 @@ sample_truncated_normals <- function(iter, new_nsims, fitted_parameter_list){
   print(paste("generation", iter, "CN2", round(CN2_mean,3), round(CN2_sd,3)))
   CN2 <- rtruncnorm(new_nsims, -0.25, 0.1, mean = CN2_mean, sd =  CN2_sd)
   
-  fitted_OV_N <- fitted_parameter_list[[2]]
-  OV_N_mean <- fitted_OV_N$estimate[1]
-  OV_N_sd <- fitted_OV_N$estimate[2]
-  print(paste("generation", iter, "OV_N", round(OV_N_mean,3), round(OV_N_sd,3)))
-  OV_N <- rtruncnorm(new_nsims, -0.5, 2, mean =OV_N_mean, sd = OV_N_sd)
-  
-  fitted_GW_DELAY <- fitted_parameter_list[[3]]
-  GW_DELAY_mean <- fitted_GW_DELAY$estimate[1]
-  GW_DELAY_sd <- fitted_GW_DELAY$estimate[2]
-  print(paste("generation", iter, "GW_DELAY", round(GW_DELAY_mean,3), round(GW_DELAY_sd,3)))
-  GW_DELAY <- rtruncnorm(new_nsims, -0.5, 2, mean =GW_DELAY_mean, sd = GW_DELAY_sd)
-  
-  
+  # fitted_GWQMN
+  # #     estimate  Std. Error
+  # mean 0.4499712 0.007905126
+  # sd   0.5589768 0.005589688
   fitted_GWQMN <- fitted_parameter_list[[2]]
   GWQMN_mean <- fitted_GWQMN$estimate[1]
   GWQMN_sd <- fitted_GWQMN$estimate[2]

@@ -161,8 +161,8 @@ for(iter in startgen:ngens){
   print(paste("optimizing based on", opt_time_interval, opt_conc_transform, "(transformation)", opt_nse))
   #
   #number to keep each generation
-  nsims_todo <- 5000
-  n_to_keep <- 1000
+  nsims_todo <- 1000
+  n_to_keep <- 200
   if(iter==0){
     pars_tibble <- create_tibble_initial(nsims_todo)
     # create dataframe to persistently store stats

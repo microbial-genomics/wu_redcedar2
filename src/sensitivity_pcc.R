@@ -118,7 +118,6 @@ library(xts)
 
 
 # huiyun laptop
-  rcdir <- path.expand("/work/OVERFLOW/RCR/sim56-sensitivity/")
 
 
 # 
@@ -197,7 +196,7 @@ sim_flux_maxs <- rowMaxs(sim_flux3)
 pcc(sim_parameters, sim_flux_maxs)
 
 
-# daily pcc for bacteria and flow
+########daily pcc for bacteria and flow
 bac_pcc <- matrix(data=NA, nrow=3865, ncol=45)
 flows_pcc <- matrix(data=NA, nrow=3865, ncol=45)
 flux_pcc <- matrix(data=NA, nrow=3865, ncol=45)
@@ -251,7 +250,7 @@ bac_dates <- ts(sim_dates, start=c(2004, 1), end=c(2014, 3865), frequency=3865)
 
 #simple ggplot
 dim(bac_pcc)
-pdf("pcc_ts_5000_45.pdf",width=11,height=8, onefile=TRUE)
+pdf("pcc_ts_5000_45-0.2.pdf",width=11,height=8, onefile=TRUE)
   for(i in 1:45){
     data <- data.frame(
       day = as.Date("2014-01-01") - 0:3864,
@@ -265,7 +264,7 @@ pdf("pcc_ts_5000_45.pdf",width=11,height=8, onefile=TRUE)
       geom_line(aes(y=flux_value), color = "orange") +
       xlab("") +
       ylab("pcc sensitivity") +
-      ylim(-1,1)
+      ylim(-0.2,0.2)
     print(p + ggtitle(colnames(bac_pcc)[i]))
   }
 dev.off()
