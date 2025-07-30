@@ -69,7 +69,7 @@ par_bound <- tibble(
                "WDPRES.bsn|change = absval"= c(0, 1))
 
 #45 parameters
-
+#View(par_bound)
 
 n_sample <- 5000
 # par_runif <- map_df(par_bound, ~ runif(n_sample, .x[1], .x[2]))
@@ -129,7 +129,7 @@ colnames(sim_bac_concs)
 dim(sim_flows)
 colnames(sim_flows)
 
-library(matrixStats)
+
 
 #fix problematic colnames
 colnames(sim_parameters)[2] <- "SOL_K"
@@ -176,21 +176,21 @@ sim_flux_maxs <- rowMaxs(sim_flux3)
 pcc(sim_parameters, sim_flux_maxs)
 
 
-########daily pcc for bacteria and flow
-bac_pcc <- matrix(data=NA, nrow=3865, ncol=45)
-flows_pcc <- matrix(data=NA, nrow=3865, ncol=45)
-flux_pcc <- matrix(data=NA, nrow=3865, ncol=45)
-for(i in 1:3865){
-  print(i)
-  daily_bac_pcc <- pcc(sim_parameters, sim_bac_concs3[,i])
-  daily_flows_pcc <- pcc(sim_parameters, sim_flows3[,i])
-  daily_flux_pcc <- pcc(sim_parameters, sim_flux3[,i])
-  length(bac_pcc[i,])
-  length(t(daily_bac_pcc$PCC))
-  bac_pcc[i,] <- t(daily_bac_pcc$PCC)
-  flows_pcc[i,] <- t(daily_flows_pcc$PCC)
-  flux_pcc[i,] <- t(daily_flux_pcc$PCC)
-}
+#########daily pcc for bacteria and flow
+daily_bac_pcc <- matrix(data=NA, nrow=3865, ncol=45)
+daily_flows_pcc <- matrix(data=NA, nrow=3865, ncol=45)
+daily_flux_pcc <- matrix(data=NA, nrow=3865, ncol=45)
+#for(i in 1:3865){
+#  print(i)
+#  daily_bac_pcc <- pcc(sim_parameters, sim_bac_concs3[,i])
+#  daily_flows_pcc <- pcc(sim_parameters, sim_flows3[,i])
+#  daily_flux_pcc <- pcc(sim_parameters, sim_flux3[,i])
+#  length(bac_pcc[i,])
+#  length(t(daily_bac_pcc$PCC))
+#  bac_pcc[i,] <- t(daily_bac_pcc$PCC)
+#  flows_pcc[i,] <- t(daily_flows_pcc$PCC)
+#  flux_pcc[i,] <- t(daily_flux_pcc$PCC)
+#}
 
 
 #save(bac_pcc, file = "/work/OVERFLOW/RCR/sim56-sensitivity/bac_pcc.RData")
@@ -198,6 +198,10 @@ for(i in 1:3865){
 #save(flows_pcc, file = "/work/OVERFLOW/RCR/sim56-sensitivity/flows_pcc.RData")
 
 #save(flux_pcc, file = "/work/OVERFLOW/RCR/sim56-sensitivity/flux_pcc.RData")
+
+load(file.path(hpc_data_sensitivity, "bac_pcc.RData"))
+load(file.path(hpc_data_sensitivity, "flows_pcc.RData"))
+load(file.path(hpc_data_sensitivity, "flux_pcc.RData"))
 
 #print violin plot
 mklab <- function(y_var){
@@ -217,37 +221,61 @@ colnames(flux_pcc) <- colnames(sim_parameters)
 #   vioplot(flux_pcc)
 # dev.off()
 
-pdf("pcc_violin_5000_45.pdf",width=55,height=30,onefile=TRUE)
+#pdf("pcc_violin_5000_45.pdf",width=55,height=30,onefile=TRUE)
 vioplot(bac_pcc)
 vioplot(flows_pcc)
 vioplot(flux_pcc)
-dev.off()
+#dev.off()
 
-flux_pcc_sensitive <- flux_pcc[,]
+colnames(flux_pcc)
+flux_pcc_sensitive <- flux_pcc[,c(1,4,6,7,8,9,10,11,14,17,19,20,22,23,26,27,28,30,40,41)]
+colnames(flux_pcc_sensitive)
+
+#vioplot(flux_pcc_sensitive, col="lightblue")
+
+# long for ggplot
+long_flux_pcc_sensitive <- as.data.frame(flux_pcc_sensitive) %>%
+  pivot_longer(cols = everything(), names_to = "parameter", values_to = "pcc")
+
+# sort by median of absolute values of pcc
+long_flux_pcc_sensitive <- long_flux_pcc_sensitive %>%
+  mutate(parameter = fct_reorder(parameter, abs(pcc), .fun = median))
+
+ggplot(long_flux_pcc_sensitive, aes(x = parameter, y = pcc)) +
+  geom_violin(trim = FALSE, color = "black", fill="lightblue", alpha = 0.7, linewidth = 0.8, width=1.1) +
+  stat_summary(fun = median, geom = "point", color = "red", size = 2) +
+  scale_fill_brewer(palette = "Set2") +
+  coord_flip() +
+  labs(title = "Violin Plot of Sensitivity for Selected Parameters",
+       x = "Parameter",
+       y = "PCC Sensitivity") +
+  theme_bw()
+
+
 
 #create time series
 bac_dates <- ts(sim_dates, start=c(2004, 1), end=c(2014, 3865), frequency=3865)
 
 
-#simple ggplot
-dim(bac_pcc)
-pdf("pcc_ts_5000_45-0.2.pdf",width=11,height=8, onefile=TRUE)
-  for(i in 1:45){
-    data <- data.frame(
-      day = as.Date("2014-01-01") - 0:3864,
-      bac_value = bac_pcc[,i],
-      flows_value = flows_pcc[,i],
-      flux_value = flux_pcc[,i]
-    )
-    p <- ggplot(data, aes(x=day)) +
-      geom_line(aes(y=bac_value), color = "darkred") + 
-      geom_line(aes(y=flows_value), color = "steelblue", linetype="twodash") +
-      geom_line(aes(y=flux_value), color = "orange") +
-      xlab("") +
-      ylab("pcc sensitivity") +
-      ylim(-0.2,0.2)
-    print(p + ggtitle(colnames(bac_pcc)[i]))
-  }
-dev.off()
+##simple ggplot
+#dim(bac_pcc)
+#pdf("pcc_ts_5000_45-0.2.pdf",width=11,height=8, onefile=TRUE)
+#  for(i in 1:45){
+#    data <- data.frame(
+#      day = as.Date("2014-01-01") - 0:3864,
+#      bac_value = bac_pcc[,i],
+#      flows_value = flows_pcc[,i],
+#      flux_value = flux_pcc[,i]
+#    )
+#    p <- ggplot(data, aes(x=day)) +
+#      geom_line(aes(y=bac_value), color = "darkred") + 
+#      geom_line(aes(y=flows_value), color = "steelblue", linetype="twodash") +
+#      geom_line(aes(y=flux_value), color = "orange") +
+#      xlab("") +
+#      ylab("pcc sensitivity") +
+#      ylim(-0.2,0.2)
+#    print(p + ggtitle(colnames(bac_pcc)[i]))
+#  }
+#dev.off()
 
 
