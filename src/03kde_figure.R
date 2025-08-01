@@ -7,7 +7,7 @@ sds_matrix   <- matrix(runif(6 * 18, 0.5, 2), nrow = 6)  # shape: 6 x 18
 mins_matrix   <- matrix(runif(6 * 18, 0.5, 2), nrow = 6)  # shape: 6 x 18
 maxs_matrix   <- matrix(runif(6 * 18, 0.5, 2), nrow = 6)  # shape: 6 x 18
 
-parameter_names
+#parameter_names
 
 #"CN2.mgt|change = relchg"= runif(nsims, -0.3, 0.3), #
 mins_matrix[1:4,1] <- -0.25
@@ -154,9 +154,89 @@ df_curves <- parameters %>%
   ) %>%
   ungroup()
 
+colnames(df_curves)
+View(df_curves)
+
+# since these are overlapping kde plots can't use scales = free
+# need to manually specify the limits
+scales_xranges <- list(
+  scale_x_continuous(limits = c(X, X)), #
+  scale_x_continuous(limits = c(X, X)), #
+  scale_x_continuous(limits = c(X, X)) #
+  scale_x_continuous(limits = c(X, X)), #
+  scale_x_continuous(limits = c(X, X)), #
+  scale_x_continuous(limits = c(X, X)) #
+  scale_x_continuous(limits = c(X, X)), #
+  scale_x_continuous(limits = c(X, X)), #
+  scale_x_continuous(limits = c(X, X)) #
+  scale_x_continuous(limits = c(X, X)), #
+  scale_x_continuous(limits = c(X, X)), #
+  scale_x_continuous(limits = c(X, X)) #
+  scale_x_continuous(limits = c(X, X)), #
+  scale_x_continuous(limits = c(X, X)), #
+  scale_x_continuous(limits = c(X, X)) #
+  scale_x_continuous(limits = c(X, X)), #
+  scale_x_continuous(limits = c(X, X)), #
+  scale_x_continuous(limits = c(X, X)) #
+)
+#"CN2.mgt|change = relchg"= runif(nsims, -0.3, 0.3), #
+mins_matrix[1:4,1] <- -0.25
+maxs_matrix[1:4,1] <- 0.1
+#"GWQMN.gw|change = relchg" = runif(nsims, -0.5, 2), #
+mins_matrix[1:4,2] <- -0.5
+maxs_matrix[1:4,2] <- 0.5
+#"ALPHA_BNK.rte|change = absval" =runif(nsims, 0, 1), #large for flat recessions, and small for steep recessions
+mins_matrix[1:4,3] <- 0.5
+maxs_matrix[1:4,3] <- 1
+#"CH_K2.rte|change = absval" = runif(nsims, 0, 50), # changed from(0,250) 
+mins_matrix[1:4,4] <- 0
+maxs_matrix[1:4,4] <- 50
+#"CH_N2.rte|change = absval" = runif(nsims, 0.05, 0.15), # changed from (0,0.1) 
+mins_matrix[1:4,5] <- 0
+maxs_matrix[1:4,5] <- 0.1
+# TRNSRCH.bsn|change = absval" = runif(nsims, 0, 0.3), # default is 0.00
+mins_matrix[1:4,6] <- 0
+maxs_matrix[1:4,6] <- 0.3
+#CH_N1
+mins_matrix[1:4,7] <- 0
+maxs_matrix[1:4,7] <- 0.15
+#"CH_K1.sub|change = absval" = runif(nsims, 0, 120), #For prennial streams with continuous groundwater contribution, the effective conductivity will be zero.
+mins_matrix[1:4,8] <- 0
+maxs_matrix[1:4,8] <- 300
+#"RCHRG_DP.gw|change = absval" = runif(nsims, 0, 0.5), # default range is (0,1)
+mins_matrix[1:4,9] <- 0
+maxs_matrix[1:4,9] <- 1
+#"SFTMP.bsn|change = absval"= runif(nsims, -5, 5), # changed from (-2,2),default is 1.0
+mins_matrix[1:4,10] <- -5
+maxs_matrix[1:4,10] <- 5
+#"SMTMP.bsn|change = absval"= runif(nsims, -5, 5), # changed from (-2,2),default is 1.0
+mins_matrix[1:4,11] <- -5
+maxs_matrix[1:4,11] <-5
+#"DEP_IMP.hru|change = absval"= runif(nsims, 2000, 6000), # "generation 21 DEP_IMP 4010.712 31.167"
+mins_matrix[1:4,12] <- 0
+maxs_matrix[1:4,12] <- 6000
+#"DDRAIN.mgt|change = absval"= runif(nsims, 500, 1500), # "generation 21 DDRAIN 1105.285 107.537"
+mins_matrix[1:4,13] <- 0
+maxs_matrix[1:4,13] <- 2000
+#"GDRAIN.mgt|change = absval"= runif(nsims, 0, 50), # "generation 21 GDRAIN 24.686 11.354"
+mins_matrix[1:4,14] <- 0
+maxs_matrix[1:4,14] <- 72
+#BACKTKDQ
+mins_matrix[1:4,15] <- 0
+maxs_matrix[1:4,15] <- 500
+#BACT_SWF
+mins_matrix[1:4,16] <- 0
+maxs_matrix[1:4,16] <- 1
+#"THBACT.bsn|change = absval"= runif(nsims, 0, 2), # default value 1.07
+mins_matrix[1:4,17] <- 0
+maxs_matrix[1:4,17] <- 10
+#"WDPRCH.bsn|change = absval"= runif(nsims, 0, 1) # 
+mins_matrix[1:4,18] <- 0 
+maxs_matrix[1:4,18] <- 1
+
 ggplot(df_curves, aes(x = x, y = density, color = level)) +
   geom_line(size = 1) +
-  facet_wrap(~ panel, ncol = 6, scales = "free") +
+  facet_wrap(~ panel, ncol = 3, scales = "free_x") +
   theme_minimal() +
   labs(
     title = "Posterior Densities by Parameter (Truncated to Initial Uniform Prior)",
@@ -166,7 +246,18 @@ ggplot(df_curves, aes(x = x, y = density, color = level)) +
   scale_color_brewer(palette = "Set1")
 
 
-
+library(patchwork)
+plots <- lapply(
+  split(df_curves, df_curves$panel),
+  function(d) {
+    ggplot(d, aes(x = x, y = density, color = level)) +
+      geom_line(size = 1) +
+      xlim(min, max) +
+      theme_minimal() +
+      labs(x = "Value", y = "Density")
+  }
+)
+wrap_plots(plots, ncol = 6)
 
 
 

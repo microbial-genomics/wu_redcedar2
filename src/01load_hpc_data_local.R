@@ -33,15 +33,19 @@ if(Sys.info()[4]=="LZ26TPURUCKE-2"){
 data_in_dir <- file.path(of_root, "data_in")
 graphics_dir <- file.path(of_root, "graphics")
 src_dir <- file.path(of_root, "src")
-hpc_data <- file.path(of_root, "hpc_data", "sim57-flux-weekly")
+hpc_data <- file.path(of_root, "hpc_data", "sim56-flux-weekly")
 hpc_data_sensitivity <- file.path(of_root, "hpc_data", "sim56-sensitivity")
 
+# 0, 1, 5, 10, 15, 19
 # load parameters but in list format
 # 18 parameter fits for each variable
 load(file.path(hpc_data, "fitted_parameters0.RData"))
 fitted_parameter_list0 <- fitted_parameter_list
 str(fitted_parameter_list)
 fitted_parameter_list0[[2]]$estimate
+fitted_parameter_list0[[5]]$estimate
+fitted_parameter_list0[[8]]$estimate
+fitted_parameter_list0[[18]]$estimate
 
 load(file.path(hpc_data, "fitted_parameters1.RData"))
 fitted_parameter_list1 <- fitted_parameter_list
