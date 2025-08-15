@@ -223,7 +223,10 @@ vioplot(flows_pcc)
 vioplot(flux_pcc)
 dev.off()
 
-flux_pcc_sensitive <- flux_pcc[,]
+colnames(flux_pcc)
+
+flux_pcc_sensitive <- flux_pcc[,c(1,4,6,7,8,9,10,11,14,17,19,20,22,23,26,27,28,30,40,41)]
+vioplot(flux_pcc_sensitive, col="lightblue", colmed="")
 
 #create time series
 bac_dates <- ts(sim_dates, start=c(2004, 1), end=c(2014, 3865), frequency=3865)

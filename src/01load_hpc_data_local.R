@@ -107,6 +107,7 @@ dim(nses_parameters11)
 load(file.path(hpc_data, "parameter_input_sims0.RData"))
 parameter_inputs0 <- parameter_input_sims
 dim(parameter_inputs0)
+simulated_parameter_list <- colnames(parameter_inputs0)
 
 load(file.path(hpc_data, "parameter_input_sims3.RData"))
 parameter_inputs3 <- parameter_input_sims
@@ -145,4 +146,61 @@ load(file.path(hpc_data, "bac_cal11.RData"))
 bac_cal_output11 <- bac_cal_output
 str(bac_cal_output11)
 
+# these are the initial parameters (prior distributions) for the sensitivity analysis
+par_bound <- tibble(
+  #Hydrology
+  "CN2.mgt|change = relchg"= c(-0.3,0.3),
+  "SOL_K(1).sol|change = relchg" = c(-0.8,0.8),
+  "SOL_AWC(1).sol|change = relchg" = c(-0.8,2),
+  "OV_N.hru|change = relchg" = c(-0.8,2),
+  "ALPHA_BF.gw|change = relchg" = c(-0.3,0.3),
+  "GW_DELAY.gw|change = relchg" = c(-0.75,4),
+  "GWQMN.gw|change = relchg" = c(-0.5,2),
+  # "HRU_SLP.hru|change = absval" = c(0,1),
+  "SLSUBBSN.hru|change = relchg" = c(-0.5, 1),
+  "ALPHA_BNK.rte|change = absval" =c(0, 1),
+  "CH_K2.rte|change = absval" = c(0,50),
+  "CH_N2.rte|change = absval" = c(0.05, 0.15),
+  "ESCO.bsn |change = absval" = c(0, 1),
+  "EPCO.bsn|change = absval" = c(0, 1),
+  "TRNSRCH.bsn|change = absval" = c(0,0.3),
+  "SURLAG.bsn|change = absval" = c(1, 24),
+  "CH_N1.sub|change = absval" = c(0.05, 0.15),
+  "CH_K1.sub|change = absval" = c(0, 300),
+  "REVAPMN.gw |change = absval" = c(0, 1000),
+  "GW_REVAP.gw|change = absval" = c(0.02, 0.2),
+  "RCHRG_DP.gw|change = absval" = c(0, 1),
+  "GW_SPYLD.gw|change = absval" = c(0, 0.4),
+  "SFTMP.bsn|change = absval"= c(-5, 5),
+  "SMTMP.bsn|change = absval"= c(-5,5),
+  "SMFMX.bsn|change = absval"= c(0, 20),
+  "SMFMN.bsn|change = absval"= c(0, 20),
+  "TIMP.bsn|change = absval"= c(0.01, 1),
+  
+  #tile drainage and sediments
+  "DEP_IMP.hru|change = absval"= c(0,6000),
+  "DDRAIN.mgt|change = absval"= c(0, 2000),
+  "TDRAIN.mgt|change = absval"= c(0, 72),
+  "GDRAIN.mgt|change = absval"= c(0, 100),
+  "SPCON.bsn|change = absval"= c(0.0001, 0.01),
+  "SPEXP.bsn|change = absval"= c(1, 2),
+  "PRF_BSN.bsn|change = absval"= c(0.5, 2),
+  "ADJ_PKR.bsn|change = absval"= c(0.5, 2),
+  "BACTKDQ.bsn|change = absval" = c(0, 500),
+  "BACTMX.bsn|change = absval" = c(7, 20),
+  "BACT_SWF.bsn|change = absval" = c(0, 1),
+  "CFRT_KG.mgt|change = relchg" = c(0, 500),
+  "FRT_SURFACE.mgt|change = absval"= c(0, 1),
+  "THBACT.bsn|change = absval"= c(0, 10),
+  "WDPRCH.bsn|change = absval"= c(0, 1),
+  "WDPQ.bsn|change = absval"= c(0, 1),
+  #"WGPQ.bsn|change = absval"= c(0, 1),
+  "WDPS.bsn|change = absval"= c(0, 1),
+  #"WGPS.bsn|change = absval"= c(0, 1),
+  "WOF_P.bsn|change = absval"= c(0, 1),
+  "WDPRES.bsn|change = absval"= c(0, 1))
+
+par_bound
+dim(par_bound)
+colnames(par_bound)
 
