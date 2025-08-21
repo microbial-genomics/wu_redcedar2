@@ -1,114 +1,101 @@
-# Example: Replace these with your real data
+# create data set of distribution moments for kde figure
+simulated_parameter_list
 
 # change to NAs
-means_matrix <- matrix(runif(6 * 18, 0, 10), nrow = 6)   # shape: 6 x 18
-dim(means_matrix)
-sds_matrix   <- matrix(runif(6 * 18, 0.5, 2), nrow = 6)  # shape: 6 x 18
-mins_matrix   <- matrix(runif(6 * 18, 0.5, 2), nrow = 6)  # shape: 6 x 18
-maxs_matrix   <- matrix(runif(6 * 18, 0.5, 2), nrow = 6)  # shape: 6 x 18
+moments_matrix1 <- matrix(NA, nrow = 6, ncol=18)   # shape: 6 x 18
+moments_matrix2 <- matrix(NA, nrow = 6, ncol=18)   # shape: 6 x 18
+
+colnames(moments_matrix1) <- simulated_parameter_list
+colnames(moments_matrix2) <- simulated_parameter_list
 
 #parameter_names
+# manually input original priors for sensitivity analysis
+# these are mins and maxes of a uniform for the initial sensitivity analysis
+# CN2.mgt|change = relchg= c(-0.3,0.3)
+moments_matrix1[1,1] <- -0.3
+moments_matrix2[1,1] <- 0.3
+# GWQMN.gw|change = relchg = c(-0.5,2)
+moments_matrix1[1,2] <- -0.5
+moments_matrix2[1,2] <- 2
+# ALPHA_BNK.rte|change = absval =c(0, 1) #large for flat recessions, and small for steep recessions
+moments_matrix1[1,3] <- 0
+moments_matrix2[1,3] <- 1
+# CH_K2.rte|change = absval = c(0,50), # changed from(0,250) 
+moments_matrix1[1,4] <- 0
+moments_matrix2[1,4] <- 50
+# CH_N2.rte|change = absval = c(0.05, 0.15), # changed from (0,0.1) 
+moments_matrix1[1,5] <- 0.05
+moments_matrix2[1,5] <- 0.15
+# TRNSRCH.bsn|change = absval = c(0,0.3) # default is 0.00
+moments_matrix1[1,6] <- 0
+moments_matrix2[1,6] <- 0.3
+# CH_N1.sub|change = absval = c(0.05, 0.15)
+moments_matrix1[1,7] <- 0.05
+moments_matrix2[1,7] <- 0.15
+# CH_K1.sub|change = absval = c(0, 300) #For perennial streams with continuous groundwater contribution, the effective conductivity will be zero.
+moments_matrix1[1,8] <- 0
+moments_matrix2[1,8] <- 300
+# RCHRG_DP.gw|change = absval = c(0, 1) # default range is (0,1)
+moments_matrix1[1,9] <- 0
+moments_matrix2[1,9] <- 1
+# SFTMP.bsn|change = absval= c(-5, 5) # changed from (-2,2),default is 1.0
+moments_matrix1[1,10] <- -5
+moments_matrix2[1,10] <- 5
+# SMTMP.bsn|change = absval= c(-5,5) # changed from (-2,2), default is 1.0
+moments_matrix1[1,11] <- -5
+moments_matrix2[1,11] <- 5
+# DEP_IMP.hru|change = absval= c(0,6000) # "generation 21 DEP_IMP 4010.712 31.167"
+moments_matrix1[1,12] <- 0
+moments_matrix2[1,12] <- 6000
+# DDRAIN.mgt|change = absval= c(0, 2000) # "generation 21 DDRAIN 1105.285 107.537"
+moments_matrix1[1,13] <- 0
+moments_matrix2[1,13] <- 2000
+# GDRAIN.mgt|change = absval= c(0, 100) # "generation 21 GDRAIN 24.686 11.354"
+moments_matrix1[1,14] <- 0
+moments_matrix2[1,14] <-100
+# BACTKDQ.bsn|change = absval = c(0, 500)
+moments_matrix1[1,15] <- 0
+moments_matrix2[1,15] <- 500
+# BACT_SWF.bsn|change = absval = c(0, 1)
+moments_matrix1[1,16] <- 0
+moments_matrix2[1,16] <- 1
+# THBACT.bsn|change = absval= c(0, 10) # default value 1.07
+moments_matrix1[1,17] <- 0
+moments_matrix2[1,17] <- 10
+# WDPRCH.bsn|change = absval= c(0, 1) # 
+moments_matrix1[1,18] <- 0 
+moments_matrix2[1,18] <- 1
 
-#"CN2.mgt|change = relchg"= runif(nsims, -0.3, 0.3), #
-mins_matrix[1:4,1] <- -0.25
-maxs_matrix[1:4,1] <- 0.1
-#"GWQMN.gw|change = relchg" = runif(nsims, -0.5, 2), #
-mins_matrix[1:4,2] <- -0.5
-maxs_matrix[1:4,2] <- 0.5
-#"ALPHA_BNK.rte|change = absval" =runif(nsims, 0, 1), #large for flat recessions, and small for steep recessions
-mins_matrix[1:4,3] <- 0.5
-maxs_matrix[1:4,3] <- 1
-#"CH_K2.rte|change = absval" = runif(nsims, 0, 50), # changed from(0,250) 
-mins_matrix[1:4,4] <- 0
-maxs_matrix[1:4,4] <- 50
-#"CH_N2.rte|change = absval" = runif(nsims, 0.05, 0.15), # changed from (0,0.1) 
-mins_matrix[1:4,5] <- 0
-maxs_matrix[1:4,5] <- 0.1
-# TRNSRCH.bsn|change = absval" = runif(nsims, 0, 0.3), # default is 0.00
-mins_matrix[1:4,6] <- 0
-maxs_matrix[1:4,6] <- 0.3
-#CH_N1
-mins_matrix[1:4,7] <- 0
-maxs_matrix[1:4,7] <- 0.15
-#"CH_K1.sub|change = absval" = runif(nsims, 0, 120), #For prennial streams with continuous groundwater contribution, the effective conductivity will be zero.
-mins_matrix[1:4,8] <- 0
-maxs_matrix[1:4,8] <- 300
-#"RCHRG_DP.gw|change = absval" = runif(nsims, 0, 0.5), # default range is (0,1)
-mins_matrix[1:4,9] <- 0
-maxs_matrix[1:4,9] <- 1
-#"SFTMP.bsn|change = absval"= runif(nsims, -5, 5), # changed from (-2,2),default is 1.0
-mins_matrix[1:4,10] <- -5
-maxs_matrix[1:4,10] <- 5
-#"SMTMP.bsn|change = absval"= runif(nsims, -5, 5), # changed from (-2,2),default is 1.0
-mins_matrix[1:4,11] <- -5
-maxs_matrix[1:4,11] <-5
-#"DEP_IMP.hru|change = absval"= runif(nsims, 2000, 6000), # "generation 21 DEP_IMP 4010.712 31.167"
-mins_matrix[1:4,12] <- 0
-maxs_matrix[1:4,12] <- 6000
-#"DDRAIN.mgt|change = absval"= runif(nsims, 500, 1500), # "generation 21 DDRAIN 1105.285 107.537"
-mins_matrix[1:4,13] <- 0
-maxs_matrix[1:4,13] <- 2000
-#"GDRAIN.mgt|change = absval"= runif(nsims, 0, 50), # "generation 21 GDRAIN 24.686 11.354"
-mins_matrix[1:4,14] <- 0
-maxs_matrix[1:4,14] <- 72
-#BACKTKDQ
-mins_matrix[1:4,15] <- 0
-maxs_matrix[1:4,15] <- 500
-#BACT_SWF
-mins_matrix[1:4,16] <- 0
-maxs_matrix[1:4,16] <- 1
-#"THBACT.bsn|change = absval"= runif(nsims, 0, 2), # default value 1.07
-mins_matrix[1:4,17] <- 0
-maxs_matrix[1:4,17] <- 10
-#"WDPRCH.bsn|change = absval"= runif(nsims, 0, 1) # 
-mins_matrix[1:4,18] <- 0 
-maxs_matrix[1:4,18] <- 1
+moments_matrix1
+moments_matrix2
   
-# not carried forward?
-#"OV_N.hru|change = relchg" = runif(nsims, 0.01, 0.4),
-#"GW_DELAY.gw|change = relchg" = runif(nsims, -0.75,4),
-#"SLSUBBSN.hru|change = relchg" = runif(nsims, -0.5, 1),
-#"GW_REVAP.gw|change = absval" = runif(nsims, 0.02, 0.2),
-#"TIMP.bsn|change = absval"= runif(nsims, 0.01, 1),
-
-# assign values
+# assign values of the posterior fitted distribution
+# after each generation to display
+fitted_parameter_list0
 for(i in 1:18){
-  means_matrix[1,i] <- fitted_parameter_list0[[i]]$estimate[[1]]
-  sds_matrix[1,i]<- fitted_parameter_list0[[i]]$estimate[[2]]
-  means_matrix[2,i] <- fitted_parameter_list1[[i]]$estimate[[1]]
-  sds_matrix[2,i]<- fitted_parameter_list1[[i]]$estimate[[2]]
-  means_matrix[3,i] <- fitted_parameter_list4[[i]]$estimate[[1]]
-  sds_matrix[3,i]<- fitted_parameter_list4[[i]]$estimate[[2]]
-  means_matrix[4,i] <- fitted_parameter_list7[[i]]$estimate[[1]]
-  sds_matrix[4,i]<- fitted_parameter_list7[[i]]$estimate[[2]]
-  means_matrix[5,i] <- fitted_parameter_list10[[i]]$estimate[[1]]
-  sds_matrix[5,i]<- fitted_parameter_list10[[i]]$estimate[[2]]
-  means_matrix[6,i] <- fitted_parameter_list13[[i]]$estimate[[1]]
-  sds_matrix[6,i]<- fitted_parameter_list13[[i]]$estimate[[2]]
+  moments_matrix1[2,i] <- fitted_parameter_list0[[i]]$estimate[[1]]
+  moments_matrix2[2,i]<- fitted_parameter_list0[[i]]$estimate[[2]]
+  moments_matrix1[3,i] <- fitted_parameter_list3[[i]]$estimate[[1]]
+  moments_matrix2[3,i]<- fitted_parameter_list3[[i]]$estimate[[2]]
+  moments_matrix1[4,i] <- fitted_parameter_list6[[i]]$estimate[[1]]
+  moments_matrix2[4,i]<- fitted_parameter_list6[[i]]$estimate[[2]]
+  moments_matrix1[5,i] <- fitted_parameter_list9[[i]]$estimate[[1]]
+  moments_matrix2[5,i]<- fitted_parameter_list9[[i]]$estimate[[2]]
+  moments_matrix1[6,i] <- fitted_parameter_list11[[i]]$estimate[[1]]
+  moments_matrix2[6,i]<- fitted_parameter_list11[[i]]$estimate[[2]]
 }
+moments_matrix1
+moments_matrix2
 
 # Assign level and panel names
-levels <- c("gen0", "gen1", "gen4", "gen7", "gen10", "gen13")
-levels <- factor(levels, levels = c("gen0", "gen1", "gen4", "gen7", "gen10", "gen13"))
-levels <- fct_relevel(levels, "gen0", "gen1", "gen4", "gen7", "gen10", "gen13")
+levels <- c("gen0", "gen1", "gen4", "gen7", "gen10", "gen12")
+#levels <- factor(levels, levels = c("gen0", "gen3", "gen6", "gen9", "gen11"))
+#levels <- fct_relevel(levels, "gen0", "gen3", "gen6", "gen9", "gen11")
 
+rownames(moments_matrix1) <- levels
+rownames(moments_matrix2) <- levels
 
-panels <- parameter_names
-rownames(means_matrix) <- levels
-rownames(sds_matrix) <- levels
-rownames(mins_matrix) <- levels
-rownames(maxs_matrix) <- levels
-colnames(means_matrix) <- panels
-colnames(sds_matrix) <- panels
-colnames(mins_matrix) <- panels
-colnames(maxs_matrix) <- panels
-
-means_matrix
-sds_matrix
-mins_matrix
-maxs_matrix
-
-
+# stopping here 8/21/2025
 
 # Convert to tidy long format
 means_long <- as.data.frame(means_matrix) %>%
@@ -179,60 +166,7 @@ scales_xranges <- list(
   scale_x_continuous(limits = c(X, X)), #
   scale_x_continuous(limits = c(X, X)) #
 )
-#"CN2.mgt|change = relchg"= runif(nsims, -0.3, 0.3), #
-mins_matrix[1:4,1] <- -0.25
-maxs_matrix[1:4,1] <- 0.1
-#"GWQMN.gw|change = relchg" = runif(nsims, -0.5, 2), #
-mins_matrix[1:4,2] <- -0.5
-maxs_matrix[1:4,2] <- 0.5
-#"ALPHA_BNK.rte|change = absval" =runif(nsims, 0, 1), #large for flat recessions, and small for steep recessions
-mins_matrix[1:4,3] <- 0.5
-maxs_matrix[1:4,3] <- 1
-#"CH_K2.rte|change = absval" = runif(nsims, 0, 50), # changed from(0,250) 
-mins_matrix[1:4,4] <- 0
-maxs_matrix[1:4,4] <- 50
-#"CH_N2.rte|change = absval" = runif(nsims, 0.05, 0.15), # changed from (0,0.1) 
-mins_matrix[1:4,5] <- 0
-maxs_matrix[1:4,5] <- 0.1
-# TRNSRCH.bsn|change = absval" = runif(nsims, 0, 0.3), # default is 0.00
-mins_matrix[1:4,6] <- 0
-maxs_matrix[1:4,6] <- 0.3
-#CH_N1
-mins_matrix[1:4,7] <- 0
-maxs_matrix[1:4,7] <- 0.15
-#"CH_K1.sub|change = absval" = runif(nsims, 0, 120), #For prennial streams with continuous groundwater contribution, the effective conductivity will be zero.
-mins_matrix[1:4,8] <- 0
-maxs_matrix[1:4,8] <- 300
-#"RCHRG_DP.gw|change = absval" = runif(nsims, 0, 0.5), # default range is (0,1)
-mins_matrix[1:4,9] <- 0
-maxs_matrix[1:4,9] <- 1
-#"SFTMP.bsn|change = absval"= runif(nsims, -5, 5), # changed from (-2,2),default is 1.0
-mins_matrix[1:4,10] <- -5
-maxs_matrix[1:4,10] <- 5
-#"SMTMP.bsn|change = absval"= runif(nsims, -5, 5), # changed from (-2,2),default is 1.0
-mins_matrix[1:4,11] <- -5
-maxs_matrix[1:4,11] <-5
-#"DEP_IMP.hru|change = absval"= runif(nsims, 2000, 6000), # "generation 21 DEP_IMP 4010.712 31.167"
-mins_matrix[1:4,12] <- 0
-maxs_matrix[1:4,12] <- 6000
-#"DDRAIN.mgt|change = absval"= runif(nsims, 500, 1500), # "generation 21 DDRAIN 1105.285 107.537"
-mins_matrix[1:4,13] <- 0
-maxs_matrix[1:4,13] <- 2000
-#"GDRAIN.mgt|change = absval"= runif(nsims, 0, 50), # "generation 21 GDRAIN 24.686 11.354"
-mins_matrix[1:4,14] <- 0
-maxs_matrix[1:4,14] <- 72
-#BACKTKDQ
-mins_matrix[1:4,15] <- 0
-maxs_matrix[1:4,15] <- 500
-#BACT_SWF
-mins_matrix[1:4,16] <- 0
-maxs_matrix[1:4,16] <- 1
-#"THBACT.bsn|change = absval"= runif(nsims, 0, 2), # default value 1.07
-mins_matrix[1:4,17] <- 0
-maxs_matrix[1:4,17] <- 10
-#"WDPRCH.bsn|change = absval"= runif(nsims, 0, 1) # 
-mins_matrix[1:4,18] <- 0 
-maxs_matrix[1:4,18] <- 1
+
 
 ggplot(df_curves, aes(x = x, y = density, color = level)) +
   geom_line(size = 1) +

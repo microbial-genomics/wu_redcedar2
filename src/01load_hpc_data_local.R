@@ -22,6 +22,7 @@ library(lhs)
 library(hydroGOF)
 library(forcats)
 library(lubridate)
+library(ggtext)
 
 
 ## setup root directory path

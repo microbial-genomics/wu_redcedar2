@@ -26,10 +26,11 @@ str(bac_cal1)
 sim_parameters <- bac_cal1$parameter$value
 dim(sim_parameters)
 #View(sim_parameters)
-colnames(sim_parameters)
+
 #fix problematic colnames
 colnames(sim_parameters)[2] <- "SOL_K"
 colnames(sim_parameters)[3] <- "SOL_AWC"
+full_parameter_list <- colnames(sim_parameters)
 
 ### resolving parameter names
 # sensitivity output list
@@ -96,31 +97,6 @@ sim_flux_maxs <- rowMaxs(sim_flux3)
 pcc(sim_parameters, sim_flux_maxs)
 
 
-#########daily pcc for bacteria and flow
-#daily_bac_pcc <- matrix(data=NA, nrow=3865, ncol=45)
-#daily_flows_pcc <- matrix(data=NA, nrow=3865, ncol=45)
-#daily_flux_pcc <- matrix(data=NA, nrow=3865, ncol=45)
-#for(i in 1:3865){
-#  print(i)
-#  daily_bac_pcc <- pcc(sim_parameters, sim_bac_concs3[,i])
-#  daily_flows_pcc <- pcc(sim_parameters, sim_flows3[,i])
-#  daily_flux_pcc <- pcc(sim_parameters, sim_flux3[,i])
-#  length(bac_pcc[i,])
-#  length(t(daily_bac_pcc$PCC))
-#  bac_pcc[i,] <- t(daily_bac_pcc$PCC)
-#  flows_pcc[i,] <- t(daily_flows_pcc$PCC)
-#  flux_pcc[i,] <- t(daily_flux_pcc$PCC)
-#}
-
-#print violin plot
-#mklab <- function(y_var){
-#  if(y_var){
-#    names(mf)[response]
-#  } else {
-#    paste(names(mf)[-response], collapse = " : ")
-#  }
-#}
-
 
 dim(bac_pcc)
 colnames(bac_pcc) <- colnames(sim_parameters)
@@ -142,28 +118,77 @@ long_combined_pcc <- pivot_longer(combined_pcc,
                               names_to = "Parameter", 
                               values_to = "Value")
 
-# Make the stacked violin plot
-pcc_plot_appendix <- ggplot(long_combined_pcc, aes(x = Parameter, y = Value, fill = Parameter)) +
+# which parameters from the sensitivity analysis are kept?
+simulated_parameter_list #18
+full_parameter_list #45
+alphabetical_parameter_list <- sort(full_parameter_list)
+alphabetical_parameter_list
+alphabetical_sensitive_parameter_positions <- sort(match(simulated_parameter_list, alphabetical_parameter_list))
+print(alphabetical_sensitive_parameter_positions)
+
+# color them differently (red) than the ones that are dropped
+my_labels <- alphabetical_parameter_list
+highlight_indices <- alphabetical_sensitive_parameter_positions
+label_colors <- ifelse(seq_along(alphabetical_parameter_list) %in% highlight_indices, "red", "black")
+# Create labels with <span> for coloring
+my_labels_colored <- paste0(
+  "<span style='color:", label_colors, "'>", my_labels, "</span>"
+)
+
+# Make the stacked violin plot of all 45 parameters for the appendix
+pcc_plot_appendix1 <- ggplot(long_combined_pcc, aes(x = Parameter, y = Value, fill = Parameter)) +
   geom_violin(scale = "width", trim = TRUE) +
   facet_grid(rows = vars(Dataset), scales = "free_y", switch = "y") +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
         legend.position = "none")
-pcc_plot_appendix
+pcc_plot_appendix1
+
+pcc_plot_appendix2 <- ggplot(long_combined_pcc, aes(x = Parameter, y = Value, fill = Parameter)) +
+  geom_violin(scale = "width", trim = TRUE) +
+  facet_grid(rows = vars(Dataset), scales = "free_y", switch = "y") +
+  scale_x_discrete(labels = my_labels_colored) +
+  theme_bw() +
+  theme(axis.text.x = ggtext::element_markdown(angle = 90, vjust = 0.5, hjust=1),
+        legend.position = "none")
+pcc_plot_appendix2
 
 
-# pdf(paste("pcc_violin_50000_45.pdf",sep=""),width=55,height=30,onefile=TRUE)
-#   vioplot(bac_pcc)
-#   vioplot(flows_pcc)
-#   vioplot(flux_pcc)
-# dev.off()
+png(paste(file.path(graphics_dir, "pcc_plot_appendix_45parameters.png")), 
+    width=11, height=8, units="in", res=300)
+   pcc_plot_appendix2
+dev.off()
 
-#pdf("pcc_violin_5000_45.pdf",width=55,height=30,onefile=TRUE)
-vioplot(bac_pcc)
-vioplot(flows_pcc)
-vioplot(flux_pcc)
-#dev.off()
+#####
+# filter long_combined_pcc to sensitive parameters for main text figure
+colnames(long_combined_pcc)
+unique(long_combined_pcc$Parameter)
 
+simulated_parameter_list #18
+
+short_combined_pcc <- long_combined_pcc %>%
+  filter(Parameter %in% simulated_parameter_list)
+unique(short_combined_pcc$Parameter)
+
+# Make the stacked violin plot of the 18 selected sensitive parameters for the main text
+pcc_plot_maintext <- ggplot(short_combined_pcc, aes(x = Parameter, y = Value, fill = Parameter)) +
+  geom_violin(scale = "width", trim = TRUE) +
+  facet_grid(rows = vars(Dataset), scales = "free_y", switch = "y") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+        legend.position = "none")
+pcc_plot_maintext
+
+png(paste(file.path(graphics_dir, "pcc_plot_maintext_18parameters.png")), 
+    width=11, height=8, units="in", res=300)
+  pcc_plot_maintext
+dev.off()
+
+
+
+
+
+######################################################################
 colnames(flux_pcc)
 flux_pcc_sensitive <- flux_pcc[,c(1,4,6,7,8,9,10,11,14,17,19,20,22,23,26,27,28,30,40,41)]
 colnames(flux_pcc_sensitive)
