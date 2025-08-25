@@ -23,7 +23,26 @@ library(hydroGOF)
 library(forcats)
 library(lubridate)
 library(ggtext)
-
+#library(devtools)
+#library(dplyr)
+#library(dygraphs)
+##library(fast) #error
+#library(forcats)
+#library(ggplot2)
+#library(hydroGOF)
+#library(lhs)
+#library(lubridate)
+#library(mapview)
+#library(plotly)
+#library(purrr)
+#library(sensitivity)
+#library(sf)
+#library(tibble)
+#library(tidyr)
+#library(fitdistrplus)
+#library(truncnorm)
+#library(xts)
+#require(data.table) # load it
 
 ## setup root directory path
 if(Sys.info()[4]=="LZ26TPURUCKE-2"){
