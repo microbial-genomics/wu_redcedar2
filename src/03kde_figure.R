@@ -22,13 +22,13 @@ moments_matrix1[1,3] <- 0
 moments_matrix2[1,3] <- 1
 # CH_K2.rte|change = absval = c(0,50), # changed from(0,250) 
 moments_matrix1[1,4] <- 0
-moments_matrix2[1,4] <- 50
+moments_matrix2[1,4] <- 250
 # CH_N2.rte|change = absval = c(0.05, 0.15), # changed from (0,0.1) 
-moments_matrix1[1,5] <- 0.05
+moments_matrix1[1,5] <- 0
 moments_matrix2[1,5] <- 0.15
 # TRNSRCH.bsn|change = absval = c(0,0.3) # default is 0.00
 moments_matrix1[1,6] <- 0
-moments_matrix2[1,6] <- 0.3
+moments_matrix2[1,6] <- 1
 # CH_N1.sub|change = absval = c(0.05, 0.15)
 moments_matrix1[1,7] <- 0.05
 moments_matrix2[1,7] <- 0.15
@@ -84,51 +84,66 @@ for(i in 1:18){
   moments_matrix1[6,i] <- fitted_parameter_list11[[i]]$estimate[[1]]
   moments_matrix2[6,i]<- fitted_parameter_list11[[i]]$estimate[[2]]
 }
-moments_matrix1
-moments_matrix2
 
 # Assign level and panel names
 levels <- c("gen0", "gen1", "gen4", "gen7", "gen10", "gen12")
-#levels <- factor(levels, levels = c("gen0", "gen3", "gen6", "gen9", "gen11"))
-#levels <- fct_relevel(levels, "gen0", "gen3", "gen6", "gen9", "gen11")
+
 
 rownames(moments_matrix1) <- levels
 rownames(moments_matrix2) <- levels
 
-# stopping here 8/21/2025
+means_matrix <- moments_matrix1[2:6,]
+sds_matrix <- moments_matrix2[2:6,]
+mins_matrix <- means_matrix
+maxs_matrix <- sds_matrix
+
+dim(mins_matrix)
+for(i in 1:5){
+  mins_matrix[i,] <- moments_matrix1[1,]
+  maxs_matrix[i,] <- moments_matrix2[1,]
+}
 
 # Convert to tidy long format
 means_long <- as.data.frame(means_matrix) %>%
   mutate(level = rownames(means_matrix)) %>%
   pivot_longer(-level, names_to = "panel", values_to = "mean")
+means_long
+dim(means_long)
 
 sds_long <- as.data.frame(sds_matrix) %>%
   mutate(level = rownames(sds_matrix)) %>%
   pivot_longer(-level, names_to = "panel", values_to = "sd")
+sds_long
+dim(sds_long)
 
 mins_long <- as.data.frame(mins_matrix) %>%
   mutate(level = rownames(mins_matrix)) %>%
   pivot_longer(-level, names_to = "panel", values_to = "mins")
+dim(mins_long)
 
 maxs_long <- as.data.frame(maxs_matrix) %>%
   mutate(level = rownames(maxs_matrix)) %>%
   pivot_longer(-level, names_to = "panel", values_to = "maxs")
+dim(maxs_long)
 
 parameters2 <- left_join(means_long, sds_long, by = c("level", "panel"))
+dim(parameters2)
 parameters1 <- left_join(parameters2, mins_long, by = c("level", "panel"))
+dim(parameters1)
 parameters <- as.data.frame(left_join(parameters1, maxs_long, by = c("level", "panel")))
-
-parameters
+dim(parameters)
 colnames(parameters)
 
 
 
 # Suppose your long data is in a dataframe called 'df'
+# this is creating points between the min and max for each parameter
+# but seems to have gone poorly
 df_curves <- parameters %>%
   group_by(panel, level) %>%
   group_modify(
     ~{
-      x = seq(.x$mins, .x$maxs, length.out = 200)
+      x = seq(.x$mins, .x$maxs, length.out = 1000)
       data.frame(
         x = x,
         density = dnorm(x, mean = .x$mean, sd = .x$sd),
@@ -140,45 +155,64 @@ df_curves <- parameters %>%
     }
   ) %>%
   ungroup()
+View(df_curves)
+dim(df_curves)
+levels(df_curves$level)
+unique(df_curves$level)
+df_curves$level <- factor(df_curves$level, levels = c("gen1", "gen4", "gen7", "gen10", "gen12"))
+#df_curves$level <- fct_relevel(levels, "gen1", "gen4", "gen7", "gen10", "gen12")
+levels(df_curves$level)
 
 colnames(df_curves)
 View(df_curves)
 
+library(ggh4x)
 # since these are overlapping kde plots can't use scales = free
 # need to manually specify the limits
-scales_xranges <- list(
-  scale_x_continuous(limits = c(X, X)), #
-  scale_x_continuous(limits = c(X, X)), #
-  scale_x_continuous(limits = c(X, X)) #
-  scale_x_continuous(limits = c(X, X)), #
-  scale_x_continuous(limits = c(X, X)), #
-  scale_x_continuous(limits = c(X, X)) #
-  scale_x_continuous(limits = c(X, X)), #
-  scale_x_continuous(limits = c(X, X)), #
-  scale_x_continuous(limits = c(X, X)) #
-  scale_x_continuous(limits = c(X, X)), #
-  scale_x_continuous(limits = c(X, X)), #
-  scale_x_continuous(limits = c(X, X)) #
-  scale_x_continuous(limits = c(X, X)), #
-  scale_x_continuous(limits = c(X, X)), #
-  scale_x_continuous(limits = c(X, X)) #
-  scale_x_continuous(limits = c(X, X)), #
-  scale_x_continuous(limits = c(X, X)), #
-  scale_x_continuous(limits = c(X, X)) #
+scales_xranges <- list( # customize each facet x axis range
+  scale_x_continuous(limits = c(0, 1)), # ALPHA_BNK
+  scale_x_continuous(limits = c(0, 1)), # BACT_SWF
+  scale_x_continuous(limits = c(0, 500)), # BACTKDQ
+  scale_x_continuous(limits = c(0, 300)), # CH_K1
+  scale_x_continuous(limits = c(0, 250)), # CH_K2 50 max
+  scale_x_continuous(limits = c(0.05, 0.15)), # CH_N1
+  scale_x_continuous(limits = c(0, 0.15)), # CH_N2 0.05 min
+  scale_x_continuous(limits = c(-0.3, 0.3)), # CN2
+  scale_x_continuous(limits = c(0, 2000)), # DDRAIN
+  scale_x_continuous(limits = c(0, 6000)), # DEP_IMP
+  scale_x_continuous(limits = c(0, 100)), # GDRAIN
+  scale_x_continuous(limits = c(-0.5, 2)), # GWQMN
+  scale_x_continuous(limits = c(0, 1)), # RCHRG_DP
+  scale_x_continuous(limits = c(-5, 5)), # SFTMP
+  scale_x_continuous(limits = c(-5, 5)), # SMTMP
+  scale_x_continuous(limits = c(0, 10)), # THBACT
+  scale_x_continuous(limits = c(0, 1)), # TRNSRCH 0.3 max
+  scale_x_continuous(limits = c(0, 1)) # WDPRCH
 )
 
-
-ggplot(df_curves, aes(x = x, y = density, color = level)) +
+View(df_curves)
+parameter_evolution_plot <- ggplot(df_curves, aes(x = x, y = density, color = level)) +
   geom_line(size = 1) +
-  facet_wrap(~ panel, ncol = 3, scales = "free_x") +
+  facet_wrap(~ panel, ncol = 3, scales="free") +
+  facetted_pos_scales(x = scales_xranges) +
   theme_minimal() +
   labs(
     title = "Posterior Densities by Parameter (Truncated to Initial Uniform Prior)",
     x = "Value",
     y = "Density"
   ) +
-  scale_color_brewer(palette = "Set1")
+  scale_color_brewer(palette = "PuBuGn")
 
+parameter_evolution_plot
+
+png(paste(file.path(graphics_dir, "parameter_evolution_plot_maintext.png")), 
+    width=8, height=10, units="in", res=300)
+  parameter_evolution_plot
+dev.off()
+
+
+
+################################################################
 
 library(patchwork)
 plots <- lapply(
