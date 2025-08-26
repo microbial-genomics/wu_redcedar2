@@ -3,7 +3,7 @@
 ####################################
 # simulated concentrations for final generation
 daily_conc_sims <- bac_cal_output11$simulation$bac_out
-dim(daily_conc_sims)
+dim(daily_conc_sims) #3865
 class(daily_conc_sims)
 
 #### daily bacteria concentration #### 
@@ -20,7 +20,16 @@ length(sim_date)
 
 # find the keepers ...
 # THIS IS IMPORTANT, CRAP SIMS ARE STILL INCLUDED
+generation_stats
 
+nses_parameters11
+dim(nses_parameters11)
+
+str(bac_cal_output11)
+str(bac_cal_output11$parameter$values)
+str(bac_cal_output11$parameter$definition)
+str(bac_cal_output11$simulation$bac_out)
+str(bac_cal_output11$simulation$q_out)
 
 # date<-as.vector(conc[,1])
 # length(date)

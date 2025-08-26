@@ -10,16 +10,6 @@ dim(flows_pcc)
 load(file.path(hpc_data_sensitivity, "flux_pcc.RData"))
 dim(flux_pcc)
 
-# empirical flow observations
-load(file.path(hpc_data_sensitivity, "q_obs.RData"))
-dim(q_obs)
-colnames(q_obs)
-
-# empirical bacteria concentrations
-load(file.path(hpc_data_sensitivity, "bac_obs.RData"))
-dim(bac_obs)
-colnames(bac_obs)
-
 # sensitivity analysis inputs and evaluation
 load(file.path(hpc_data_sensitivity, "bac_sensitivity.RData"))
 str(bac_cal1)
@@ -144,9 +134,14 @@ pcc_plot_appendix1 <- ggplot(long_combined_pcc, aes(x = Parameter, y = Value, fi
         legend.position = "none")
 pcc_plot_appendix1
 
+
+my_palette <- colorRampPalette(brewer.pal(9, "GnBu"))
+colors45 <- my_palette(90)[11:55]
 pcc_plot_appendix2 <- ggplot(long_combined_pcc, aes(x = Parameter, y = Value, fill = Parameter)) +
   geom_violin(scale = "width", trim = TRUE) +
   facet_grid(rows = vars(Dataset), scales = "free_y", switch = "y") +
+  scale_fill_manual(values = colors45) +
+  stat_summary(fun = median, geom = "point", color = "red", size = 1) +
   scale_x_discrete(labels = my_labels_colored) +
   theme_bw() +
   theme(axis.text.x = ggtext::element_markdown(angle = 90, vjust = 0.5, hjust=1),
@@ -171,9 +166,13 @@ short_combined_pcc <- long_combined_pcc %>%
 unique(short_combined_pcc$Parameter)
 
 # Make the stacked violin plot of the 18 selected sensitive parameters for the main text
+my_palette <- colorRampPalette(brewer.pal(9, "GnBu"))
+colors18 <- my_palette(40)[11:28]
 pcc_plot_maintext <- ggplot(short_combined_pcc, aes(x = Parameter, y = Value, fill = Parameter)) +
   geom_violin(scale = "width", trim = TRUE) +
   facet_grid(rows = vars(Dataset), scales = "free_y", switch = "y") +
+  scale_fill_manual(values = colors18) +
+  stat_summary(fun = median, geom = "point", color = "red", size = 1) +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
         legend.position = "none")

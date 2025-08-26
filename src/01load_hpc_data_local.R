@@ -23,6 +23,7 @@ library(hydroGOF)
 library(forcats)
 library(lubridate)
 library(ggtext)
+library(RColorBrewer)
 #library(devtools)
 #library(dplyr)
 #library(dygraphs)
@@ -223,4 +224,21 @@ par_bound <- tibble(
 par_bound
 dim(par_bound)
 colnames(par_bound)
+
+# empirical observations
+# empirical flow observations
+load(file.path(hpc_data_sensitivity, "q_obs.RData"))
+dim(q_obs)
+colnames(q_obs)
+
+# empirical bacteria concentrations
+load(file.path(hpc_data_sensitivity, "bac_obs.RData"))
+dim(bac_obs)
+colnames(bac_obs)
+
+# rainfall
+load(file.path(hpc_data_sensitivity, "pcp_obs.RData"))
+dim(pcp_obs)
+colnames(pcp_obs)
+
 
