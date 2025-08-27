@@ -123,6 +123,7 @@ dim(nses_parameters9)
 load(file.path(hpc_data, "nses_parameters11.RData"))
 nses_parameters11 <- nses_parameters
 dim(nses_parameters11)
+# View(nses_parameters11)
 
 # parameter inputs for each generation
 load(file.path(hpc_data, "parameter_input_sims0.RData"))

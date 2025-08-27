@@ -17,31 +17,31 @@ class(daily_conc_sims)
 sim_date <- daily_conc_sims$date
 class(sim_date)
 length(sim_date)
+sim_date
 
 # find the keepers ...
-# THIS IS IMPORTANT, CRAP SIMS ARE STILL INCLUDED
 generation_stats
-
+# nses_parameters files has all the keepers and the rejected simulations
 nses_parameters11
 dim(nses_parameters11)
-
 str(bac_cal_output11)
 str(bac_cal_output11$parameter$values)
 str(bac_cal_output11$parameter$definition)
 str(bac_cal_output11$simulation$bac_out)
 str(bac_cal_output11$simulation$q_out)
 
-# date<-as.vector(conc[,1])
-# length(date)
-# nrow(date)
-# dim(date)
-# class(date)
+# strip out numbers of keepers
+keepers_text <- rownames(nses_parameters11)
+keepers_indices <- as.integer(sub("^0+", "", substr(keepers_text, 6, 9)))
+keepers_indices # use this to subset the full generation of sims
+
+#### daily concentrations  #### 
+# extract the concentration data for the keepers only
 conc2 <- daily_conc_sims[,c(2:2139)]
-#conc2
-#dim(conc2) #3865*1000
-conc3<-t(conc2)
+#dim(conc2) #3865 days 2138 sims
+conc3 <- t(conc2)
 conc3
-dim(conc3)
+dim(conc3) # 2138 sims 3865 days
 colnames(conc3)<-as.Date(sim_date,"%Y%m%d")
 class(colnames(conc3))
 class(colnames(conc3))<-"Date"
@@ -49,86 +49,62 @@ conc3
 head(conc3)
 colnames(conc3)
 class(conc3)
-
+### re-assign and subset conc3 to be the reduced set of sims
 dim(conc3)
-quantile_results <- data.frame(matrix(nrow = 3865, ncol = 8))
-colnames(quantile_results) <- c("i", "first_q","sec_q","third_q","four_q","fif_q","six_q","sev_q")
+# View(conc3)
+conc4 <- conc3[keepers_indices,]
+dim(conc4) # 200 (sims) 3865 (days)
+
+# calculate concentration quantiles for each day
+concentration_daily_quantile_results <- data.frame(matrix(nrow = 3865, ncol = 8))
+colnames(concentration_daily_quantile_results) <- c("i", "first_q","sec_q","third_q","four_q","fif_q","six_q","sev_q")
 i=1
 for (i in 1:3865) {
-  first_q <- quantile(conc3[,i], c(0.001))
-  sec_q <- quantile(conc3[,i], c(0.023))
-  third_q <- quantile(conc3[,i], c(0.159))
-  four_q <- quantile(conc3[,i], c(0.5))
-  fif_q <- quantile(conc3[,i], c(0.841))
-  six_q <- quantile(conc3[,i], c(0.977))
-  sev_q <- quantile(conc3[,i], c(0.99))
-  quantile_results[i, 1] <- i
-  quantile_results[i, 2] <- first_q
-  quantile_results[i, 3] <- sec_q
-  quantile_results[i, 4] <- third_q
-  quantile_results[i, 5] <- four_q
-  quantile_results[i, 6] <- fif_q
-  quantile_results[i, 7] <- six_q
-  quantile_results[i, 8] <- sev_q
+  first_q <- quantile(conc4[,i], c(0.001))
+  sec_q <- quantile(conc4[,i], c(0.023))
+  third_q <- quantile(conc4[,i], c(0.159))
+  four_q <- quantile(conc4[,i], c(0.5))
+  fif_q <- quantile(conc4[,i], c(0.841))
+  six_q <- quantile(conc4[,i], c(0.977))
+  sev_q <- quantile(conc4[,i], c(0.99))
+  concentration_daily_quantile_results[i, 1] <- i
+  concentration_daily_quantile_results[i, 2] <- first_q
+  concentration_daily_quantile_results[i, 3] <- sec_q
+  concentration_daily_quantile_results[i, 4] <- third_q
+  concentration_daily_quantile_results[i, 5] <- four_q
+  concentration_daily_quantile_results[i, 6] <- fif_q
+  concentration_daily_quantile_results[i, 7] <- six_q
+  concentration_daily_quantile_results[i, 8] <- sev_q
 }
-head(quantile_results)
-#View(quantile_results)
+head(concentration_daily_quantile_results)
+dim(concentration_daily_quantile_results)
+#View(concentration_daily_quantile_results)
 
-quantile_results2 <- cbind(date, quantile_results[,c(2:8)])
-head(quantile_results2)
-dim(quantile_results2)
-# plot(x=result2$date, y=result2$first_q)
-# plot(x=result2$date, y=result2$sec_q)
-# result3<-merge(bac_obs, result2, by="date", incomparables = NA)
-# dim(result3)
+concentration_daily_quantile_results2 <- cbind(sim_date, concentration_daily_quantile_results[,c(2:8)])
+head(concentration_daily_quantile_results2)
+dim(concentration_daily_quantile_results2)
 
-
-
-
-# The summary data frame ds is used to plot larger red points on top
-# of the raw data. Note that we don't need to supply `data` or `mapping`
-# # in each layer because the defaults from ggplot() are used.
-# p <-ggplot() +
-#   # geom_point(data=result2, aes(date,first_q),colour = "#999999",size =1)+ 
-#   # geom_point(data=result2,aes(date,sec_q),colour = "#E69F00",size =1)+ 
-#   # geom_point(data=result2,aes(date,third_q),colour ="#56B4E9",size =1)+ 
-#   # geom_point(data=result2,aes(date,four_q),colour =  "#009E73",size =1)+ 
-#   # geom_point(data=result2,aes(date,fif_q),colour ="#F0E442",size =1)+ 
-#   # geom_point(data=result2,aes(date,six_q),colour =  "#0072B2",size =1)+ 
-#   geom_line(data=result2,aes(date,sev_q),colour ="#D55E00",size =1)+
-#   theme()+
-#   theme(panel.spacing = unit(0.2, "lines"),
-#         legend.position = "bottom")+
-#   labs( x = "Date (yyyy)", 
-#         y = "Concentration") 
-# p  
-
-
-
-quantile_results2[quantile_results2<1] <- 1
-conc_daily_quantile_results <- quantile_results2[c(2193:2793),]
+# truncate to min = 1
+concentration_daily_quantile_results2[concentration_daily_quantile_results2<1] <- 1
+# we subset the dates to this period for reasons I do not recall
+conc_daily_quantile_results <- concentration_daily_quantile_results2[c(2193:2793),]
 range(conc_daily_quantile_results$first_q)
-
+# check on bacteria observations
 dim(bac_obs)
 
-# still working this out
+# create ribbon plots
 # https://www.geeksforgeeks.org/r-language/combine-and-modify-ggplot2-legends-with-ribbons-and-lines/
-daily_concs_quantiles_ribbon_plot <- ggplot(conc_daily_quantile_results, aes(x = date)) +
-  geom_ribbon(aes(ymin = first_q, ymax = sev_q), fill = "Median+-3s", alpha = 0.2) +
-  geom_ribbon(aes(ymin = sec_q, ymax = six_q), fill = "Median+-2s", alpha = 0.4) +
-  geom_ribbon(aes(ymin = third_q, ymax = fif_q), fill = "Median+-1s", alpha = 0.6) +
+daily_concs_quantiles_ribbon_plot <- ggplot(conc_daily_quantile_results, aes(x = sim_date)) +
+  geom_ribbon(aes(ymin = first_q, ymax = sev_q, fill = "Median_3s"), alpha = 0.2) +
+  geom_ribbon(aes(ymin = sec_q, ymax = six_q, fill = "Median_2s"), alpha = 0.4) +
+  geom_ribbon(aes(ymin = third_q, ymax = fif_q, fill = "Median_1s"), alpha = 0.6) +
   geom_line(aes(y = four_q), color = "slateblue4", linewidth = 0.8, alpha=0.8) +
   geom_point(data = bac_obs[c(155:180),], aes(x=date, y=bacteria, colour = "bacteria"))+
   scale_fill_manual(name = "Ribbon", 
-                    values = c("Median+-3s" = "skyblue",
-                               "Median+-2s" = "skyblue3",
-                               "Median+-1s" = "skyblue4")) +
-                    #) +       # manual legend
-  #scale_fill_manual(name = "Ribbon", values = c()) +       # manual legend
-  #scale_fill_manual(name = "Ribbon", values = c() +       # manual legend
-  #scale_color_manual(name = "Lines", values = c("Lower" = "blue", "Upper" = "red")) +    # manual legend
+                    values = c("Median_3s" = "skyblue",
+                               "Median_2s" = "skyblue3",
+                               "Median_1s" = "skyblue4")) +
   xlab(" ") +
-  # scale_y_continuous("Concentration (log10)") + 
   scale_x_date(
     date_breaks = "2 months",      # 3 month ticks
     date_labels = "%b %Y"          # month abbreviation, year
@@ -143,32 +119,26 @@ daily_concs_quantiles_ribbon_plot
 #### daily flow  #### 
 # simulated flows of final generation
 daily_flow_sims <- bac_cal_output11$simulation$q_out
-dim(daily_flow_sims)
 class(daily_flow_sims)
-#load("E:/boxplot/daily_flow.RData")
-#flow<-bac_cal_output$simulation$q_out
 
-date <- daily_flow_sims$date
+flow_sim_date <- daily_flow_sims$date
 daily_flow_sims2 <- daily_flow_sims[,c(2:2139)]
-#conc2
+dim(daily_flow_sims2) # 3865 days 2138 sims
 #dim(conc2) #3865*1000
 daily_flow_sims3 <- t(daily_flow_sims2)
-# conc3
-# dim(conc3)
-colnames(daily_flow_sims3)<-as.Date(date,"%Y%m%d")
+dim(daily_flow_sims3) # 2138 sims 3865 days
+
+colnames(daily_flow_sims3)<-as.Date(flow_sim_date,"%Y%m%d")
 class(colnames(daily_flow_sims3))
 class(colnames(daily_flow_sims3))<-"Date"
 daily_flow_sims3
 dim(daily_flow_sims3)
 head(daily_flow_sims3)
-# colnames(conc3)
-# class(conc3)
+daily_flow_sims4 <- daily_flow_sims3[keepers_indices,]
+dim(daily_flow_sims4) # 200 (sims) 3865 (days)
 
-# day1=conc3[,1]
-# q1<-quantile(conc3[,1], c(0.001, 0.023, 0.159, 0.5, 0.841, 0.977, 0.99))
-# q1
-
-result <- data.frame(matrix(nrow = 3865, ncol = 8))
+# calculate flow quantiles for each day
+flow_daily_quantile_results <- data.frame(matrix(nrow = 3865, ncol = 8))
 colnames(result) <- c("i", "first_q","sec_q","third_q","four_q","fif_q","six_q","sev_q")
 i=1
 for (i in 1:3865) {
