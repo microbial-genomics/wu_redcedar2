@@ -37,6 +37,7 @@ keepers_indices # use this to subset the full generation of sims
 
 #### daily concentrations  #### 
 # extract the concentration data for the keepers only
+dim(daily_conc_sims)
 conc2 <- daily_conc_sims[,c(2:2139)]
 #dim(conc2) #3865 days 2138 sims
 conc3 <- t(conc2)
@@ -87,24 +88,37 @@ dim(concentration_daily_quantile_results2)
 # truncate to min = 1
 concentration_daily_quantile_results2[concentration_daily_quantile_results2<1] <- 1
 # we subset the dates to this period for reasons I do not recall
-conc_daily_quantile_results <- concentration_daily_quantile_results2[c(2193:2793),]
+conc_daily_quantile_results <- concentration_daily_quantile_results2[c(2193:3865),]
 range(conc_daily_quantile_results$first_q)
 # check on bacteria observations
 dim(bac_obs)
 
+### narrow in on desired time range
+dim(bac_obs)
+head(bac_obs)
+View(bac_obs)
+# 184 = April 7, 2013
+# 335 last observation on May 1, 2014
+dim(conc_daily_quantile_results)
+conc_daily_quantile_results$sim_date[1193]
+# 1193 - April 7, 2013
+conc_daily_quantile_results$sim_date[1582]
+# 1582 = May 1, 2014
+
 # create ribbon plots
 # https://www.geeksforgeeks.org/r-language/combine-and-modify-ggplot2-legends-with-ribbons-and-lines/
-daily_concs_quantiles_ribbon_plot <- ggplot(conc_daily_quantile_results, aes(x = sim_date)) +
+daily_concs_quantiles_ribbon_plot <- ggplot(conc_daily_quantile_results[1193:1582,], aes(x = sim_date)) +
   geom_ribbon(aes(ymin = first_q, ymax = sev_q, fill = "Median_3s"), alpha = 0.2) +
   geom_ribbon(aes(ymin = sec_q, ymax = six_q, fill = "Median_2s"), alpha = 0.4) +
   geom_ribbon(aes(ymin = third_q, ymax = fif_q, fill = "Median_1s"), alpha = 0.6) +
   geom_line(aes(y = four_q), color = "slateblue4", linewidth = 0.8, alpha=0.8) +
-  geom_point(data = bac_obs[c(155:180),], aes(x=date, y=bacteria, colour = "bacteria"))+
+  geom_point(data = bac_obs[c(184:335),], aes(x=date, y=bacteria, colour = "bacteria"))+ #c(155:334)
   scale_fill_manual(name = "Ribbon", 
                     values = c("Median_3s" = "skyblue",
                                "Median_2s" = "skyblue3",
                                "Median_1s" = "skyblue4")) +
   xlab(" ") +
+  ylab("Concentration (MPU/100 ml)") +
   scale_x_date(
     date_breaks = "2 months",      # 3 month ticks
     date_labels = "%b %Y"          # month abbreviation, year
@@ -139,66 +153,106 @@ dim(daily_flow_sims4) # 200 (sims) 3865 (days)
 
 # calculate flow quantiles for each day
 flow_daily_quantile_results <- data.frame(matrix(nrow = 3865, ncol = 8))
-colnames(result) <- c("i", "first_q","sec_q","third_q","four_q","fif_q","six_q","sev_q")
+colnames(flow_daily_quantile_results) <- c("i", "first_q","sec_q","third_q","four_q","fif_q","six_q","sev_q")
 i=1
 for (i in 1:3865) {
-  first_q <- quantile(flow3[,i], c(0.001))
-  sec_q <- quantile(flow3[,i], c(0.023))
-  third_q <- quantile(flow3[,i], c(0.159))
-  four_q <- quantile(flow3[,i], c(0.5))
-  fif_q <- quantile(flow3[,i], c(0.841))
-  six_q <- quantile(flow3[,i], c(0.977))
-  sev_q <- quantile(flow3[,i], c(0.99))
-  result[i, 1] <- i
-  result[i, 2] <- first_q
-  result[i, 3] <- sec_q
-  result[i, 4] <- third_q
-  result[i, 5] <- four_q
-  result[i, 6] <- fif_q
-  result[i, 7] <- six_q
-  result[i, 8] <- six_q
+  first_q <- quantile(daily_flow_sims4[,i], c(0.001))
+  sec_q <- quantile(daily_flow_sims4[,i], c(0.023))
+  third_q <- quantile(daily_flow_sims4[,i], c(0.159))
+  four_q <- quantile(daily_flow_sims4[,i], c(0.5))
+  fif_q <- quantile(daily_flow_sims4[,i], c(0.841))
+  six_q <- quantile(daily_flow_sims4[,i], c(0.977))
+  sev_q <- quantile(daily_flow_sims4[,i], c(0.99))
+  flow_daily_quantile_results[i, 1] <- i
+  flow_daily_quantile_results[i, 2] <- first_q
+  flow_daily_quantile_results[i, 3] <- sec_q
+  flow_daily_quantile_results[i, 4] <- third_q
+  flow_daily_quantile_results[i, 5] <- four_q
+  flow_daily_quantile_results[i, 6] <- fif_q
+  flow_daily_quantile_results[i, 7] <- six_q
+  flow_daily_quantile_results[i, 8] <- six_q
   i=i+1  
 }
-head(result)
+head(flow_daily_quantile_results)
 
-result2<-cbind(date,result[,c(2:8)])
-head(result2)
-dim(result2)
-# plot(x=result2$date, y=result2$first_q)
-# plot(x=result2$date, y=result2$sec_q)
-# result3<-merge(bac_obs, result2, by="date", incomparables = NA)
-# dim(result3)
+flow_daily_quantile_results2 <- cbind(sim_date, flow_daily_quantile_results[,c(2:8)])
+head(flow_daily_quantile_results2)
+dim(flow_daily_quantile_results2)
 
-result2[result2<1] <-1
-result2
+# don't truncate
+min(flow_daily_quantile_results2$first_q)
+dim(flow_daily_quantile_results2)
 
-range(result2$first_q)
-
-ggplot() +
-  geom_line(data = result2[c(2193:2793),], aes(x = date, y = log10(first_q), colour = "first_q")) +
-  # geom_line(data = result2[c(2193:2793),], aes(x = date, y = sec_q, colour = "sec_q")) +
-  # geom_line(data = result2, aes(x = date, y = third_q, colour = "third_q")) +
-  geom_line(data = result2[c(2193:2793),], aes(x = date, y = log10(four_q), colour = "four_q")) +
-  #geom_line(data = result2, aes(x = date,y = fif_q, colour = "fif_q")) +
-  # geom_line(data = result2[c(2193:2793),], aes(x = date,y = six_q, colour = "six_q")) +
-  geom_line(data = result2[c(2193:2793),], aes(x = date,y = log10(sev_q), colour = "sev_q")) +
-  geom_point(data =q_obs[c(2193:2793),], aes(x=date, y=log10(discharge), colour = "discharge"))+
-  scale_colour_manual("", 
-                      breaks = c("first_q",   "four_q",  "sev_q",  "discharge"),
-                      values =c("grey70", "#CC79A7", "grey30",  "darkblue")) +
-  xlab(" ") +
-  scale_y_continuous("log10(discharge) (cms)") + 
-  labs(title="Daily_flow")+
-  theme_bw()
+### narrow in on desired time range
+dim(bac_obs)
+View(bac_obs)
+# 184 = April 7, 2013
+# 335 last observation on May 1, 2014
 
 
 
-#### weekly flow ####
-load("E:/boxplot/weekly_flow.RData")
-load(file="E:/boxplot/q_obs.RData")
+# we subset the dates to this period for reasons I do not recall
+
+flow_daily_quantile_results <- flow_daily_quantile_results2[c(2193:2793),]
+View(flow_daily_quantile_results)
+range(flow_daily_quantile_results$first_q)
+
+# check on flow observations
 flow_obs <- q_obs # [4018,2]
 flow_obs_daily <- flow_obs$discharge 
 obs_flow_xts <- as.xts(flow_obs$discharge,order.by=as.Date(flow_obs$date))
+dim(obs_flow_xts) #4018 1
+head(obs_flow_xts)
+View(obs_flow_xts)
+colnames(obs_flow_xts) <- c("date", "flow")
+obs_flow_xts[3415,]
+# 3415 - April 7, 2013
+obs_flow_xts[3774,]
+# 3774 = May 1, 2014
+colnames(obs_flow_xts) <- c("flow")
+
+# create ribbon plots
+# https://www.geeksforgeeks.org/r-language/combine-and-modify-ggplot2-legends-with-ribbons-and-lines/
+daily_flow_quantiles_ribbon_plot <- ggplot(flow_daily_quantile_results2[3415:3774,], aes(x = sim_date)) +
+  geom_ribbon(aes(ymin = first_q, ymax = sev_q, fill = "Median_3s"), alpha = 0.2) +
+  geom_ribbon(aes(ymin = sec_q, ymax = six_q, fill = "Median_2s"), alpha = 0.4) +
+  geom_ribbon(aes(ymin = third_q, ymax = fif_q, fill = "Median_1s"), alpha = 0.6) +
+  geom_line(aes(y = four_q), color = "slateblue4", linewidth = 0.8, alpha=0.8) +
+  # geom_point(data = obs_flow_xts[3415:3774,], aes(x=date, y=flow, colour = "flow"))+
+  scale_fill_manual(name = "Ribbon", 
+                    values = c("Median_3s" = "skyblue",
+                               "Median_2s" = "skyblue3",
+                               "Median_1s" = "skyblue4")) +
+  xlab(" ") +
+  ylab("Flow (cfs)") +
+  scale_x_date(
+    date_breaks = "2 months",      # 3 month ticks
+    date_labels = "%b %Y"          # month abbreviation, year
+  ) +
+  scale_y_log10() +
+  labs(title="Daily Flow")+
+  theme_bw()
+
+daily_flow_quantiles_ribbon_plot
+
+
+stacked_daily_ribbon_plot <- plot_grid(daily_concs_quantiles_ribbon_plot, 
+          daily_flow_quantiles_ribbon_plot, 
+          ncol = 1, labels = c("A", "B"))
+
+stacked_daily_ribbon_plot
+
+png(paste(file.path(graphics_dir, "daily_stacked_simulation_ribbon_plot_apppendix.png")), 
+    width=11, height=8, units="in", res=300)
+  stacked_daily_ribbon_plot
+dev.off()
+
+
+#### weekly flow ####
+flow_obs <- q_obs # [4018,2]
+flow_obs_daily <- flow_obs$discharge 
+obs_flow_xts <- as.xts(flow_obs$discharge,order.by=as.Date(flow_obs$date))
+dim(obs_flow_xts)
 flow_obs_weekly <- as.data.frame(apply.weekly(obs_flow_xts, mean)) #575
 
 flow_all_days <- bac_cal_output$simulation$q_out # [3865,1451]
