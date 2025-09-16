@@ -118,7 +118,7 @@ daily_concs_quantiles_ribbon_plot <- ggplot(conc_daily_quantile_results[1193:158
                                "Median_2s" = "skyblue3",
                                "Median_1s" = "skyblue4")) +
   xlab(" ") +
-  ylab("Concentration (MPU/100 ml)") +
+  ylab("Concentration (MPN/100 ml)") +
   scale_x_date(
     date_breaks = "2 months",      # 3 month ticks
     date_labels = "%b %Y"          # month abbreviation, year

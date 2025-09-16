@@ -232,15 +232,31 @@ colnames(par_bound)
 load(file.path(hpc_data_sensitivity, "q_obs.RData"))
 dim(q_obs)
 colnames(q_obs)
+head(q_obs)
+head(as.data.frame(q_obs))
 
 # empirical bacteria concentrations
 load(file.path(hpc_data_sensitivity, "bac_obs.RData"))
 dim(bac_obs)
 colnames(bac_obs)
+head(bac_obs)
 
 # rainfall
 load(file.path(hpc_data_sensitivity, "pcp_obs.RData"))
 dim(pcp_obs)
 colnames(pcp_obs)
+head(pcp_obs)
 
+# merge observations on date
+obs_list <- list(as.data.frame(q_obs), bac_obs, pcp_obs)
+obs_merged <- obs_list %>% reduce(full_join, by = "date")
+head(obs_merged)
+tail(obs_merged)
+dim(obs_merged)
+#View(obs_merged)
+colnames(obs_merged)
+min(obs_merged$bacteria, na.rm=TRUE)
 
+# filter NAs for conc
+filtered_obs_merged <- drop_na(obs_merged)
+dim(filtered_obs_merged)
