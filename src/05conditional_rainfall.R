@@ -12,6 +12,10 @@ concentration_daily_quantile_results[1,]
 sim_date[3865]
 pcp_obs$date[3865]
 
+# 3 day moving average of precip data
+length()
+pcp_obs$precipitation_ma3 <- zoo::rollmean(pcp_obs$precipitation, k = 3, fill = NA, align = "right")
+
 rainfall_response_data <- as.data.frame(cbind(sim_date, pcp_obs$precipitation[1:3865], concentration_daily_quantile_results$four_q, flow_daily_quantile_results2$four_q))
 dim(rainfall_response_data)
 colnames(rainfall_response_data) <- c("date", "rainfall", "bacteria_conc", "flow")
