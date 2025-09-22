@@ -155,7 +155,7 @@ df_curves <- parameters %>%
     }
   ) %>%
   ungroup()
-View(df_curves)
+#View(df_curves)
 dim(df_curves)
 levels(df_curves$level)
 unique(df_curves$level)
@@ -164,9 +164,9 @@ df_curves$level <- factor(df_curves$level, levels = c("gen1", "gen4", "gen7", "g
 levels(df_curves$level)
 
 colnames(df_curves)
-View(df_curves)
+#View(df_curves)
 
-library(ggh4x)
+
 # since these are overlapping kde plots can't use scales = free
 # need to manually specify the limits
 scales_xranges <- list( # customize each facet x axis range
@@ -190,95 +190,106 @@ scales_xranges <- list( # customize each facet x axis range
   scale_x_continuous(limits = c(0, 1)) # WDPRCH
 )
 
-View(df_curves)
+#View(df_curves)
 parameter_evolution_plot <- ggplot(df_curves, aes(x = x, y = density, color = level)) +
   geom_line(size = 1) +
-  facet_wrap(~ panel, ncol = 3, scales="free") +
+  facet_wrap(~ panel, ncol = 6, scales="free") +
   facetted_pos_scales(x = scales_xranges) +
   theme_minimal() +
   labs(
     title = "Posterior Densities by Parameter (Truncated to Initial Uniform Prior)",
-    x = "Value",
+    x = "Parameter Value",
     y = "Density"
   ) +
-  scale_color_brewer(palette = "PuBuGn")
+  scale_color_brewer(palette = "PuBuGn") +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
 parameter_evolution_plot
 
 png(paste(file.path(graphics_dir, "parameter_evolution_plot_maintext.png")), 
     width=8, height=10, units="in", res=300)
-  parameter_evolution_plot
+  print(parameter_evolution_plot)
 dev.off()
 
 
 
 ################################################################
 
-library(patchwork)
-plots <- lapply(
-  split(df_curves, df_curves$panel),
-  function(d) {
-    ggplot(d, aes(x = x, y = density, color = level)) +
-      geom_line(size = 1) +
-      xlim(min, max) +
-      theme_minimal() +
-      labs(x = "Value", y = "Density")
-  }
-)
-wrap_plots(plots, ncol = 6)
+#library(patchwork)
+#plots <- lapply(
+#  split(df_curves, df_curves$panel),
+#  function(d) {
+#    ggplot(d, aes(x = x, y = density, color = level)) +
+#      geom_line(size = 1) +
+#      xlim(min, max) +
+#      theme_minimal() +
+#      labs(x = "Value", y = "Density")
+#  }
+#)
+#wrap_plots(plots, ncol = 6)
 
 
 
 
 
-# Create a grid of x-values covering the full range expected in all densities
-x_min <- min(parameters$mean - 3 * parameters$sd)
-x_max <- max(parameters$mean + 3 * parameters$sd)
-x_vals <- seq(x_min, x_max, length.out = 200)
+## Create a grid of x-values covering the full range expected in all densities
+#x_min <- min(parameters$mean - 3 * parameters$sd)
+#x_max <- max(parameters$mean + 3 * parameters$sd)
+#x_vals <- seq(x_min, x_max, length.out = 200)
 
-# For each panel and level, calculate the density
-plot_data <- parameters %>%
-  group_by(panel, level) %>%
-  do({
-    data.frame(
-      x = x_vals,
-      density = dnorm(x_vals, mean = .$mean, sd = .$sd),
-      level = .$level,
-      panel = .$panel
-    )
-  }) %>%
-  ungroup()
+## For each panel and level, calculate the density
+#plot_data <- parameters %>%
+#  group_by(panel, level) %>%
+#  do({
+#    data.frame(
+#      x = x_vals,
+#      density = dnorm(x_vals, mean = .$mean, sd = .$sd),
+#      level = .$level,
+#      panel = .$panel
+#    )
+#  }) %>%
+#  ungroup()
 
-#View(plot_data)
-
-
-
-ggplot(plot_data, aes(x = x, y = density, color = level)) +
-  geom_line(size = 1) +
-  facet_wrap(~ panel, ncol = 6, scales='free') +
-  theme_minimal() +
-  labs(
-    title = "Updated Posterior Densities of Sensitive Parameters",
-    x = "Value", y = "Density"
-  ) +
-  scale_color_brewer(palette = "Set1")
+##View(plot_data)
 
 
 
+#ggplot(plot_data, aes(x = x, y = density, color = level)) +
+#  geom_line(size = 1) +
+#  facet_wrap(~ panel, ncol = 6, scales='free') +
+#  theme_minimal() +
+#  labs(
+#    title = "Updated Posterior Densities of Sensitive Parameters",
+#    x = "Value", y = "Density"
+#  ) +
+#  scale_color_brewer(palette = "Set1")
 
-plot_kde_pdf <- function(iter, kde_next_gen){
-  ggplot(data = kde_next_gen) +
-    geom_density(aes(x = parameter_range)) +
-    facet_wrap(.~par, nrow=5, scales = "free") +
-    theme_bw()
-  density_plot_filename <- paste("kde_mcabc_gen", iter, ".pdf", sep="")
-  ggsave(file.path(graphics_dir, density_plot_filename))  
-}
+
+
+
+#plot_kde_pdf <- function(iter, kde_next_gen){
+#  ggplot(data = kde_next_gen) +
+#    geom_density(aes(x = parameter_range)) +
+#    facet_wrap(.~par, nrow=5, scales = "free") +
+#    theme_bw()
+#  density_plot_filename <- paste("kde_mcabc_gen", iter, ".pdf", sep="")
+#  ggsave(file.path(graphics_dir, density_plot_filename))  
+#}
 
 
 
 ## find the updated unweighted kernel densities based on these new 5k simulations
-kde_next_gen <- sim_pars[valid_keepers,] %>% 
-  gather(key = "par", value = "parameter_range")
+#kde_next_gen <- sim_pars[valid_keepers,] %>% 
+#  gather(key = "par", value = "parameter_range")
 
-plot_kde_pdf(iter, kde_next_gen)
+#plot_kde_pdf(iter, kde_next_gen)
+
+
+# For memory used by R
+cat("Current R memory used: ", mem_used()/1e+9, "\n")
+# Cross platform
+m <- ps::ps_system_memory()
+cat("Total RAM:", m$total/1E+9, "\n")
+cat("Available RAM:", m$avail/1E+9, "\n")
+gc()

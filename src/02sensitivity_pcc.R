@@ -134,6 +134,10 @@ pcc_plot_appendix1 <- ggplot(long_combined_pcc, aes(x = Parameter, y = Value, fi
         legend.position = "none")
 pcc_plot_appendix1
 
+png(paste(file.path(graphics_dir, "pcc_violin_plot_appendix_45parameters_dont_use.png")), 
+    width=11, height=8, units="in", res=300)
+   print(pcc_plot_appendix1)
+dev.off()
 
 my_palette <- colorRampPalette(brewer.pal(9, "GnBu"))
 colors45 <- my_palette(90)[11:55]
@@ -151,7 +155,7 @@ pcc_plot_appendix2
 
 png(paste(file.path(graphics_dir, "pcc_plot_appendix_45parameters.png")), 
     width=11, height=8, units="in", res=300)
-   pcc_plot_appendix2
+   print(pcc_plot_appendix2)
 dev.off()
 
 #####
@@ -174,13 +178,18 @@ pcc_plot_maintext <- ggplot(short_combined_pcc, aes(x = Parameter, y = Value, fi
   scale_fill_manual(values = colors18) +
   stat_summary(fun = median, geom = "point", color = "red", size = 1) +
   theme_bw() +
+  labs(
+    title = "Initial Sensitivity Analyses",
+    x = "Parameter",
+    y = "Sensitivity"
+  ) + 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
         legend.position = "none")
 pcc_plot_maintext
 
 png(paste(file.path(graphics_dir, "pcc_plot_maintext_18parameters.png")), 
     width=11, height=8, units="in", res=300)
-  pcc_plot_maintext
+  print(pcc_plot_maintext)
 dev.off()
 
 
@@ -239,4 +248,10 @@ bac_dates <- ts(sim_dates, start=c(2004, 1), end=c(2014, 3865), frequency=3865)
 #  }
 #dev.off()
 
-
+# For memory used by R
+cat("Current R memory used: ", mem_used()/1e+9, "\n")
+# Cross platform
+m <- ps::ps_system_memory()
+cat("Total RAM:", m$total/1E+9, "\n")
+cat("Available RAM:", m$avail/1E+9, "\n")
+gc()

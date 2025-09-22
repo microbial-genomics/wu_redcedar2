@@ -1,64 +1,3 @@
-library(sensitivity)
-library(dplyr)
-library(ggplot2)
-library(gridExtra)
-library(matrixStats)
-library(miceadds)
-#library(dtwclust)
-library(vioplot)
-library(xts)
-#library(SWATplusR)
-library(dplyr)
-library(dygraphs)
-library(ggplot2)
-library(lubridate)
-library(mapview)
-library(plotly)
-library(sf)
-library(tibble)
-library(tidyr)
-library(purrr)
-library(lhs)
-library(hydroGOF)
-library(forcats)
-library(lubridate)
-library(ggtext)
-library(RColorBrewer)
-library(cowplot)
-library(zoo)
-#library(devtools)
-#library(dplyr)
-#library(dygraphs)
-##library(fast) #error
-#library(forcats)
-#library(ggplot2)
-#library(hydroGOF)
-#library(lhs)
-#library(lubridate)
-#library(mapview)
-#library(plotly)
-#library(purrr)
-#library(sensitivity)
-#library(sf)
-#library(tibble)
-#library(tidyr)
-#library(fitdistrplus)
-#library(truncnorm)
-#library(xts)
-#require(data.table) # load it
-
-## setup root directory path
-if(Sys.info()[4]=="LZ26TPURUCKE-2"){
-  # tom epa windows
-  of_root <- file.path("c:", "Users", "tpurucke", "git", "wu_redcedar2")
-}
-
-data_in_dir <- file.path(of_root, "data_in")
-graphics_dir <- file.path(of_root, "graphics")
-src_dir <- file.path(of_root, "src")
-hpc_data <- file.path(of_root, "hpc_data", "sim56-flux-weekly")
-hpc_data_sensitivity <- file.path(of_root, "hpc_data", "sim56-sensitivity")
-
 # simulation sets 0, 3, 6, 9, 11
 # load parameter fits but in list format
 # 18 parameter fits for each variable
@@ -235,18 +174,23 @@ dim(q_obs)
 colnames(q_obs)
 head(q_obs)
 head(as.data.frame(q_obs))
+sum(duplicated(q_obs$date))
 
 # empirical bacteria concentrations
 load(file.path(hpc_data_sensitivity, "bac_obs.RData"))
 dim(bac_obs)
 colnames(bac_obs)
 head(bac_obs)
+sum(duplicated(bac_obs$date))
+bac_obs <- bac_obs %>% distinct(date, .keep_all = TRUE)
+dim(bac_obs)
 
 # rainfall
 load(file.path(hpc_data_sensitivity, "pcp_obs.RData"))
 dim(pcp_obs)
 colnames(pcp_obs)
 head(pcp_obs)
+sum(duplicated(pcp_obs$date))
 
 # merge observations on date
 obs_list <- list(as.data.frame(q_obs), bac_obs, pcp_obs)
@@ -261,3 +205,11 @@ min(obs_merged$bacteria, na.rm=TRUE)
 # filter NAs for conc
 filtered_obs_merged <- drop_na(obs_merged)
 dim(filtered_obs_merged)
+
+# For memory used by R
+cat("Current R memory used: ", mem_used()/1e+9, "\n")
+# Cross platform
+m <- ps::ps_system_memory()
+cat("Total RAM:", m$total/1E+9, "\n")
+cat("Available RAM:", m$avail/1E+9, "\n")
+gc()

@@ -199,3 +199,11 @@ ggplot(precip_df, aes(x = group, y = log(value), fill = group)) +
        x = "Group",
        y = "Value") +
   theme_minimal()
+
+
+# For memory used by R
+cat("Current R memory used: ", mem_used()/1e+9, "\n")
+# Cross platform
+m <- ps::ps_system_memory()
+cat("Total RAM:", m$total/1E+9, "\n")
+cat("Available RAM:", m$avail/1E+9, "\n")
