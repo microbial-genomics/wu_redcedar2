@@ -13,7 +13,7 @@ sim_date[3865]
 pcp_obs$date[3865]
 
 # 3 day moving average of precip data
-length()
+#length()
 pcp_obs$precipitation_ma3 <- zoo::rollmean(pcp_obs$precipitation, k = 3, fill = NA, align = "right")
 
 rainfall_response_data <- as.data.frame(cbind(sim_date, pcp_obs$precipitation[1:3865], concentration_daily_quantile_results$four_q, flow_daily_quantile_results2$four_q))
@@ -49,13 +49,19 @@ daily_flow_conc_sims_plot <- ggplot(rainfall_response_data, aes(x = flow, y = ba
   geom_smooth(method = "loess", se = FALSE, color = "red", size = 1.2)+
   theme_classic()
 
-
+daily_rain_flow_sims_plot
+daily_rain_conc_sims_plot
+daily_flow_conc_sims_plot
 rain_flow_conc_plot <- plot_grid(daily_rain_flow_sims_plot, 
                                        daily_rain_conc_sims_plot, 
                                        daily_flow_conc_sims_plot,
                                        ncol = 3, labels = c("A", "B", "C"))
 
 rain_flow_conc_plot
+ggsave(paste(file.path(graphics_dir, "daily_sims_rain_flow_conc_plot.png")), 
+       plot = rain_flow_conc_plot, 
+       width=11, height=8, units="in", dpi=300)
+
 
 # now with observations
 dim(filtered_obs_merged)
@@ -87,12 +93,18 @@ daily_flow_conc_obs_plot <- ggplot(filtered_obs_merged, aes(x = discharge, y = b
   geom_smooth(method = "loess", se = FALSE, color = "blue", size = 1.2)+
   theme_classic()
 
-
+daily_rain_flow_obs_plot
+daily_rain_conc_obs_plot
+daily_flow_conc_obs_plot
 rain_flow_conc_obs_plot <- plot_grid(daily_rain_flow_obs_plot, 
                                  daily_rain_conc_obs_plot, 
                                  daily_flow_conc_obs_plot,
                                  ncol = 3, labels = c("A", "B", "C"))
 rain_flow_conc_obs_plot
+ggsave(paste(file.path(graphics_dir, "daily_obs_rain_flow_conc_plot.png")), 
+       plot = rain_flow_conc_obs_plot, 
+       width=11, height=8, units="in", dpi=300)
+
 
 combined_rain_flow_conc_obs_plot <- plot_grid(daily_rain_flow_sims_plot, 
                                               daily_rain_conc_sims_plot, 
@@ -103,7 +115,9 @@ combined_rain_flow_conc_obs_plot <- plot_grid(daily_rain_flow_sims_plot,
                                                ncol = 3, labels = c("A", "B", "C",
                                                                     "D", "E", "F"))
 combined_rain_flow_conc_obs_plot
-
+ggsave(paste(file.path(graphics_dir, "combined_daily_rain_flow_conc_plot.png")), 
+       plot = combined_rain_flow_conc_obs_plot, 
+       width=11, height=8, units="in", dpi=300)
 
 
 # merge simulation and observation data on date
@@ -145,31 +159,50 @@ rainfall_conc_plot
 
 # flow vs conc
 flow_conc_plot <- ggplot(sims_obs_merged, aes(x = flow)) +
-  geom_point(aes(y = bacteria_conc), color = "lightblue") +
-  geom_point(aes(y = bacteria), color = "#FF6666", size=1.2) +
+  # Points: use 'Data Type Point' and 'Data Type Line'
+  geom_point(aes(y = bacteria_conc, color = "Simulated"), size = 1.2) +
+  geom_point(aes(y = bacteria, color = "Observed"), size = 1.2) +
+  geom_smooth(aes(y = bacteria_conc, color = "Simulated loess"), method = "loess", se = FALSE, size = 1.2) +
+  geom_smooth(aes(y = bacteria, color = "Observed loess"), method = "loess", se = FALSE, size = 1.2) +
   xlab("log10(Flow (cfs))") +
   ylab("log10(Concentration (MPN/100 ml))") +
   scale_x_log10() +
-  scale_y_log10()+
-  geom_smooth(aes(y = bacteria_conc), method = "loess", se = FALSE, color = "blue", size = 1.2)+
-  geom_smooth(aes(y = bacteria), method = "loess", se = FALSE, color = "red", size = 1.2)+
+  scale_y_log10() +
+  scale_color_manual(
+    name = "Legend",
+    values = c(
+      "Simulated" = "lightblue",
+      "Observed" = "#FF6666",
+      "Simulated loess" = "blue",
+      "Observed loess" = "red"
+    )
+  ) +
   theme_classic()
 flow_conc_plot
-
 
 combined_rain_flow_conc_obs_sims_plot <- plot_grid(rainfall_flow_plot, 
                                               rainfall_conc_plot, 
                                               flow_conc_plot,
-                                              ncol = 3, labels = c("A", "B", "C"))
+                                              ncol = 3, 
+                                              rel_widths = c(1, 1, 1.5),
+                                              labels = c("D", "E", "F"))
 combined_rain_flow_conc_obs_sims_plot
 
+ggsave(paste(file.path(graphics_dir, "combined_daily_rain_flow_conc_obs_sims_plot.png")), 
+       plot = combined_rain_flow_conc_obs_sims_plot, 
+       width=11, height=6, units="in", dpi=300)
+
+
+
+
+###################################
 length(na.omit(sims_obs_merged$rainfall))
 length(na.omit(sims_obs_merged$precipitation))
 
 precip_df <- data.frame(
   value = c(na.omit(sims_obs_merged$rainfall), na.omit(sims_obs_merged$precipitation)),
   group = c(rep("Sim",length(na.omit(sims_obs_merged$rainfall))), rep("Obs",length(na.omit(sims_obs_merged$precipitation)))) )
-)
+
 colnames(precip_df)
 
 # Overlapping kernel density plot

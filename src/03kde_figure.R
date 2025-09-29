@@ -192,7 +192,7 @@ scales_xranges <- list( # customize each facet x axis range
 
 #View(df_curves)
 parameter_evolution_plot <- ggplot(df_curves, aes(x = x, y = density, color = level)) +
-  geom_line(size = 1) +
+  geom_line(linewidth = 1) +
   facet_wrap(~ panel, ncol = 6, scales="free") +
   facetted_pos_scales(x = scales_xranges) +
   theme_minimal() +

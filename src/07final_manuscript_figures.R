@@ -1,3 +1,4 @@
+### combined parameter plots
 pcc_plot_maintext
 parameter_evolution_plot
 
@@ -14,10 +15,21 @@ png(paste(file.path(graphics_dir, "stacked_sensitivity_posteriors_plot_maintext.
 dev.off()
 
 
+### ribbon and scatter plots
+stacked_daily_ribbon_plot_subset
+combined_rain_flow_conc_obs_sims_plot
+
+combined_ribbon_scatter_plots <- plot_grid(stacked_daily_ribbon_plot_subset,
+                                                   combined_rain_flow_conc_obs_sims_plot,
+                                                   rel_heights = c(2,1),
+                                                   ncol = 1)
+combined_ribbon_scatter_plots
+
+ggsave(paste(file.path(graphics_dir, "combined_ribbon_scatter_plots.png")), 
+       plot = combined_ribbon_scatter_plots, 
+       width=12, height=12, units="in", dpi=300)
 
 
-
-stacked_daily_ribbon_plot
 
 # For memory used by R
 cat("Current R memory used: ", mem_used()/1e+9, "\n")
