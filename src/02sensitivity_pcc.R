@@ -108,6 +108,48 @@ long_combined_pcc <- pivot_longer(combined_pcc,
                               names_to = "Parameter", 
                               values_to = "Value")
 
+### calculate mean absolute value pccs for each of the 45 initial parameters
+#View(combined_pcc)
+colnames(combined_pcc)
+dim(combined_pcc) #11595 46
+#11595/3 = 3865
+unique(combined_pcc$Dataset)
+bacteria_combined_pcc <- combined_pcc[1:3865,1:45]
+dim(bacteria_combined_pcc)
+bacteria_mav_pcc <- sapply(bacteria_combined_pcc, function(x) mean(abs(x)))
+bacteria_mav_pcc
+
+flow_combined_pcc <- combined_pcc[3866:7730,1:45]
+dim(flow_combined_pcc)
+flow_mav_pcc <- sapply(flow_combined_pcc, function(x) mean(abs(x)))
+
+flux_combined_pcc <- combined_pcc[7731:11595,1:45]
+dim(flux_combined_pcc)
+flux_mav_pcc <- sapply(flux_combined_pcc, function(x) mean(abs(x)))
+
+combined_mav_pcc <- as.data.frame(bind_rows(bacteria_mav_pcc, flow_mav_pcc, flux_mav_pcc))
+rownames(combined_mav_pcc) <- c("Bacteria_MAV_PCC", "Flow_MAV_PCC", "Flux_MAV_PCC")
+combined_mav_pcc
+
+
+library(DT)
+library(htmlwidgets)
+library(webshot2)
+# Calculate quantile breaks from all cell values
+combined_mav_pcc <- combined_mav_pcc %>% mutate_if(is.numeric, signif, digits = 3)
+breaks <- quantile(unlist(combined_mav_pcc), probs = c(0.33, 0.66), na.rm = TRUE)
+
+dt_mav_pcc <- datatable(combined_mav_pcc) %>%
+  formatStyle(
+    columns = names(combined_mav_pcc),
+    backgroundColor = styleInterval(
+      breaks,
+      c("lightblue", "orange", "red")
+    )
+  )
+
+
+
 # which parameters from the sensitivity analysis are kept?
 simulated_parameter_list #18
 full_parameter_list #45
