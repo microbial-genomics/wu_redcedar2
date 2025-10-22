@@ -148,6 +148,9 @@ dt_mav_pcc <- datatable(combined_mav_pcc) %>%
     )
   )
 
+saveWidget(dt_mav_pcc, file.path(graphics_dir, "dt_mav_pcc.html"))
+webshot(file.path(graphics_dir, "dt_mav_pcc.html"), file.path(graphics_dir, "dt_mav_pcc.png"), vwidth = 4000, vheight = 40)
+
 
 
 # which parameters from the sensitivity analysis are kept?
