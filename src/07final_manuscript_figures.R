@@ -1,4 +1,5 @@
 ### combined parameter plots
+heatmap_pcc
 pcc_plot_maintext
 parameter_evolution_plot
 
@@ -7,7 +8,15 @@ stacked_sensitivity_posteriors_plot <- plot_grid(
                                       parameter_evolution_plot, 
                                       ncol = 1, labels = c("A", "B"))
 
-stacked_sensitivity_posteriors_plot 
+#library(cowplot)
+library(patchwork)
+stacked_sensitivity_posteriors_plot <- heatmap_pcc | (pcc_plot_maintext / parameter_evolution_plot)
+
+stacked_sensitivity_posteriors_plot <- stacked_sensitivity_posteriors_plot + 
+                                  plot_annotation(tag_levels = "A") +
+                                  plot_layout(widths = c(1, 4))
+stacked_sensitivity_posteriors_plot
+
 
 png(paste(file.path(graphics_dir, "stacked_sensitivity_posteriors_plot_maintext.png")), 
     width=10, height=9, units="in", res=300)

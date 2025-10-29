@@ -131,10 +131,6 @@ combined_mav_pcc <- as.data.frame(bind_rows(bacteria_mav_pcc, flow_mav_pcc, flux
 rownames(combined_mav_pcc) <- c("Bacteria_MAV_PCC", "Flow_MAV_PCC", "Flux_MAV_PCC")
 combined_mav_pcc
 
-
-library(DT)
-library(htmlwidgets)
-library(webshot2)
 # Calculate quantile breaks from all cell values
 combined_mav_pcc <- combined_mav_pcc %>% mutate_if(is.numeric, signif, digits = 3)
 breaks <- quantile(unlist(combined_mav_pcc), probs = c(0.33, 0.66), na.rm = TRUE)
@@ -151,8 +147,63 @@ dt_mav_pcc <- datatable(combined_mav_pcc) %>%
 saveWidget(dt_mav_pcc, file.path(graphics_dir, "dt_mav_pcc.html"))
 webshot(file.path(graphics_dir, "dt_mav_pcc.html"), file.path(graphics_dir, "dt_mav_pcc.png"), vwidth = 4000, vheight = 40)
 
+# save ranked mean absolute value pccs to csv
+ranked_mav_pcc <- combined_mav_pcc %>%
+  t() %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "Parameter") %>%
+  arrange(desc(Flux_MAV_PCC), desc(Flow_MAV_PCC), desc(Bacteria_MAV_PCC))
+write.csv(ranked_mav_pcc, file.path(data_out_dir, "ranked_mean_absolute_value_pccs_45parameters.csv"), row.names = FALSE)
+ranked_mav_pcc
+#View(ranked_mav_pcc)
+rownames(ranked_mav_pcc) <- ranked_mav_pcc$Parameter
 
+# # create a complexheatmap of ranked mean absolute values
+# summary(ranked_mav_pcc)
+# rownames(ranked_mav_pcc) <- ranked_mav_pcc$Parameter
+# ranked_mav_pcc2 <- as.matrix(ranked_mav_pcc[1:10, -1])
+# summary(ranked_mav_pcc2)
+# gnbu_ramp <- colorRampPalette(brewer.pal(9, "YlOrRd"))(180)
+# ht <- Heatmap(ranked_mav_pcc2, name="PCC", col = gnbu_ramp,
+#         cluster_columns = F,
+#         cluster_rows = F,
+#         column_labels = c("Bacteria", "Flow", "Flux"),
+#         heatmap_legend_param = list(direction = "horizontal"))
+# heatmap_pcc <- draw(ht, heatmap_legend_side = "bottom")
+# heatmap_pcc
 
+# Suppose ranked_mav_pcc2 is your matrix; convert to data.frame if needed
+library(reshape2)
+mat_df <- as.data.frame(ranked_mav_pcc)
+colnames(mat_df) <- c("Parameter", "Bacteria", "Flow", "Flux" )
+# mat_df$Parameter <- rownames(ranked_mav_pcc)  # Add rownames as column
+
+# Pivot to long format
+df_long <- mat_df %>% 
+  pivot_longer(cols = -Parameter, names_to = "variable", values_to = "value")
+
+# sort on Flux
+df_long$parameter <- factor(df_long$Parameter, levels = mat_df$Parameter[order(mat_df$Flux)])
+levels(df_long$parameter)
+bolded_labels <- c("TIMP", "WDPS", "FRT_SURFACE", "SLSUBBSN", "WOF_P", "BACTMX", "WDPRES",  "ADJ_PKR",  "SPEXP", "CFRT_KG",  "SOL_AWC", "GW_SPYLD", "SPCON",      
+                   "SMFMN", "ESCO", "REVAPMN", "GW_DELAY", "GW_REVAP", "EPCO",  "BACTKDQ",  "GWQMN",  "SOL_K",  "WDPQ", "CH_N1",  "ALPHA_BF", "SURLAG",     
+                   "BACT_SWF", "PRF_BSN", "OV_N", "SMFMX", "SMTMP",  "CH_N2", "RCHRG_DP", "DDRAIN", "TDRAIN", "SFTMP", "WDPRCH", "CH_K1", "CN2",        
+                   "CH_K2", "GDRAIN", "**ALPHA_BNK**",  "THBACT", "DEP_IMP",  "TRNSRCH")
+
+#plot
+colnames(df_long)
+library(ggtext)
+heatmap_pcc <- ggplot(df_long, aes(x = variable, y = parameter, fill = value)) +
+  geom_tile() +
+  scale_fill_distiller(palette = "YlOrRd", direction = 1) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  labs(fill = "PCC", x = "Variable", y = "Parameter")+
+  #scale_y_discrete(labels=bolded_labels) + # is not currently supported
+  theme(axis.text.y = ggtext::element_markdown())
+heatmap_pcc
+
+#####
 # which parameters from the sensitivity analysis are kept?
 simulated_parameter_list #18
 full_parameter_list #45
